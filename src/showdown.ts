@@ -6,7 +6,7 @@ import Discord from 'discord.js';
 import Util from './Util.js';
 
 const showdown = new Discord.Client({
-    intents: 3,
+    intents: 1,
     shards: 'auto',
     allowedMentions: { parse: ['users', 'roles'], repliedUser: true },
     restRequestTimeout: 25000
