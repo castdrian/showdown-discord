@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "moduleResolution": "node",
+        "module": "ES2020",
+        "removeComments": false,
+        "alwaysStrict": true,
+        "pretty": true,
+        "target": "ES2020",
+        "lib": ["ESNext"],
+        "sourceMap": true,
+        "inlineSources": true,
+        "noEmitHelpers": true,
+        "importHelpers": true,
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "noImplicitAny": true,
+        "strictNullChecks": true,
+        "strictFunctionTypes": true,
+        "sourceRoot": "./src",
+        "outDir": "./dist",       
+        "baseUrl": "./",
+        "typeRoots": ["node_modules/@types", "src/@types"]
+    }
+}
