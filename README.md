@@ -10,6 +10,7 @@
 
 Powered through and through by Pokémon Showdown, discord.js, some TypeScript and myself.
 
+<a href="https://depressed-lemonade.me/E5VOE54.gif"><img src="https://depressed-lemonade.me/E5VOE54.gif"/></a>
 
 ### Donations
 

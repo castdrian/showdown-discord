@@ -22,7 +22,7 @@
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",
     "del": "^6.0.0",
-    "discord.js": "github:monbrey/discord.js#message-components",
+    "discord.js": "github:monbrey/discord.js#586d4a8bd131e358379ec0c1322661528fa5eea5",
     "dotenv": "^8.0.0",
     "eslint": "^7.24.0",
     "last-commit-log": "^3.1.1",

@@ -26,7 +26,7 @@ export async function run(interaction: CommandInteraction): Promise<void> {
     void p2.start();
 
     const startrow = new MessageActionRow()
-    .addComponent(new MessageButton().setStyle('PRIMARY').setLabel('Start battle').setCustomID('startbattle'));
+    .addComponents([new MessageButton().setStyle('PRIMARY').setLabel('Start battle').setCustomID('startbattle')]);
     interaction.editReply('Battle format: `Gen 8 random singles battle (OU)`', { components: [startrow] }); 
 	
 	const message = await interaction.fetchReply() as Message;
