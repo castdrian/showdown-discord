@@ -11,7 +11,7 @@ export async function run(interaction: CommandInteraction): Promise<void> {
         const embed = new MessageEmbed()
         .setTitle('Ping:')
         .setDescription(`WebSocket ping: ${process.showdown.ws.ping.toFixed(2)} ms\nREST ping: ${took} ms`)
-        .setColor('#CB45CC')
+        .setColor('#458bcc')
         .setThumbnail((process.showdown.user?.displayAvatarURL() as string))
         .setFooter('Showdown! | by adrifcastr', process.showdown.user?.displayAvatarURL());
 
@@ -30,5 +30,5 @@ export const info: Command['info'] = {
 
 export const data: Command['data'] = {
     name: 'ping',
-    description: 'ping alot'
+    description: 'Showdown!\'s ping'
 };

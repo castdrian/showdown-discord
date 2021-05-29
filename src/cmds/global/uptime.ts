@@ -9,7 +9,7 @@ export async function run(interaction: CommandInteraction): Promise<void> {
     const embed = new MessageEmbed()
     .setTitle('Uptime:')
     .setDescription(Util.secondsToDifferenceString(process.showdown.uptime as number / 1000, { enableSeconds: true }))
-    .setColor('#CB45CC')
+    .setColor('#458bcc')
     .setThumbnail((process.showdown.user?.displayAvatarURL() as string))
     .setFooter('Showdown! | by adrifcastr', process.showdown.user?.displayAvatarURL());
         
@@ -24,5 +24,5 @@ export const info: Command['info'] = {
 
 export const data: Command['data'] = {
     name: 'uptime',
-    description: 'alot of uptime'
+    description: 'Showdown!\'s uptime'
 };

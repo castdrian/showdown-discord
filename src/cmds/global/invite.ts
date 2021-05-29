@@ -17,5 +17,5 @@ export const info: Command['info'] = {
 
 export const data: Command['data'] = {
     name: 'invite',
-    description: 'invite alot of alots'
+    description: 'Invite Showdown!'
 };

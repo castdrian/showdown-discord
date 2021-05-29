@@ -8,7 +8,7 @@
 # Showdown! 
 ### Open source Showdown! sim client wrapped inside a Discord Bot
 
-Poewered through and through by Pokémon Showdown, discord.js, some TypeScript and myself.
+Powered through and through by Pokémon Showdown, discord.js, some TypeScript and myself.
 
 
 ### Donations
