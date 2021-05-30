@@ -6,6 +6,7 @@ import { Battle, Side, Pokemon } from '@pkmn/client';
 import { TeamGenerators } from '@pkmn/randoms';
 import { LogFormatter, ChoiceBuilder } from '@pkmn/view';
 import { Generations, GenerationNum } from '@pkmn/data';
+import Util from '../../Util.js';
 
 export async function run(interaction: CommandInteraction): Promise<void> {
     Teams.setGeneratorFactory(TeamGenerators);
@@ -24,14 +25,16 @@ export async function run(interaction: CommandInteraction): Promise<void> {
 
     const startrow = new MessageActionRow()
     .addComponents(new MessageButton().setStyle('PRIMARY').setLabel('Start battle').setCustomID('startbattle'));
-    interaction.editReply('Battle format: `Gen 8 random singles battle (OU)`', { components: [startrow] }); 
+    interaction.editReply('Battle format: `Gen 8 random singles battle`', { components: [startrow] }); 
 	
 	const message = await interaction.fetchReply() as Message;
 
 	const filter = (i: MessageComponentInteraction) => i.user.id === interaction.user.id;
 	const collector = message.createMessageComponentInteractionCollector(filter);
+  let movebuttons: any = [];
 
 	collector.on('collect', async (i: MessageComponentInteraction) => {
+        await i.deferUpdate();
         if (i.customID === 'startbattle') {
             const battle = new Battle(gens);
             const formatter = new LogFormatter('p1', battle);
@@ -72,11 +75,34 @@ export async function run(interaction: CommandInteraction): Promise<void> {
                     console.error("\n" + chunk.substring(7) + "\n\n");
                   } else {
                     if (!chunk.startsWith('|request|')) {
-                        console.log(chunk);
+                        //console.log(chunk);
                     } else {
                       state.request = JSON.parse(chunk.substring(9));
                       console.log(JSON.stringify(state.request, null, 2));
-                      if (chunk.includes('|teampreview|')) streams.p1.write(`>p1 CHOICE switch default`);
+                      const activemon = state.request.side.pokemon[0];
+
+                      const moverow = new MessageActionRow();
+                      const optionsrow = new MessageActionRow()
+                      .addComponents(
+                        new MessageButton().setCustomID('forfeit').setLabel('Forfeit').setStyle('DANGER'),
+                        new MessageButton().setCustomID('switch').setLabel('Switch').setStyle('SUCCESS'),
+                      );
+
+                      for (const move of activemon.moves) {
+                        moverow.addComponents(new MessageButton().setCustomID(move).setLabel(move.charAt(0).toUpperCase() + move.slice(1)).setStyle('PRIMARY'));
+                        movebuttons.push(move)
+                      }
+
+                      const monname = activemon.details.split(',')[0];
+                      const hp = activemon.condition;
+
+                      const embed = new MessageEmbed()
+                      .setDescription('Your side:\n\n```md\n' + activemon.details + '\n' + activemon.condition + 'HP\n```')
+                      .setAuthor('Showdown!', interaction.client.user?.displayAvatarURL())
+                      .setFooter(`${monname} | ${hp}HP`, interaction.user.displayAvatarURL())
+                      .setImage(`https://play.pokemonshowdown.com/sprites/ani-back/${monname.toLowerCase().trim()}.gif`);
+
+                      await i.editReply({ embeds: [embed], components: [moverow, optionsrow] });
                     }
               
                     if (chunk.startsWith('|player|') || chunk.startsWith('|\n')) {
@@ -89,8 +115,21 @@ export async function run(interaction: CommandInteraction): Promise<void> {
               })();
               
 
-            await i.update('Battle started. Check console.', { components: [] });
-        }
+            //await i.update('Battle started. Check console.', { components: [] });
+          }
+
+          if (movebuttons.some((x: String) => x === i.customID)) {
+            streams.p1.write(`>p1 move ${i.customID}`);
+            await i.editReply('You chose ' + i.customID.charAt(0).toUpperCase() + i.customID.slice(1), { components: [] });
+          }
+
+          if (i.customID === 'forfeit') {
+            await i.editReply('Battle cancelled. You lost.', { components: [] });
+          }
+
+          if (i.customID === 'switch') {
+            await i.editReply('Check console. lol.', { components: [] });
+          }
     });
 
     const displayLog = (log: string) => {
