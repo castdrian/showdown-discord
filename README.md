@@ -12,6 +12,14 @@ Powered through and through by Pokémon Showdown, discord.js, some TypeScript an
 
 <a href="https://depressed-lemonade.me/E5VOE54.gif"><img src="https://depressed-lemonade.me/E5VOE54.gif"/></a>
 
+### Resources used:
+- https://github.com/pkmn/ps/blob/master/integration/src/ui/index.ts
+- https://github.com/pkmn/ps/tree/master/view
+- https://github.com/pkmn/ps/tree/master/sim
+- https://github.com/pkmn/ps/tree/master/client
+- https://github.com/smogon/pokemon-showdown/blob/master/sim/SIM-PROTOCOL.md
+- https://github.com/pkmn-archive/test-ps-sim/blob/master/sim.js
+
 ### Donations
 
 Donations are gladly accepted. Please send them to my [Paypal.me](https://www.paypal.me/adrifcastr) or [Patreon](https://www.patreon.com/gideonbot)
