@@ -4,7 +4,7 @@ import { Dex, Teams, TeamValidator, RandomPlayerAI, BattleStreams, PRNG } from '
 import { Protocol, Handler, ArgName, ArgType, BattleArgsKWArgType } from '@pkmn/protocol';
 import { Battle, Side, Pokemon } from '@pkmn/client';
 import { TeamGenerators } from '@pkmn/randoms';
-import { LogFormatter } from '@pkmn/view';
+import { LogFormatter, ChoiceBuilder } from '@pkmn/view';
 import { Generations, GenerationNum } from '@pkmn/data';
 
 export async function run(interaction: CommandInteraction): Promise<void> {
@@ -14,25 +14,21 @@ export async function run(interaction: CommandInteraction): Promise<void> {
 
     const spec = {formatid: 'gen8customgame'};
 
-    const p1spec = {name: interaction.user.username, team: Teams.pack(Teams.generate('gen8randombattle'))};
-    const p2spec = {name: 'Showdown!', team: Teams.pack(Teams.generate('gen8randombattle'))};
+    const p1spec = { name: interaction.user.username, team: Teams.pack(Teams.generate('gen8randombattle')) };
+    const p2spec = { name: 'Showdown!', team: Teams.pack(Teams.generate('gen8randombattle')) };
 
     const streams = BattleStreams.getPlayerStreams(new BattleStreams.BattleStream());
 
-    const p1 = new RandomPlayerAI(streams.p1);
     const p2 = new RandomPlayerAI(streams.p2);
-
-    void p1.start();
     void p2.start();
 
     const startrow = new MessageActionRow()
-    .addComponents([new MessageButton().setStyle('PRIMARY').setLabel('Start battle').setCustomID('startbattle')]);
+    .addComponents(new MessageButton().setStyle('PRIMARY').setLabel('Start battle').setCustomID('startbattle'));
     interaction.editReply('Battle format: `Gen 8 random singles battle (OU)`', { components: [startrow] }); 
 	
 	const message = await interaction.fetchReply() as Message;
 
 	const filter = (i: MessageComponentInteraction) => i.user.id === interaction.user.id;
-
 	const collector = message.createMessageComponentInteractionCollector(filter);
 
 	collector.on('collect', async (i: MessageComponentInteraction) => {
@@ -49,7 +45,6 @@ export async function run(interaction: CommandInteraction): Promise<void> {
 
             void (async () => {
                 for await (const chunk of streams.omniscient) {
-                  console.log(chunk);
               
                   for (const line of chunk.split('\n')) {
                     const {args, kwArgs} = Protocol.parseBattleLine(line);
@@ -66,33 +61,37 @@ export async function run(interaction: CommandInteraction): Promise<void> {
                 }
             })();
 
+            streams.omniscient.write(`>start ${JSON.stringify(spec)}`);
+            streams.omniscient.write(`>player p1 ${JSON.stringify(p1spec)}`);
+            streams.omniscient.write(`>player p2 ${JSON.stringify(p2spec)}`);
+
+            let state: any = {};
             void (async () => {
-                for await (const chunk of streams.spectator) {
-                  console.log(chunk);
+                for await (const chunk of streams.p1) {
+                  if (chunk.startsWith('|error|')) {
+                    console.error("\n" + chunk.substring(7) + "\n\n");
+                  } else {
+                    if (!chunk.startsWith('|request|')) {
+                        console.log(chunk);
+                    } else {
+                      state.request = JSON.parse(chunk.substring(9));
+                      console.log(JSON.stringify(state.request, null, 2));
+                      if (chunk.includes('|teampreview|')) streams.p1.write(`>p1 CHOICE switch default`);
+                    }
               
-                  for (const line of chunk.split('\n')) {
-                    const {args, kwArgs} = Protocol.parseBattleLine(line);
-                    const log = formatter.formatText(args, kwArgs);
-                    const key = Protocol.key(args);
-              
-                    add(pre, key, args, kwArgs);
-                    battle.add(args, kwArgs);
-                    add(post, key, args, kwArgs);
-              
-                    displayLog(log);
+                    if (chunk.startsWith('|player|') || chunk.startsWith('|\n')) {
+                      //console.log(chunk);
+                      
+                    }
+            
                   }
-                  battle.update();
                 }
-            })();
-            void streams.omniscient.write(`>start ${JSON.stringify(spec)}
-            >player p1 ${JSON.stringify(p1spec)}
-            >player p2 ${JSON.stringify(p2spec)}`);
+              })();
+              
 
             await i.update('Battle started. Check console.', { components: [] });
         }
     });
-
-	//collector.on('end', collected => console.log(`Collected ${collected.size} items`));
 
     const displayLog = (log: string) => {
         if (!log) return;
