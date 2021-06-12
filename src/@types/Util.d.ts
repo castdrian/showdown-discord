@@ -39,13 +39,8 @@ interface secondsToDifferenceSettings {
 }
 
 interface Command {
-    info: {
-        roles: string[];
-        user_perms: Discord.PermissionResolvable[];
-        bot_perms: Discord.PermissionResolvable[];
-    },
     data: Discord.ApplicationCommandData;
-    async run(interaction: Discord.CommandInteraction, options: Discord.CommandInteractionOption[]): Promise<void>;
+    async run(interaction: Discord.CommandInteraction, options: Discord.Collection<String,Discord.CommandInteractionOption>): Promise<void>;
 }
 
 interface Event {

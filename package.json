@@ -2,16 +2,18 @@
   "name": "showdown",
   "version": "1.0.0",
   "description": "Showdown! for Discord",
-  "main": "alot.js",
+  "main": "showdown.js",
   "type": "module",
   "scripts": {
     "build": "npm i --prefer-offline --no-audit && npx tsc -p ./ && npm run start",
+    "dev": "npx tsc -p ./ && npm run start",
     "prod": "npm i --prefer-offline --no-audit && rm -rf dist && npx tsc -p ./ && npm run start",
     "start": "cd dist && node showdown.js"
   },
   "author": "adrifcastr",
   "dependencies": {
     "@pkmn/client": "^0.3.2",
+    "@pkmn/dex": "^0.4.6",
     "@pkmn/randoms": "^0.4.5",
     "@pkmn/sim": "^0.4.5",
     "@pkmn/view": "^0.3.1",
@@ -22,7 +24,7 @@
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",
     "del": "^6.0.0",
-    "discord.js": "github:monbrey/discord.js#586d4a8bd131e358379ec0c1322661528fa5eea5",
+    "discord.js": "^13.0.0-dev.02693bc02f45980d8165820a103220f0027b96b7",
     "dotenv": "^8.0.0",
     "eslint": "^7.24.0",
     "last-commit-log": "^3.1.1",

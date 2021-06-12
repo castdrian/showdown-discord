@@ -1,5 +1,4 @@
-import { CommandInteraction, MessageComponentInteraction, MessageActionRow, MessageButton, Message, MessageEmbed } from 'discord.js';
-import { Command } from 'src/@types/Util';
+import { CommandInteraction, MessageComponentInteraction, MessageActionRow, MessageButton, Message, MessageEmbed, ApplicationCommandData } from 'discord.js';
 import { Dex, Teams, TeamValidator, RandomPlayerAI, BattleStreams, PRNG } from '@pkmn/sim';
 import { Protocol, Handler, ArgName, ArgType, BattleArgsKWArgType } from '@pkmn/protocol';
 import { Battle, Side, Pokemon } from '@pkmn/client';
@@ -25,7 +24,7 @@ export async function run(interaction: CommandInteraction): Promise<void> {
 
     const startrow = new MessageActionRow()
     .addComponents(new MessageButton().setStyle('PRIMARY').setLabel('Start battle').setCustomID('startbattle'));
-    interaction.editReply('Battle format: `Gen 8 random singles battle`', { components: [startrow] }); 
+    /* interaction.editReply('Battle format: `Gen 8 random singles battle`', { components: [startrow] });  */
 	
 	const message = await interaction.fetchReply() as Message;
 
@@ -62,63 +61,53 @@ export async function run(interaction: CommandInteraction): Promise<void> {
                   }
                   battle.update();
                 }
+
+                for await (const chunk of streams.p1) {
+              
+                  for (const line of chunk.split('\n')) {
+                    const {args, kwArgs} = Protocol.parseBattleLine(line);
+                    const log = formatter.formatText(args, kwArgs);
+                    const key = Protocol.key(args);
+              
+                    add(pre, key, args, kwArgs);
+                    battle.add(args, kwArgs);
+                    add(post, key, args, kwArgs);
+              
+                    displayLog(log);
+                  }
+                  battle.update();
+                }
             })();
 
             streams.omniscient.write(`>start ${JSON.stringify(spec)}`);
             streams.omniscient.write(`>player p1 ${JSON.stringify(p1spec)}`);
             streams.omniscient.write(`>player p2 ${JSON.stringify(p2spec)}`);
 
-            let state: any = {};
-            void (async () => {
-                for await (const chunk of streams.p1) {
-                  if (chunk.startsWith('|error|')) {
-                    console.error("\n" + chunk.substring(7) + "\n\n");
-                  } else {
-                    if (!chunk.startsWith('|request|')) {
-                        //console.log(chunk);
-                    } else {
-                      state.request = JSON.parse(chunk.substring(9));
-                      console.log(JSON.stringify(state.request, null, 2));
-                      const activemon = state.request.side.pokemon[0];
+            const moverow = new MessageActionRow();
+            const optionsrow = new MessageActionRow()
+            .addComponents(
+              new MessageButton().setCustomID('forfeit').setLabel('Forfeit').setStyle('DANGER'),
+              new MessageButton().setCustomID('switch').setLabel('Switch').setStyle('SUCCESS'),
+            );
 
-                      const moverow = new MessageActionRow();
-                      const optionsrow = new MessageActionRow()
-                      .addComponents(
-                        new MessageButton().setCustomID('forfeit').setLabel('Forfeit').setStyle('DANGER'),
-                        new MessageButton().setCustomID('switch').setLabel('Switch').setStyle('SUCCESS'),
-                      );
+           // for (const move of activemon.moves) {
+           //   moverow.addComponents(new MessageButton().setCustomID(move).setLabel(move.charAt(0).toUpperCase() + move.slice(1)).setStyle('PRIMARY'));
+          //    movebuttons.push(move)
+           // }
 
-                      for (const move of activemon.moves) {
-                        moverow.addComponents(new MessageButton().setCustomID(move).setLabel(move.charAt(0).toUpperCase() + move.slice(1)).setStyle('PRIMARY'));
-                        movebuttons.push(move)
-                      }
+            //const monname = activemon.details.split(',')[0];
+            //const hp = activemon.condition;
 
-                      const monname = activemon.details.split(',')[0];
-                      const hp = activemon.condition;
+            const embed = new MessageEmbed()
+           // .setDescription('Your side:\n\n```md\n' + activemon.details + '\n' + activemon.condition + 'HP\n```')
+            .setAuthor('Showdown!', interaction.client.user?.displayAvatarURL())
+           // .setFooter(`${monname} | ${hp}HP`, interaction.user.displayAvatarURL())
+            //.setImage(`https://play.pokemonshowdown.com/sprites/ani-back/${monname.toLowerCase().trim()}.gif`);
 
-                      const embed = new MessageEmbed()
-                      .setDescription('Your side:\n\n```md\n' + activemon.details + '\n' + activemon.condition + 'HP\n```')
-                      .setAuthor('Showdown!', interaction.client.user?.displayAvatarURL())
-                      .setFooter(`${monname} | ${hp}HP`, interaction.user.displayAvatarURL())
-                      .setImage(`https://play.pokemonshowdown.com/sprites/ani-back/${monname.toLowerCase().trim()}.gif`);
-
-                      await i.editReply({ embeds: [embed], components: [moverow, optionsrow] });
-                    }
-              
-                    if (chunk.startsWith('|player|') || chunk.startsWith('|\n')) {
-                      //console.log(chunk);
-                      
-                    }
-            
-                  }
-                }
-              })();
-              
-
-            //await i.update('Battle started. Check console.', { components: [] });
+            //await i.editReply({ embeds: [embed], components: [moverow, optionsrow] });
           }
 
-          if (movebuttons.some((x: String) => x === i.customID)) {
+         /*  if (movebuttons.some((x: String) => x === i.customID)) {
             streams.p1.write(`>p1 move ${i.customID}`);
             await i.editReply('You chose ' + i.customID.charAt(0).toUpperCase() + i.customID.slice(1), { components: [] });
           }
@@ -129,7 +118,7 @@ export async function run(interaction: CommandInteraction): Promise<void> {
 
           if (i.customID === 'switch') {
             await i.editReply('Check console. lol.', { components: [] });
-          }
+          } */
     });
 
     const displayLog = (log: string) => {
@@ -150,8 +139,8 @@ export async function run(interaction: CommandInteraction): Promise<void> {
         this.battle = battle;
     }
     
-    '|faint|'(args: Protocol.Args['|faint|']) {
-    }
+      '|faint|'(args: Protocol.Args['|faint|']) {
+      }
     }
       
     class PostHandler implements Handler<void> {
@@ -159,22 +148,18 @@ export async function run(interaction: CommandInteraction): Promise<void> {
         this.battle = battle;
     }
     
-    '|teampreview|'() {
-    }
-    
-    '|turn|'() {
-        
-    }
+      '|teampreview|'() {
+        console.log(this.battle.request);
+        console.log('previeewww');
+      }
+      
+      '|turn|'() {
+        console.log('turnnnn');
+      }
     }
 }
 
-export const info: Command['info'] = {
-    roles: [],
-    user_perms: [],
-    bot_perms: []
-};
-
-export const data: Command['data'] = {
+export const data: ApplicationCommandData = {
     name: 'battle',
     description: 'Start a battle simulation'
 };

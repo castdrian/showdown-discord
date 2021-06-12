@@ -7,6 +7,7 @@ import type { Command } from './@types/Util.js';
 import { Collection } from 'discord.js';
 import type { ApplicationCommandData } from 'discord.js';
 import Md5 from 'md5';
+import { Snowflake } from 'discord.js';
 
 class Util {
     constructor() {
@@ -78,14 +79,14 @@ class Util {
         const split = url.split('/');
         if (split.length < 2) return false;
 
-        const client = new Discord.WebhookClient(split[0], split[1]);
+        const client = new Discord.WebhookClient(split[0] as Snowflake, split[1]);
 
         if (typeof message == 'string') {
             for (const msg of Discord.Util.splitMessage(message, { maxLength: 1980 })) {
-                client.send(msg, { avatarURL: process.showdown.user?.displayAvatarURL(), username: 'alot-of-logs', files: files });
+                client.send({ content: msg, avatarURL: process.showdown.user?.displayAvatarURL(), username: 'Showdown! logs', files: files });
             }
         }
-        else client.send(null, { embeds: [message], avatarURL: process.showdown.user?.displayAvatarURL(), username: 'alot-of-logs', files: files });
+        else client.send({ embeds: [message], avatarURL: process.showdown.user?.displayAvatarURL(), username: 'Showdown! logs', files: files });
         
         return true;
     }
@@ -184,7 +185,7 @@ class Util {
             global.set(props.data.name, props.data);
         }
 
-        if (process.showdown.user?.id === '') {
+        if (process.showdown.user?.id === '1') {
             const globalcmds = await process.showdown.application?.commands.fetch();
 
             if (!globalcmds) {
