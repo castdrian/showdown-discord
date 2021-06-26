@@ -4,6 +4,6 @@ export default {
     name: 'uncaughtException',
     process: true,
     async run(err: Error): Promise<void> {
-        Util.log('Uncaught Exception: ' + `\`\`\`\n${err.stack}\n\`\`\``);
+        Util.log(`Uncaught Exception: \`\`\`\n${err.stack}\n\`\`\``);
     }
 };

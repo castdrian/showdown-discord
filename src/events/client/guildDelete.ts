@@ -1,5 +1,5 @@
-import Util from '../../Util.js';
 import { Guild, MessageEmbed } from 'discord.js';
+import Util from '../../Util.js';
 
 export default {
     name: 'guildDelete',

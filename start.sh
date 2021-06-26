@@ -1,3 +1,3 @@
 #!/bin/bash
 
-nodemon -e ts  --exec 'npm run prod'
+nodemon -e ts  --exec 'npm run build'

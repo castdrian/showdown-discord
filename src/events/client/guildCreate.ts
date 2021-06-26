@@ -1,9 +1,9 @@
+import { Guild, MessageEmbed } from 'discord.js';
 import Util from '../../Util.js';
-import { Guild, Client, MessageEmbed } from 'discord.js';
 
 export default {
     name: 'guildCreate',
-    async run(guild: Guild, gideon: Client): Promise<void> {
+    async run(guild: Guild): Promise<void> {
         await guild.members.fetch();
         const owner = await guild.fetchOwner();
 

@@ -1,2 +1,2 @@
-nodemon -e ts  --exec 'npm run dev'
+nodemon -e ts  --exec 'npm run build'
 pause

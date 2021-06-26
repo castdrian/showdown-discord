@@ -1,13 +1,15 @@
-import Discord from 'discord.js';
+/* eslint-disable consistent-return */
+/* eslint-disable no-param-reassign */
+import Discord, { Collection , Snowflake } from 'discord.js';
 import fetch from 'node-fetch';
-import Interactions from './handlers/Interactions.js';
 import recursive from 'recursive-readdir';
 import path from 'path';
-import type { Command } from './@types/Util.js';
-import { Collection } from 'discord.js';
+
 import type { ApplicationCommandData } from 'discord.js';
 import Md5 from 'md5';
-import { Snowflake } from 'discord.js';
+import type { Command } from './@types/Util.js';
+import Interactions from './handlers/Interactions.js';
+
 
 class Util {
     constructor() {
@@ -34,16 +36,16 @@ class Util {
         if (!seconds_input || typeof seconds_input !== 'number') return 'Unknown';
 
         const seconds = Math.floor(seconds_input % 60);
-        seconds_input = seconds_input / 60;
+        seconds_input /= 60;
         const minutes = Math.floor(seconds_input % 60);
-        seconds_input = seconds_input / 60;
+        seconds_input /= 60;
         const hours = Math.floor(seconds_input % 24);
         const days = Math.floor(seconds_input / 24);
 
-        const dayString = days + ' day' + (days !== 1 ? 's' : '');
-        const hourString = hours + ' hour' + (hours !== 1 ? 's' : '');
-        const minuteString = minutes + ' minute' + (minutes !== 1 ? 's' : '');
-        const secondString = seconds + ' second' + (seconds !== 1 ? 's' : '');
+        const dayString = `${days  } day${  days !== 1 ? 's' : ''}`;
+        const hourString = `${hours  } hour${  hours !== 1 ? 's' : ''}`;
+        const minuteString = `${minutes  } minute${  minutes !== 1 ? 's' : ''}`;
+        const secondString = `${seconds  } second${  seconds !== 1 ? 's' : ''}`;
 
         const outputArray = [];
         if (days > 0) outputArray.push(dayString);
@@ -59,7 +61,7 @@ class Util {
 
         // Remove the last element from the array
         const last = outputArray.pop();
-        return outputArray.join(', ') + ' and ' + last;
+        return `${outputArray.join(', ')  } and ${  last}`;
     }
 
     /**
@@ -81,12 +83,13 @@ class Util {
 
         const client = new Discord.WebhookClient(split[0] as Snowflake, split[1]);
 
-        if (typeof message == 'string') {
+        if (typeof message === 'string') {
+            // eslint-disable-next-line no-restricted-syntax
             for (const msg of Discord.Util.splitMessage(message, { maxLength: 1980 })) {
-                client.send({ content: msg, avatarURL: process.showdown.user?.displayAvatarURL(), username: 'Showdown! logs', files: files });
+                client.send({ content: msg, avatarURL: process.showdown.user?.displayAvatarURL(), username: 'Showdown! logs', files });
             }
         }
-        else client.send({ embeds: [message], avatarURL: process.showdown.user?.displayAvatarURL(), username: 'Showdown! logs', files: files });
+        else client.send({ embeds: [message], avatarURL: process.showdown.user?.displayAvatarURL(), username: 'Showdown! logs', files });
         
         return true;
     }
@@ -94,7 +97,7 @@ class Util {
     static fetchJSON(url: string) : Promise<unknown> {
         // eslint-disable-next-line no-async-promise-executor
         return new Promise(async (resolve, reject) => {
-            if (!url || typeof url != 'string') return reject('No URL');
+            if (!url || typeof url !== 'string') return reject(new Error('No URL'));
 
             try {
                 const res = await fetch(url);
@@ -109,23 +112,23 @@ class Util {
     static truncate(str: string, length: number, useWordBoundary: boolean): string {
         if (str.length <= length) return str;
         const subString = str.substr(0, length - 1);
-        return (useWordBoundary ? subString.substr(0, subString.lastIndexOf(' ')) : subString) + '...';
+        return `${useWordBoundary ? subString.substr(0, subString.lastIndexOf(' ')) : subString  }...`;
     }
 
     static normalize(num: number): string {
-        if (num == undefined || typeof num != 'number') return '';
+        if (typeof num === 'undefined' || typeof num !== 'number') return '';
 
         return num.toLocaleString(undefined, {minimumIntegerDigits: 2, useGrouping: false});
     }
 
     static Split<T>(arr: T[], chunks: number): T[][] {
-        const array_of_arrays = [];
+        const arrayOfarrays = [];
 
         for (let i = 0; i < arr.length; i += chunks) {
-            array_of_arrays.push(arr.slice(i, i + chunks));
+            arrayOfarrays.push(arr.slice(i, i + chunks));
         }
 
-        return array_of_arrays;
+        return arrayOfarrays;
     }
 
     static LoadCommands(): Promise<void> {
@@ -134,29 +137,31 @@ class Util {
     
             recursive('./cmds', async (err, files) => {
                 if (err) {
-                    Util.log('Error while reading commands:\n' + err);
+                    Util.log(`Error while reading commands:\n${  err}`);
                     return reject(err);
                 }
         
                 const jsfiles = files.filter(fileName => fileName.endsWith('.js') && !path.basename(fileName).startsWith('_'));
                 if (jsfiles.length < 1) {
                     console.log('No commands to load!');
-                    return reject('No commmands');
+                    return reject(new Error('No commmands'));
                 }
     
                 console.log(`Found ${jsfiles.length} commands`);
     
-                for (const file_path of jsfiles) {
-                    const cmd_start = process.hrtime.bigint();
+                // eslint-disable-next-line no-restricted-syntax
+                for (const filePath of jsfiles) {
+                    const cmdStart = process.hrtime.bigint();
     
-                    const props: Command = await import(`./${file_path}`);
+                    // eslint-disable-next-line no-await-in-loop
+                    const props: Command = await import(`./${filePath}`);
                     
                     process.showdown.commands.set(props.data.name, props);
             
-                    const cmd_end = process.hrtime.bigint();
-                    const took = (cmd_end - cmd_start) / BigInt('1000000');
+                    const cmdEnd = process.hrtime.bigint();
+                    const took = (cmdEnd - cmdStart) / BigInt('1000000');
             
-                    console.log(`${Util.normalize(jsfiles.indexOf(file_path) + 1)} - ${file_path} loaded in ${took}ms`);
+                    console.log(`${Util.normalize(jsfiles.indexOf(filePath) + 1)} - ${filePath} loaded in ${took}ms`);
                 }
         
                 const end = process.hrtime.bigint();
@@ -171,16 +176,18 @@ class Util {
     static async DeployCommands(): Promise<void | boolean> {
         const global: Collection<string, ApplicationCommandData> = new Collection();
 
-        const files = await recursive('./cmds').catch(err => Util.log('Error while reading commands:\n' + err));
-        if (!Array.isArray(files)) return; //in case it somehow fails the catch block will return a boolean
+        const files = await recursive('./cmds').catch(err => Util.log(`Error while reading commands:\n${  err}`));
+        if (!Array.isArray(files)) return; // in case it somehow fails the catch block will return a boolean
 
         const jsfiles = files.filter(fileName => fileName.endsWith('.js') && !path.basename(fileName).startsWith('_'));
         if (jsfiles.length < 1) {
             return Util.log('No commands to load!');
         }
 
-        for (const file_path of jsfiles) {
-            const props: Command = await import(`./${file_path}`);
+        // eslint-disable-next-line no-restricted-syntax
+        for (const filePath of jsfiles) {
+            // eslint-disable-next-line no-await-in-loop
+            const props: Command = await import(`./${filePath}`);
             
             global.set(props.data.name, props.data);
         }
@@ -222,29 +229,31 @@ class Util {
     
             recursive('./events', async (err, files) => {
                 if (err) {
-                    Util.log('Error while reading events:\n' + err);
+                    Util.log(`Error while reading events:\n${  err}`);
                     return reject(err);
                 }
             
                 const jsfiles = files.filter(fileName => fileName.endsWith('.js') && !path.basename(fileName).startsWith('_'));
                 if (jsfiles.length < 1) {
                     console.log('No events to load!');
-                    return reject('No events!');
+                    return reject(new Error('No events!'));
                 }
         
                 console.log(`Found ${jsfiles.length} events`);
         
-                for (const file_path of jsfiles) {
-                    const start = process.hrtime.bigint();
+                // eslint-disable-next-line no-restricted-syntax
+                for (const filePath of jsfiles) {
+                    const strt = process.hrtime.bigint();
         
-                    const props = await import(`./${file_path}`);
+                    // eslint-disable-next-line no-await-in-loop
+                    const props = await import(`./${filePath}`);
                         
                     process.showdown.events.set(props.default.name, props.default);
                 
                     const end = process.hrtime.bigint();
-                    const took = (end - start) / BigInt('1000000');
+                    const took = (end - strt) / BigInt('1000000');
                 
-                    console.log(`${Util.normalize(jsfiles.indexOf(file_path) + 1)} - ${file_path} loaded in ${took}ms`);
+                    console.log(`${Util.normalize(jsfiles.indexOf(filePath) + 1)} - ${filePath} loaded in ${took}ms`);
                 }
             
                 const end = process.hrtime.bigint();

@@ -1,4 +1,4 @@
-import { CommandInteraction, TextChannel, GuildMember, Permissions } from 'discord.js';
+import { CommandInteraction } from 'discord.js';
 import Util from '../Util.js';
 
 class Interactions {
@@ -14,17 +14,17 @@ class Interactions {
         command.defer();
         if (!command.guild) return;
 
-        const options = command.options;
+        const {options} = command;
         const cmd = process.showdown.commands.get(command.commandName);
         if (!cmd) return;
         
         try {
-            if (process.env.CI) console.log('Handling interaction ' + command.commandName);
+            if (process.env.CI) console.log(`Handling interaction ${  command.commandName}`);
             await cmd.run(command, options);
         }
         catch (e) {
             Util.log(`An error occurred while running ${command.commandName}:\n\n\`\`\`\n${e.stack}\n\`\`\``);
-            return command.reply({ content: 'An error occurred while processing your request:```\n' + e + '```', ephemeral: true });
+            command.reply({ content: `An error occurred while processing your request:\`\`\`\n${  e  }\`\`\``, ephemeral: true });
         }
     }
 }

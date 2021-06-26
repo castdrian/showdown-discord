@@ -1,12 +1,13 @@
+/* eslint-disable no-param-reassign */
 import { Client, ClientApplication, User, Team } from 'discord.js';
-import Util from '../../Util.js';
 import LCL from 'last-commit-log';
+import Util from '../../Util.js';
 
 export default {
     name: 'ready',
     once: true,
     async run(showdown: Client): Promise<void> {
-        const app = await showdown.application?.fetch().catch(x => Util.log('Failed to fetch owner: ' + x));
+        const app = await showdown.application?.fetch().catch(x => Util.log(`Failed to fetch owner: ${  x}`));
         if (app && app instanceof ClientApplication && app.owner && app.owner instanceof User) showdown.owner = app.owner.id;
         else if (app && app instanceof ClientApplication && app.owner && app.owner instanceof Team) showdown.owner = app.owner.ownerID as string;
 
