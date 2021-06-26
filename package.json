@@ -11,6 +11,13 @@
     "prepare": "husky install"
   },
   "author": "adrifcastr",
+  "lint-staged": {
+    "*.{js,ts,tsx}": [
+      "eslint src/**/*.ts --fix",
+      "prettier src/**/*.ts --write"
+    ],
+    "*.js": "eslint --cache --fix"
+  },
   "dependencies": {
     "@pkmn/client": "^0.3.2",
     "@pkmn/dex": "^0.4.6",
