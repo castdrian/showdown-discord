@@ -1,10 +1,9 @@
-import {Dex, Teams as DTeams, TeamValidator, RandomPlayerAI, BattleStreams, PRNG} from '@pkmn/sim';
+import {Dex, Teams as DTeams, RandomPlayerAI, BattleStreams, Move} from '@pkmn/sim';
 import {Protocol, Handler, ArgName, ArgType, BattleArgsKWArgType} from '@pkmn/protocol';
-import {Teams, Data, PokemonSet} from '@pkmn/sets';
-import {Battle, Side, Pokemon} from '@pkmn/client';
+import {Battle} from '@pkmn/client';
 import {TeamGenerators} from '@pkmn/randoms';
 import {LogFormatter} from '@pkmn/view';
-import {Generations, GenerationNum} from '@pkmn/data';
+import {Generations} from '@pkmn/data';
 
 DTeams.setGeneratorFactory(TeamGenerators);
 const gens = new Generations(Dex as any);
@@ -44,10 +43,7 @@ class PostHandler implements Handler<void> {
     
   }
 
-  '|turn|'() {
-    for (const active of this.battle.p1.active) {
-      console.log(active?.moves);
-    }
+  '|turn|'(args: Protocol.Args['|turn|']) {
   }
 }
 
@@ -78,4 +74,21 @@ const add = <T>(h: Handler<T>, k: ArgName | undefined, a: ArgType, kw: BattleArg
 streams.omniscient.write(`>start ${JSON.stringify(spec)}
 >player p1 ${JSON.stringify(p1spec)}
 >player p2 ${JSON.stringify(p2spec)}`);
-streams.p1.write(`>p1 CHOICE switch default`);
+
+(async () => {
+  for await (const chunk of streams.p1) {
+    for (const line of chunk.split('\n')) {
+      const {args, kwArgs} = Protocol.parseBattleLine(line);
+      battle.add(args, kwArgs);
+    }
+    battle.update();
+    if (battle.request?.requestType === 'move') {
+      const activemon = battle.p1.active[0];
+      const opponent = battle.p1.foe.active[0];
+      console.log(activemon?.moveSlots)
+      console.log(activemon?.moves)
+      //activemon?.useMove(, opponent)
+      //streams.p1.write(`move ${JSON.stringify(activemon?.moves[0])}`)
+    }
+  }
+})();
