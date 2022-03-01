@@ -11,6 +11,13 @@
     "prepare": "husky install"
   },
   "author": "castdrian",
+  "lint-staged": {
+    "*.{js,ts,tsx}": [
+      "eslint src/**/*.ts --fix",
+      "prettier src/**/*.ts --write"
+    ],
+    "*.js": "eslint --cache --fix"
+  },
   "eslintConfig": {
     "extends": "@sapphire"
   },
@@ -27,7 +34,9 @@
     "@typescript-eslint/parser": "^4.22.0",
     "discord-api-types": "^0.20.2",
     "discord.js": "^13.6.0",
-    "dotenv": "^16.0.0"
+    "dotenv": "^16.0.0",
+    "husky": "^7.0.4",
+    "lint-staged": "^12.3.4"
   },
   "devDependencies": {
     "@sapphire/eslint-config": "^4.0.5",
