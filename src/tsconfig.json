@@ -1,0 +1,18 @@
+{
+	"extends": "../tsconfig.base.json",
+	"compilerOptions": {
+		"rootDir": "./",
+		"outDir": "../dist",
+		"module": "ESNext",
+		"target": "ESNext",
+		"composite": true,
+		"preserveConstEnums": true,
+        "paths": {
+			"#handlers/*": ["./handlers/*"],
+			"#types/*": ["./@types/*"],
+			"#config/*": ["./config/*"],
+			"#root/*": ["./*"],
+		}
+	},
+	"include": ["."]
+}
