@@ -1,25 +1,18 @@
 {
+	"extends": "@sapphire/ts-config",
     "compilerOptions": {
-        "strict": true,
         "moduleResolution": "node",
-        "module": "ES2020",
-        "removeComments": false,
-        "alwaysStrict": true,
-        "pretty": true,
-        "target": "ES2020",
-        "lib": ["ESNext"],
-        "sourceMap": true,
-        "inlineSources": true,
-        "noEmitHelpers": true,
-        "importHelpers": true,
-        "skipLibCheck": true,
-        "esModuleInterop": true,
-        "noImplicitAny": true,
-        "strictNullChecks": true,
-        "strictFunctionTypes": true,
-        "sourceRoot": "./src",
+		"module": "ESnext",
+		"rootDir": "./src",
         "outDir": "./dist",       
-        "baseUrl": "./",
-        "typeRoots": ["node_modules/@types", "src/@types"]
+        "baseUrl": "./src",
+        "typeRoots": ["node_modules/@types", "src/@types"],
+		"noImplicitReturns": false,
+		"paths": {
+            "#handlers/*": ["handlers/*"],
+            "#types/*": ["@types/*"],
+            "#config/*": ["config/*"],
+			"#root/*": ["*"],
+        }
     }
 }
