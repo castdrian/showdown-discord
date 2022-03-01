@@ -2,7 +2,7 @@ import {Dex, Teams as DTeams, RandomPlayerAI, BattleStreams, Move} from '@pkmn/s
 import {Protocol, Handler, ArgName, ArgType, BattleArgsKWArgType} from '@pkmn/protocol';
 import {Battle} from '@pkmn/client';
 import {TeamGenerators} from '@pkmn/randoms';
-import {LogFormatter} from '@pkmn/view';
+import {LogFormatter, ChoiceBuilder} from '@pkmn/view';
 import {Generations} from '@pkmn/data';
 
 DTeams.setGeneratorFactory(TeamGenerators);
@@ -85,10 +85,11 @@ streams.omniscient.write(`>start ${JSON.stringify(spec)}
     if (battle.request?.requestType === 'move') {
       const activemon = battle.p1.active[0];
       const opponent = battle.p1.foe.active[0];
-      console.log(activemon?.moveSlots)
-      console.log(activemon?.moves)
-      //activemon?.useMove(, opponent)
-      //streams.p1.write(`move ${JSON.stringify(activemon?.moves[0])}`)
+      
+      const builder = new ChoiceBuilder(battle.request);
+      builder.addChoice('move 1');
+      const choice = builder.toString();
+      streams.p1.write(choice)
     }
   }
 })();
