@@ -13,9 +13,8 @@ export class RejectionListener extends Listener {
 			Constants.APIErrors.INVALID_FORM_BODY
 		];
 
-		if (ignore.includes(err.code))
-			return console.log(`Unhandled Rejection: \`\`\`\n${`${err.stack}\n\nJSON: ${JSON.stringify(err, null, 2)}`}\n\`\`\``);
+		if (ignore.includes(err.code)) return;
 
-		console.log(`Unhandled Rejection: ${`${err.stack}\n\nJSON: ${JSON.stringify(err, null, 2)}`}`);
+		this.container.logger.error(`Unhandled Rejection: ${err.stack}`);
 	}
 }

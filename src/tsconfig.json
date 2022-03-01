@@ -9,9 +9,6 @@
 		"preserveConstEnums": true,
         "paths": {
 			"#handlers/*": ["./handlers/*"],
-			"#types/*": ["./@types/*"],
-			"#config/*": ["./config/*"],
-			"#root/*": ["./*"],
 		}
 	},
 	"include": ["."]

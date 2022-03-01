@@ -5,6 +5,6 @@ import { ListenerOptions, Listener } from '@sapphire/framework';
 export class ReadyListener extends Listener {
 	public run() {
 		setInterval(() => this.container.client.user?.setActivity({ type: 'PLAYING', name: 'Pokémon Showdown!' }), 30e3);
-		console.log('Ready!');
+		this.container.logger.info('Ready!');
 	}
 }

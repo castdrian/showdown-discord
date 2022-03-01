@@ -72,9 +72,6 @@
   },
   "prettier": "@sapphire/prettier-config",
   "imports": {
-    "#handlers/*": "./dist/handlers/*.js",
-    "#types/*": "./dist/types/*.d.ts",
-    "#config/*": "./dist/config/*.js",
-    "#root/*": "./dist/*"
+    "#handlers/*": "./dist/handlers/*.js"
   }
 }
