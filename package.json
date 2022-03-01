@@ -2,55 +2,75 @@
   "name": "showdown",
   "version": "1.0.0",
   "description": "Showdown! for Discord",
-  "main": "showdown.js",
+  "main": "dist/showdown.js",
+  "author": "castdrian",
   "type": "module",
   "scripts": {
-    "lint": "eslint src/**/*.ts --quiet --fix && prettier src/**/*.ts --write",
-    "build": "npm i && npx tsc -p ./ && npm run start",
-    "start": "cd dist && node showdown.js",
-    "prepare": "husky install"
+    "lint": "eslint src tests --ext ts --fix",
+    "format": "prettier --write {src,tests}/**/*.ts",
+    "docs": "typedoc",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "update": "yarn upgrade-interactive",
+    "build": "tsc -b src",
+    "clean": "tsc -b src --clean",
+    "watch": "tsc -b src -w",
+    "sversion": "standard-version",
+    "commit": "git-cz",
+    "cz": "git-cz",
+    "prepublishOnly": "yarn build",
+    "prepare": "husky install .github/husky",
+    "start": "npm run build && node ."
   },
-  "author": "castdrian",
-  "lint-staged": {
-    "*.{js,ts,tsx}": [
-      "eslint src/**/*.ts --fix",
-      "prettier src/**/*.ts --write"
-    ],
-    "*.js": "eslint --cache --fix"
-  },
-  "eslintConfig": {
-    "extends": "@sapphire"
-  },
-  "prettier": "@sapphire/prettier-config",
   "dependencies": {
-    "@pkmn/client": "^0.3.2",
-    "@pkmn/dex": "^0.4.6",
-    "@pkmn/randoms": "^0.4.5",
-    "@pkmn/sim": "^0.4.5",
-    "@pkmn/view": "^0.3.1",
-    "@sapphire/decorators": "^3.1.4",
-    "@sapphire/framework": "^2.4.1",
+    "@sapphire/decorators": "^4.2.5",
+    "@sapphire/framework": "next",
     "@sapphire/plugin-logger": "^2.1.3",
-    "@typescript-eslint/eslint-plugin": "^4.22.0",
-    "@typescript-eslint/parser": "^4.22.0",
-    "discord-api-types": "^0.20.2",
+    "discord-api-types": "^0.27.3",
     "discord.js": "^13.6.0",
     "dotenv": "^16.0.0",
-    "husky": "^7.0.4",
-    "lint-staged": "^12.3.4"
+    "tslib": "^2.3.1"
   },
   "devDependencies": {
-    "@sapphire/eslint-config": "^4.0.5",
-    "@sapphire/prettier-config": "^1.2.4",
-    "@sapphire/ts-config": "^3.1.4",
-    "@types/node": "^17.0.21",
-    "@typescript-eslint/eslint-plugin": "^4.28.0",
-    "@typescript-eslint/parser": "^4.28.0",
-    "eslint": "^7.29.0",
-    "eslint-config-airbnb-typescript": "^12.3.1",
-    "tslib": "^2.3.0",
-    "typescript": "^4.6.0"
+    "@commitlint/cli": "^16.2.1",
+    "@commitlint/config-conventional": "^16.2.1",
+    "@sapphire/eslint-config": "^4.2.1",
+    "@sapphire/prettier-config": "^1.3.0",
+    "@sapphire/ts-config": "^3.3.1",
+    "@types/jest": "^27.4.0",
+    "@types/node": "^17.0.18",
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "cz-conventional-changelog": "^3.3.0",
+    "eslint": "^8.9.0",
+    "eslint-config-prettier": "^8.4.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "husky": "^7.0.4",
+    "jest": "^27.5.1",
+    "jest-circus": "^27.5.1",
+    "lint-staged": "^12.3.4",
+    "prettier": "^2.5.1",
+    "pretty-quick": "^3.1.3",
+    "standard-version": "^9.3.2",
+    "ts-jest": "^27.1.3",
+    "ts-node": "^10.5.0",
+    "typedoc": "^0.22.11",
+    "typescript": "^4.5.5"
   },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "lint-staged": {
+    "*.{mjs,js,ts}": "eslint --fix --ext mjs,js,ts"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "prettier": "@sapphire/prettier-config",
   "imports": {
     "#handlers/*": "./dist/handlers/*.js",
     "#types/*": "./dist/types/*.d.ts",
