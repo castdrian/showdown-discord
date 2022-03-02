@@ -1,2 +1,2 @@
-nodemon -e ts  --exec 'npm run start'
+npm run start
 pause

@@ -8,7 +8,6 @@
   "scripts": {
     "lint": "eslint src tests --ext ts --fix",
     "format": "prettier --write {src,tests}/**/*.ts",
-    "docs": "typedoc",
     "test": "jest",
     "test:watch": "jest --watch",
     "update": "yarn upgrade-interactive",
@@ -18,7 +17,6 @@
     "sversion": "standard-version",
     "commit": "git-cz",
     "cz": "git-cz",
-    "prepublishOnly": "yarn build",
     "prepare": "husky install .github/husky",
     "start": "npm run build && node ."
   },
@@ -29,6 +27,7 @@
     "discord-api-types": "^0.27.3",
     "discord.js": "^13.6.0",
     "dotenv": "^16.0.0",
+    "skia-canvas": "^0.9.29",
     "tslib": "^2.3.1"
   },
   "devDependencies": {
@@ -72,6 +71,7 @@
   },
   "prettier": "@sapphire/prettier-config",
   "imports": {
-    "#handlers/*": "./dist/handlers/*.js"
+    "#handlers/*": "./dist/handlers/*.js",
+	"#util/*": "./dist/util/*.js"
   }
 }
