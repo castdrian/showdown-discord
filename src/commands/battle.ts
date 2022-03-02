@@ -1,6 +1,7 @@
 import { type ApplicationCommandRegistry, Command, RegisterBehavior } from '@sapphire/framework';
-import type { CommandInteraction } from 'discord.js';
+import type { CommandInteraction, MessageComponentInteraction } from 'discord.js';
 import { versusScreen } from '#util/canvas';
+import { initiateBattle } from '#handlers/simulation';
 
 export class Battle extends Command {
 	public override async chatInputRun(interaction: CommandInteraction) {
@@ -36,6 +37,23 @@ export class Battle extends Command {
 		const files = [{ attachment: image, name: 'versus.png' }];
 
 		await interaction.editReply({ embeds, components, files });
+
+		const filter = (i: MessageComponentInteraction) => i.customId === 'start' && i.user.id === interaction.user.id;
+		const collector = interaction.channel!.createMessageComponentCollector({ filter });
+
+		collector.on('collect', async (i) => {
+			if (i.customId === 'start') {
+				const embeds = [
+					{
+						title: 'Pokémon Showdown! Battle',
+						thumbnail: { url: this.container.client.user?.displayAvatarURL() },
+						description: `Format: \`Random Battle (Gen 8)\`\nPlayers: \`${interaction.user.username}\` vs. \`${this.container.client.user?.username}\`\n\n\`\`\`Battle initiated\`\`\``,
+						color: '0x5865F2'
+					}
+				] as any;
+				await i.update({ embeds, components: [], files: [] });
+			}
+		});
 	}
 
 	public override registerApplicationCommands(registry: ApplicationCommandRegistry) {
