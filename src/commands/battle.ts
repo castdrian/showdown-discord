@@ -61,6 +61,7 @@ export class Battle extends Command {
 		collector.on('collect', async (i) => {
 			if (i.customId === 'start') {
 				await i.deferUpdate();
+				collector.stop();
 				initiateBattle(i);
 			}
 		});

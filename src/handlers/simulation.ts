@@ -11,7 +11,7 @@ import { Generations } from '@pkmn/data';
 import { PreHandler } from '#handlers/prehandler';
 import { PostHandler } from '#handlers/posthandler';
 import { displayLog } from '#handlers/battlelog';
-import type { MessageComponentInteraction } from 'discord.js';
+import { MessageComponentInteraction, Util } from 'discord.js';
 import { updateBattleEmbed } from '#handlers/battlescreen';
 
 export function initiateBattle(interaction: MessageComponentInteraction) {
@@ -37,6 +37,8 @@ export function initiateBattle(interaction: MessageComponentInteraction) {
 		if (k && k in h) (h as any)[k](a, kw);
 	};
 
+	const battlelog: string[] = [];
+
 	(async () => {
 		for await (const chunk of streams.omniscient) {
 			for (const line of chunk.split('\n')) {
@@ -48,6 +50,7 @@ export function initiateBattle(interaction: MessageComponentInteraction) {
 				battle.add(args, kwArgs);
 				add(post, key, args, kwArgs);
 
+				battlelog.push(Util.escapeMarkdown(text));
 				displayLog(text);
 			}
 			battle.update();
