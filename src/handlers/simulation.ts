@@ -50,7 +50,7 @@ export function initiateBattle(interaction: MessageComponentInteraction) {
 				battle.add(args, kwArgs);
 				add(post, key, args, kwArgs);
 
-				battlelog.push(Util.escapeMarkdown(text));
+				if (text !== '') battlelog.push(Util.escapeMarkdown(text));
 				displayLog(text);
 			}
 			battle.update();
@@ -70,7 +70,7 @@ export function initiateBattle(interaction: MessageComponentInteraction) {
 			battle.update();
 			if (battle.request?.requestType === 'move') {
 				const activemon = battle.p1.active[0];
-				if (activemon) await updateBattleEmbed(battle, interaction);
+				if (activemon) await updateBattleEmbed(battle, interaction, battlelog);
 				/* const builder = new ChoiceBuilder(battle.request);
 				builder.addChoice('move 1');
 				const choice = builder.toString();

@@ -2,7 +2,7 @@ import type { Battle } from '@pkmn/client';
 import type { MessageComponentInteraction } from 'discord.js';
 import { Sprites } from '@pkmn/img';
 
-export async function updateBattleEmbed(battle: Battle, interaction: MessageComponentInteraction) {
+export async function updateBattleEmbed(battle: Battle, interaction: MessageComponentInteraction, battlelog: string[]) {
 	const activemon = battle.p1.active[0];
 	const opponent = battle.p1.foe.active[0];
 
@@ -70,4 +70,5 @@ export async function updateBattleEmbed(battle: Battle, interaction: MessageComp
 	];
 
 	await interaction.editReply({ embeds, components, files: [] });
+	console.log(battlelog);
 }

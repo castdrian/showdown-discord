@@ -45,6 +45,12 @@ export class Battle extends Command {
 						label: 'Custom Team',
 						style: 2,
 						disabled: true
+					},
+					{
+						type: 2,
+						custom_id: 'cancel',
+						label: 'Cancel',
+						style: 4
 					}
 				]
 			}
@@ -55,7 +61,7 @@ export class Battle extends Command {
 
 		await interaction.editReply({ embeds, components, files });
 
-		const filter = (i: MessageComponentInteraction) => i.customId === 'start' && i.user.id === interaction.user.id;
+		const filter = (i: MessageComponentInteraction) => i.user.id === interaction.user.id;
 		const collector = interaction.channel!.createMessageComponentCollector({ filter });
 
 		collector.on('collect', async (i) => {
@@ -63,6 +69,19 @@ export class Battle extends Command {
 				await i.deferUpdate();
 				collector.stop();
 				initiateBattle(i);
+			}
+			if (i.customId === 'cancel') {
+				const embeds = [
+					{
+						title: 'Pokémon Showdown! Battle',
+						thumbnail: { url: this.container.client.user?.displayAvatarURL() },
+						description: '`Battle cancelled`',
+						color: '0x5865F2'
+					}
+				] as any;
+
+				await i.update({ embeds, components: [], files: [] });
+				collector.stop();
 			}
 		});
 	}

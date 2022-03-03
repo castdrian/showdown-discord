@@ -1,5 +1,7 @@
-import { Util } from 'discord.js';
+// @ts-ignore no types
+import pkg from '@tommoor/remove-markdown';
+const { removeMD } = pkg;
 
 export function displayLog(text: string) {
-	console.log(Util.escapeMarkdown(text));
+	console.log(removeMD(text));
 }
