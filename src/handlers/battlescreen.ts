@@ -1,8 +1,8 @@
 import type { Battle } from '@pkmn/client';
-import type { CommandInteraction } from 'discord.js';
+import type { MessageComponentInteraction } from 'discord.js';
 import { Sprites } from '@pkmn/img';
 
-export async function updateBattleEmbed(battle: Battle, interaction: CommandInteraction) {
+export async function updateBattleEmbed(battle: Battle, interaction: MessageComponentInteraction) {
 	const activemon = battle.p1.active[0];
 	const opponent = battle.p1.foe.active[0];
 

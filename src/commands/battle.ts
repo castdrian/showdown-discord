@@ -19,19 +19,36 @@ export class Battle extends Command {
 
 		const components = [
 			{
-				type: 3,
-				custom_id: 'format',
-				options: [{ label: 'Random Battle (Gen 8)', value: 'gen8randombattle' }],
-				placeholder: 'Random Battle (Gen 8)',
-				disabled: true
+				type: 1,
+				components: [
+					{
+						type: 3,
+						custom_id: 'format',
+						options: [{ label: 'Random Battle (Gen 8)', value: 'gen8randombattle' }],
+						placeholder: 'Random Battle (Gen 8)',
+						disabled: true
+					}
+				]
 			},
 			{
-				type: 2,
-				custom_id: 'start',
-				label: 'Start Battle',
-				style: 1
+				type: 1,
+				components: [
+					{
+						type: 2,
+						custom_id: 'start',
+						label: 'Start Battle',
+						style: 1
+					},
+					{
+						type: 2,
+						custom_id: 'team',
+						label: 'Custom Team',
+						style: 2,
+						disabled: true
+					}
+				]
 			}
-		].map((c) => ({ type: 1, components: [c] }));
+		];
 
 		const image = await versusScreen(interaction);
 		const files = [{ attachment: image, name: 'versus.png' }];
@@ -44,7 +61,7 @@ export class Battle extends Command {
 		collector.on('collect', async (i) => {
 			if (i.customId === 'start') {
 				await i.deferUpdate();
-				initiateBattle(interaction);
+				initiateBattle(i);
 			}
 		});
 	}

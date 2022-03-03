@@ -11,10 +11,10 @@ import { Generations } from '@pkmn/data';
 import { PreHandler } from '#handlers/prehandler';
 import { PostHandler } from '#handlers/posthandler';
 import { displayLog } from '#handlers/battlelog';
-import type { CommandInteraction } from 'discord.js';
+import type { MessageComponentInteraction } from 'discord.js';
 import { updateBattleEmbed } from '#handlers/battlescreen';
 
-export function initiateBattle(interaction: CommandInteraction) {
+export function initiateBattle(interaction: MessageComponentInteraction) {
 	Teams.setGeneratorFactory(TeamGenerators);
 	const gens = new Generations(Dex as any);
 
@@ -66,17 +66,15 @@ export function initiateBattle(interaction: CommandInteraction) {
 			}
 			battle.update();
 			if (battle.request?.requestType === 'move') {
-				// @ts-ignore this
 				const activemon = battle.p1.active[0];
-				// @ts-ignore this
-				const opponent = battle.p1.foe.active[0];
-				// if (!activemon) return;
-				console.log(battle.p1.active);
 				if (activemon) await updateBattleEmbed(battle, interaction);
 				/* const builder = new ChoiceBuilder(battle.request);
 				builder.addChoice('move 1');
 				const choice = builder.toString();
 				streams.p1.write(choice); */
+			}
+			if (battle.request?.requestType === 'switch') {
+				console.log('switch');
 			}
 		}
 	})();
