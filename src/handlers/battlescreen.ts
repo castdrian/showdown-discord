@@ -1,5 +1,5 @@
 import type { Battle } from '@pkmn/client';
-import type { MessageComponentInteraction } from 'discord.js';
+import { Formatters, MessageComponentInteraction } from 'discord.js';
 import { Sprites } from '@pkmn/img';
 
 export async function updateBattleEmbed(battle: Battle, interaction: MessageComponentInteraction, battlelog: string[]) {
@@ -9,12 +9,14 @@ export async function updateBattleEmbed(battle: Battle, interaction: MessageComp
 	const { url: activesprite } = Sprites.getPokemon(activemon?.species.name as string, { gen: 'ani', shiny: activemon?.shiny, side: 'p1' });
 	const { url: opponentprite } = Sprites.getPokemon(opponent?.species.name as string, { gen: 'ani', shiny: opponent?.shiny, side: 'p2' });
 
+	const log = battlelog.join('');
+	console.log(log);
 	const embeds = [
 		{
-			author: { name: `${opponent?.name} | ${opponent?.hp}/${opponent?.maxhp} HP`, iconURL: interaction.client.user?.displayAvatarURL() },
+			author: { name: `${opponent?.name} | ${opponent?.hp}% HP`, iconURL: interaction.client.user?.displayAvatarURL() },
 			thumbnail: { url: opponentprite },
-			description: `\`\`\`<battle log here>\`\`\``,
 			color: '0x5865F2',
+			description: Formatters.codeBlock(battlelog.join('')),
 			image: { url: activesprite },
 			footer: { text: `${activemon?.name} | ${activemon?.hp}/${activemon?.maxhp} HP`, iconURL: interaction.user?.displayAvatarURL() }
 		}
@@ -70,5 +72,4 @@ export async function updateBattleEmbed(battle: Battle, interaction: MessageComp
 	];
 
 	await interaction.editReply({ embeds, components, files: [] });
-	console.log(battlelog);
 }

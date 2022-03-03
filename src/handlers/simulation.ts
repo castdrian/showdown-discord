@@ -11,8 +11,9 @@ import { Generations } from '@pkmn/data';
 import { PreHandler } from '#handlers/prehandler';
 import { PostHandler } from '#handlers/posthandler';
 import { displayLog } from '#handlers/battlelog';
-import { MessageComponentInteraction, Util } from 'discord.js';
+import type { MessageComponentInteraction } from 'discord.js';
 import { updateBattleEmbed } from '#handlers/battlescreen';
+import { default as removeMD } from 'remove-markdown';
 
 export function initiateBattle(interaction: MessageComponentInteraction) {
 	Teams.setGeneratorFactory(TeamGenerators);
@@ -37,6 +38,12 @@ export function initiateBattle(interaction: MessageComponentInteraction) {
 		if (k && k in h) (h as any)[k](a, kw);
 	};
 
+	const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+	const waitFor = async function waitFor(f: any) {
+		while (!f()) await sleep(1000);
+		return f();
+	};
+
 	const battlelog: string[] = [];
 
 	(async () => {
@@ -50,8 +57,8 @@ export function initiateBattle(interaction: MessageComponentInteraction) {
 				battle.add(args, kwArgs);
 				add(post, key, args, kwArgs);
 
-				if (text !== '') battlelog.push(Util.escapeMarkdown(text));
-				displayLog(text);
+				if (text !== '') battlelog.push(removeMD(text));
+				displayLog(removeMD(text));
 			}
 			battle.update();
 		}
@@ -70,6 +77,8 @@ export function initiateBattle(interaction: MessageComponentInteraction) {
 			battle.update();
 			if (battle.request?.requestType === 'move') {
 				const activemon = battle.p1.active[0];
+				await waitFor(() => battlelog.length !== 0);
+				console.log('log', battlelog);
 				if (activemon) await updateBattleEmbed(battle, interaction, battlelog);
 				/* const builder = new ChoiceBuilder(battle.request);
 				builder.addChoice('move 1');
