@@ -52,6 +52,7 @@ export class Battle extends Command {
 					}
 				] as any;
 				await i.update({ embeds, components: [], files: [] });
+				initiateBattle();
 			}
 		});
 	}
