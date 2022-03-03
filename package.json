@@ -23,6 +23,7 @@
   "dependencies": {
     "@pkmn/client": "^0.3.2",
     "@pkmn/dex": "^0.4.6",
+    "@pkmn/img": "^0.1.16",
     "@pkmn/randoms": "^0.4.5",
     "@pkmn/sim": "^0.4.5",
     "@pkmn/view": "^0.3.3",

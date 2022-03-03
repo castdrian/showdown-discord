@@ -6,19 +6,20 @@ import { Dex, Teams, RandomPlayerAI, BattleStreams } from '@pkmn/sim';
 import { Protocol, Handler, ArgName, ArgType, BattleArgsKWArgType } from '@pkmn/protocol';
 import { Battle } from '@pkmn/client';
 import { TeamGenerators } from '@pkmn/randoms';
-import { LogFormatter, ChoiceBuilder } from '@pkmn/view';
+import { LogFormatter } from '@pkmn/view';
 import { Generations } from '@pkmn/data';
+import { PreHandler } from '#handlers/prehandler';
+import { PostHandler } from '#handlers/posthandler';
+import { displayLog } from '#handlers/battlelog';
+import type { CommandInteraction } from 'discord.js';
+import { updateBattleEmbed } from '#handlers/battlescreen';
 
-export function initiateBattle() {
+export function initiateBattle(interaction: CommandInteraction) {
 	Teams.setGeneratorFactory(TeamGenerators);
 	const gens = new Generations(Dex as any);
 
-	const displayLog = (text: string) => {
-		console.log(text);
-	};
-
 	const spec = { formatid: 'gen8randombattle' };
-	const p1spec = { name: 'castdrian', team: Teams.pack(Teams.generate('gen8randombattle')) };
+	const p1spec = { name: interaction.user.username, team: Teams.pack(Teams.generate('gen8randombattle')) };
 	const p2spec = { name: 'Showdown!', team: Teams.pack(Teams.generate('gen8randombattle')) };
 
 	const streams = BattleStreams.getPlayerStreams(new BattleStreams.BattleStream());
@@ -28,28 +29,6 @@ export function initiateBattle() {
 
 	const battle = new Battle(gens);
 	const formatter = new LogFormatter('p1', battle);
-
-	class PreHandler implements Handler<void> {
-		constructor(private readonly battle: Battle) {
-			this.battle = battle;
-		}
-
-		'|faint|'(args: Protocol.Args['|faint|']) {
-			// @ts-ignore this
-			const poke = this.battle.getPokemon(args[1]);
-		}
-	}
-
-	class PostHandler implements Handler<void> {
-		// @ts-ignore this
-		constructor(private readonly battle: Battle) {
-			this.battle = battle;
-		}
-
-		'|teampreview|'() {}
-		// @ts-ignore this
-		'|turn|'(args: Protocol.Args['|turn|']) {}
-	}
 
 	const pre = new PreHandler(battle);
 	const post = new PostHandler(battle);
@@ -91,11 +70,13 @@ export function initiateBattle() {
 				const activemon = battle.p1.active[0];
 				// @ts-ignore this
 				const opponent = battle.p1.foe.active[0];
-
-				const builder = new ChoiceBuilder(battle.request);
+				// if (!activemon) return;
+				console.log(battle.p1.active);
+				if (activemon) await updateBattleEmbed(battle, interaction);
+				/* const builder = new ChoiceBuilder(battle.request);
 				builder.addChoice('move 1');
 				const choice = builder.toString();
-				streams.p1.write(choice);
+				streams.p1.write(choice); */
 			}
 		}
 	})();
