@@ -10,11 +10,11 @@ import { LogFormatter } from '@pkmn/view';
 import { Generations } from '@pkmn/data';
 import { PreHandler } from '#handlers/prehandler';
 import { PostHandler } from '#handlers/posthandler';
-import type { MessageComponentInteraction } from 'discord.js';
+import type { CommandInteraction } from 'discord.js';
 import { moveChoice, updateBattleEmbed } from '#handlers/battlescreen';
 import { default as removeMD } from 'remove-markdown';
 
-export async function initiateBattle(interaction: MessageComponentInteraction) {
+export async function initiateBattle(interaction: CommandInteraction) {
 	Teams.setGeneratorFactory(TeamGenerators);
 	const gens = new Generations(Dex as any);
 

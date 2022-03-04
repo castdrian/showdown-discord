@@ -68,7 +68,7 @@ export class Battle extends Command {
 			if (i.customId === 'start') {
 				await i.deferUpdate();
 				collector.stop();
-				initiateBattle(i);
+				await initiateBattle(interaction);
 			}
 			if (i.customId === 'cancel') {
 				const embeds = [
@@ -80,7 +80,7 @@ export class Battle extends Command {
 					}
 				] as any;
 
-				await i.update({ embeds, components: [], files: [] });
+				await interaction.editReply({ embeds, components: [], files: [] });
 				collector.stop();
 			}
 		});

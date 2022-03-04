@@ -1,9 +1,9 @@
 import type { Battle } from '@pkmn/client';
-import { Formatters, MessageComponentInteraction } from 'discord.js';
+import { CommandInteraction, Formatters, MessageComponentInteraction } from 'discord.js';
 import { Sprites } from '@pkmn/img';
 import { ChoiceBuilder } from '@pkmn/view';
 
-export async function updateBattleEmbed(battle: Battle, interaction: MessageComponentInteraction, battlelog: string[]) {
+export async function updateBattleEmbed(battle: Battle, interaction: CommandInteraction, battlelog: string[]) {
 	const activemon = battle.p1.active[0];
 	const opponent = battle.p1.foe.active[0];
 
@@ -75,7 +75,7 @@ export async function updateBattleEmbed(battle: Battle, interaction: MessageComp
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await
-export async function moveChoice(streams: any, battle: Battle, interaction: MessageComponentInteraction) {
+export async function moveChoice(streams: any, battle: Battle, interaction: CommandInteraction) {
 	const activemon = battle.p1.active[0];
 	const builder = new ChoiceBuilder(battle.request!);
 
@@ -84,13 +84,13 @@ export async function moveChoice(streams: any, battle: Battle, interaction: Mess
 
 	collector.on('collect', async (i) => {
 		await i.deferUpdate();
-		console.log(activemon?.moves);
-		console.log(activemon?.moves.includes(i.customId as any));
+
 		if (activemon?.moves.includes(i.customId as any)) {
 			console.log('test');
 			builder.addChoice(`move ${i.customId}`);
 			const choice = builder.toString();
 			streams.p1.write(choice);
+			collector.stop();
 		}
 		if (i.customId === 'switch') {
 			// switch
