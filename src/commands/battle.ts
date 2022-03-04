@@ -1,17 +1,18 @@
 import { type ApplicationCommandRegistry, Command, RegisterBehavior } from '@sapphire/framework';
-import type { CommandInteraction, MessageComponentInteraction } from 'discord.js';
+import type { CommandInteraction, MessageComponentInteraction, MessageSelectOption } from 'discord.js';
 import { initiateBattle } from '#handlers/simulation';
 import { versusScreen } from '#util/canvas';
 
 export class Battle extends Command {
 	public override async chatInputRun(interaction: CommandInteraction) {
 		await interaction.deferReply();
+		let formatid = 'gen8randombattle';
 
 		const embeds = [
 			{
 				title: 'Pokémon Showdown! Battle',
 				thumbnail: { url: this.container.client.user?.displayAvatarURL() },
-				description: `Format: \`Random Battle (Gen 8)\`\nPlayers: \`${interaction.user.username}\` vs. \`${this.container.client.user?.username}\``,
+				description: `Format: \`[Gen 8] Random Battle\`\nPlayers: \`${interaction.user.username}\` vs. \`${this.container.client.user?.username}\``,
 				color: '0x5865F2',
 				image: { url: 'attachment://versus.png' }
 			}
@@ -24,9 +25,13 @@ export class Battle extends Command {
 					{
 						type: 3,
 						custom_id: 'format',
-						options: [{ label: '[Gen 8] Random Battle', value: 'gen8randombattle' }],
-						placeholder: '[Gen 8] Random Battle',
-						disabled: true
+						options: [
+							{ label: '[Gen 8] Random Battle', value: 'gen8randombattle' },
+							{ label: '[Gen 7] Random Battle', value: 'gen7randombattle' },
+							{ label: '[Gen 6] Random Battle', value: 'gen6randombattle' },
+							{ label: '[Gen 5] Random Battle', value: 'gen5randombattle' }
+						],
+						placeholder: 'Select Battle Format'
 					}
 				]
 			},
@@ -60,15 +65,17 @@ export class Battle extends Command {
 		const files = [{ attachment: image, name: 'versus.png' }];
 
 		await interaction.editReply({ embeds, components, files });
+		await interaction.followUp({ content: '[info] This application is experimental and may break at any time.', ephemeral: true });
 
 		const filter = (i: MessageComponentInteraction) => i.user.id === interaction.user.id;
 		const collector = interaction.channel!.createMessageComponentCollector({ filter });
 
 		collector.on('collect', async (i) => {
+			await i.deferUpdate();
+
 			if (i.customId === 'start') {
-				await i.deferUpdate();
 				collector.stop();
-				await initiateBattle(interaction);
+				await initiateBattle(interaction, formatid);
 			}
 			if (i.customId === 'cancel') {
 				const embeds = [
@@ -80,8 +87,25 @@ export class Battle extends Command {
 					}
 				] as any;
 
-				await interaction.editReply({ embeds, components: [], files: [] });
 				collector.stop();
+				await interaction.editReply({ embeds, components: [], files: [] });
+			}
+			if (i.customId === 'format') {
+				if (!i.isSelectMenu()) return;
+				const embeds = [
+					{
+						title: 'Pokémon Showdown! Battle',
+						thumbnail: { url: this.container.client.user?.displayAvatarURL() },
+						description: `Format: \`${
+							(i.component.options as MessageSelectOption[]).find((x) => x.value === i.values[0])?.label
+						}\`\nPlayers: \`${interaction.user.username}\` vs. \`${this.container.client.user?.username}\``,
+						color: '0x5865F2',
+						image: { url: 'attachment://versus.png' }
+					}
+				] as any;
+
+				[formatid] = i.values;
+				await interaction.editReply({ embeds });
 			}
 		});
 	}
