@@ -21,7 +21,7 @@ export async function updateBattleEmbed(battle: Battle, interaction: CommandInte
 			footer: { text: `${activemon?.name} | ${activemon?.hp}/${activemon?.maxhp} HP`, iconURL: interaction.user?.displayAvatarURL() }
 		}
 	] as any;
-
+	console.log(activemon?.moveSlots[0]);
 	const components = [
 		{
 			type: 1,
@@ -29,13 +29,15 @@ export async function updateBattleEmbed(battle: Battle, interaction: CommandInte
 				{
 					type: 2,
 					custom_id: activemon?.moveSlots[0]?.id,
-					label: activemon?.moveSlots[0]?.name,
+					// @ts-ignore pp props missing from types
+					label: `${activemon?.moveSlots[0]?.name} ${activemon?.moveSlots[0]?.pp}/${activemon?.moveSlots[0]?.maxpp} PP`,
 					style: 1
 				},
 				{
 					type: 2,
 					custom_id: activemon?.moveSlots[1]?.id,
-					label: activemon?.moveSlots[1]?.name,
+					// @ts-ignore pp props missing from types
+					label: `${activemon?.moveSlots[1]?.name} ${activemon?.moveSlots[1]?.pp}/${activemon?.moveSlots[1]?.maxpp} PP`,
 					style: 1
 				},
 				{
@@ -52,13 +54,15 @@ export async function updateBattleEmbed(battle: Battle, interaction: CommandInte
 				{
 					type: 2,
 					custom_id: activemon?.moveSlots[2]?.id,
-					label: activemon?.moveSlots[2]?.name,
+					// @ts-ignore pp props missing from types
+					label: `${activemon?.moveSlots[2]?.name} ${activemon?.moveSlots[2]?.pp}/${activemon?.moveSlots[2]?.maxpp} PP`,
 					style: 1
 				},
 				{
 					type: 2,
 					custom_id: activemon?.moveSlots[3]?.id,
-					label: activemon?.moveSlots[3]?.name,
+					// @ts-ignore pp props missing from types
+					label: `${activemon?.moveSlots[3]?.name} ${activemon?.moveSlots[3]?.pp}/${activemon?.moveSlots[3]?.maxpp} PP`,
 					style: 1
 				},
 				{
@@ -86,7 +90,6 @@ export async function moveChoice(streams: any, battle: Battle, interaction: Comm
 		await i.deferUpdate();
 
 		if (activemon?.moves.includes(i.customId as any)) {
-			console.log('test');
 			builder.addChoice(`move ${i.customId}`);
 			const choice = builder.toString();
 			streams.p1.write(choice);
