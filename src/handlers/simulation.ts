@@ -43,7 +43,7 @@ export async function initiateBattle(interaction: CommandInteraction) {
 		return f();
 	};
 
-	let battlelog: string[] = [];
+	process.battlelog = [];
 
 	await Promise.all([omnicientStream(), playerStream(), startBattle()]);
 
@@ -58,7 +58,7 @@ export async function initiateBattle(interaction: CommandInteraction) {
 				battle.add(args, kwArgs);
 				add(post, key, args, kwArgs);
 
-				if (text !== '') battlelog.push(removeMD(text));
+				if (text !== '') process.battlelog.push(removeMD(text));
 				console.log(removeMD(text));
 			}
 			battle.update();
@@ -73,10 +73,10 @@ export async function initiateBattle(interaction: CommandInteraction) {
 			}
 			battle.update();
 			if (battle.request?.requestType === 'move') {
-				await waitFor(() => battlelog.length !== 0);
-				await updateBattleEmbed(battle, interaction, battlelog);
+				await waitFor(() => process.battlelog.length !== 0);
+				await updateBattleEmbed(battle, interaction, process.battlelog);
 				await moveChoice(streams, battle, interaction);
-				battlelog = [];
+				process.battlelog = [];
 			}
 			if (battle.request?.requestType === 'switch') {
 				console.log('switch');

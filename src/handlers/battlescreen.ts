@@ -102,6 +102,7 @@ export async function moveChoice(streams: any, battle: Battle, interaction: Comm
 			const choice = builder.toString();
 			streams.p1.write(choice);
 			collector.stop();
+			await updateBattleEmbed(battle, interaction, process.battlelog);
 		}
 		if (i.customId === 'switch') {
 			// switch
