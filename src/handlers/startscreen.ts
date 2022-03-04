@@ -24,7 +24,11 @@ export async function startScreen(interaction: CommandInteraction) {
 	];
 
 	await interaction.editReply({ embeds, components, files });
-	await interaction.followUp({ content: '[info] This application is experimental and may break at any time.', ephemeral: true });
+	await interaction.followUp({
+		content:
+			'[info] This application is experimental and may break at any time.\n[info] You may just want to play [Pokémon Showdown](https://play.pokemonshowdown.com).',
+		ephemeral: true
+	});
 
 	const filter = (i: MessageComponentInteraction) => i.user.id === interaction.user.id;
 	const collector = interaction.channel!.createMessageComponentCollector({ filter });

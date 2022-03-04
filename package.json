@@ -81,7 +81,7 @@
   "prettier": "@sapphire/prettier-config",
   "imports": {
     "#handlers/*": "./dist/handlers/*.js",
-    "#constants/*": "./dist/handlers/*.js",
+    "#constants/*": "./dist/constants/*.js",
     "#util/*": "./dist/util/*.js"
   }
 }
