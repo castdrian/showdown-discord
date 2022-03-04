@@ -24,8 +24,8 @@ export class Battle extends Command {
 					{
 						type: 3,
 						custom_id: 'format',
-						options: [{ label: 'Random Battle (Gen 8)', value: 'gen8randombattle' }],
-						placeholder: 'Random Battle (Gen 8)',
+						options: [{ label: '[Gen 8] Random Battle', value: 'gen8randombattle' }],
+						placeholder: '[Gen 8] Random Battle',
 						disabled: true
 					}
 				]
