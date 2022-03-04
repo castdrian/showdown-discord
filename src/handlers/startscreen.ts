@@ -2,6 +2,7 @@ import { versusScreen } from '#util/canvas';
 import type { CommandInteraction, MessageComponentInteraction, MessageSelectOption } from 'discord.js';
 import { initiateBattle } from '#handlers/simulation';
 import type { formaticon } from '#types/';
+import { components } from '#constants/components';
 
 export async function startScreen(interaction: CommandInteraction) {
 	let formatid = 'gen8randombattle';
@@ -15,49 +16,6 @@ export async function startScreen(interaction: CommandInteraction) {
 			image: { url: 'attachment://versus.png' }
 		}
 	] as any;
-
-	const components = [
-		{
-			type: 1,
-			components: [
-				{
-					type: 3,
-					custom_id: 'format',
-					options: [
-						{ label: '[Gen 8] Random Battle', value: 'gen8randombattle' },
-						{ label: '[Gen 7] Random Battle', value: 'gen7randombattle' },
-						{ label: '[Gen 6] Random Battle', value: 'gen6randombattle' },
-						{ label: '[Gen 5] Random Battle', value: 'gen5randombattle' }
-					],
-					placeholder: 'Select Battle Format'
-				}
-			]
-		},
-		{
-			type: 1,
-			components: [
-				{
-					type: 2,
-					custom_id: 'start',
-					label: 'Start Battle',
-					style: 1
-				},
-				{
-					type: 2,
-					custom_id: 'team',
-					label: 'Custom Team',
-					style: 2,
-					disabled: true
-				},
-				{
-					type: 2,
-					custom_id: 'cancel',
-					label: 'Cancel',
-					style: 4
-				}
-			]
-		}
-	];
 
 	const image = await versusScreen(interaction);
 	const files = [

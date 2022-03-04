@@ -9,6 +9,7 @@
 		"preserveConstEnums": true,
         "paths": {
 			"#handlers/*": ["./handlers/*"],
+			"#constants/*": ["./constants/*"],
 			"#util/*": ["./util/*"],
 			"#types/*": ["./@types/index.d.ts"],
 		},
