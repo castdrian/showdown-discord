@@ -21,7 +21,7 @@ export async function updateBattleEmbed(battle: Battle, interaction: CommandInte
 			footer: { text: `${activemon?.name} | ${activemon?.hp}/${activemon?.maxhp} HP`, iconURL: interaction.user?.displayAvatarURL() }
 		}
 	] as any;
-	console.log(activemon?.moveSlots[0]);
+
 	const components = [
 		{
 			type: 1,
@@ -31,14 +31,18 @@ export async function updateBattleEmbed(battle: Battle, interaction: CommandInte
 					custom_id: activemon?.moveSlots[0]?.id,
 					// @ts-ignore pp props missing from types
 					label: `${activemon?.moveSlots[0]?.name} ${activemon?.moveSlots[0]?.pp}/${activemon?.moveSlots[0]?.maxpp} PP`,
-					style: 1
+					style: 1,
+					// @ts-ignore disbaled prop missing from types
+					disabled: activemon?.moveSlots[0]?.disabled
 				},
 				{
 					type: 2,
 					custom_id: activemon?.moveSlots[1]?.id,
 					// @ts-ignore pp props missing from types
 					label: `${activemon?.moveSlots[1]?.name} ${activemon?.moveSlots[1]?.pp}/${activemon?.moveSlots[1]?.maxpp} PP`,
-					style: 1
+					style: 1,
+					// @ts-ignore disbaled prop missing from types
+					disabled: activemon?.moveSlots[1]?.disabled
 				},
 				{
 					type: 2,
@@ -56,14 +60,18 @@ export async function updateBattleEmbed(battle: Battle, interaction: CommandInte
 					custom_id: activemon?.moveSlots[2]?.id,
 					// @ts-ignore pp props missing from types
 					label: `${activemon?.moveSlots[2]?.name} ${activemon?.moveSlots[2]?.pp}/${activemon?.moveSlots[2]?.maxpp} PP`,
-					style: 1
+					style: 1,
+					// @ts-ignore disbaled prop missing from types
+					disabled: activemon?.moveSlots[2]?.disabled
 				},
 				{
 					type: 2,
 					custom_id: activemon?.moveSlots[3]?.id,
 					// @ts-ignore pp props missing from types
 					label: `${activemon?.moveSlots[3]?.name} ${activemon?.moveSlots[3]?.pp}/${activemon?.moveSlots[3]?.maxpp} PP`,
-					style: 1
+					style: 1,
+					// @ts-ignore disbaled prop missing from types
+					disabled: activemon?.moveSlots[3]?.disabled
 				},
 				{
 					type: 2,
