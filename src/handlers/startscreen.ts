@@ -1,6 +1,7 @@
 import { versusScreen } from '#util/canvas';
 import type { CommandInteraction, MessageComponentInteraction, MessageSelectOption } from 'discord.js';
 import { initiateBattle } from '#handlers/simulation';
+import type { formaticon } from '#types/';
 
 export async function startScreen(interaction: CommandInteraction) {
 	let formatid = 'gen8randombattle';
@@ -8,7 +9,7 @@ export async function startScreen(interaction: CommandInteraction) {
 	const embeds = [
 		{
 			title: 'Pokémon Showdown! Battle',
-			thumbnail: { url: interaction.client.user?.displayAvatarURL() },
+			thumbnail: { url: 'attachment://format.png' },
 			description: `Format: \`[Gen 8] Random Battle\`\nPlayers: \`${interaction.user.username}\` vs. \`${interaction.client.user?.username}\``,
 			color: '0x5865F2',
 			image: { url: 'attachment://versus.png' }
@@ -59,7 +60,10 @@ export async function startScreen(interaction: CommandInteraction) {
 	];
 
 	const image = await versusScreen(interaction);
-	const files = [{ attachment: image, name: 'versus.png' }];
+	const files = [
+		{ attachment: image, name: 'versus.png' },
+		{ attachment: './data/images/swsh.png', name: 'format.png' }
+	];
 
 	await interaction.editReply({ embeds, components, files });
 	await interaction.followUp({ content: '[info] This application is experimental and may break at any time.', ephemeral: true });
@@ -89,10 +93,12 @@ export async function startScreen(interaction: CommandInteraction) {
 		}
 		if (i.customId === 'format') {
 			if (!i.isSelectMenu()) return;
+			[formatid] = i.values;
+
 			const embeds = [
 				{
 					title: 'Pokémon Showdown! Battle',
-					thumbnail: { url: interaction.client.user?.displayAvatarURL() },
+					thumbnail: { url: 'attachment://format.png' },
 					description: `Format: \`${
 						(i.component.options as MessageSelectOption[]).find((x) => x.value === i.values[0])?.label
 					}\`\nPlayers: \`${interaction.user.username}\` vs. \`${interaction.client.user?.username}\``,
@@ -101,8 +107,19 @@ export async function startScreen(interaction: CommandInteraction) {
 				}
 			] as any;
 
-			[formatid] = i.values;
-			await interaction.editReply({ embeds });
+			const formatimgs: formaticon = {
+				gen8randombattle: './data/images/swsh.png',
+				gen7randombattle: './data/images/sumo.png',
+				gen6randombattle: './data/images/xy.png',
+				gen5randombattle: './data/images/bw.png'
+			};
+
+			const thumbnail = formatimgs[formatid];
+			const files = [
+				{ attachment: image, name: 'versus.png' },
+				{ attachment: thumbnail, name: 'format.png' }
+			];
+			await interaction.editReply({ embeds, files });
 		}
 	});
 }
