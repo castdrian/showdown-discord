@@ -14,7 +14,7 @@ import type { MessageComponentInteraction } from 'discord.js';
 import { moveChoice, updateBattleEmbed } from '#handlers/battlescreen';
 import { default as removeMD } from 'remove-markdown';
 
-export function initiateBattle(interaction: MessageComponentInteraction) {
+export async function initiateBattle(interaction: MessageComponentInteraction) {
 	Teams.setGeneratorFactory(TeamGenerators);
 	const gens = new Generations(Dex as any);
 
@@ -45,7 +45,9 @@ export function initiateBattle(interaction: MessageComponentInteraction) {
 
 	let battlelog: string[] = [];
 
-	(async () => {
+	await Promise.all([omnicientStream(), playerStream(), startBattle()]);
+
+	async function omnicientStream() {
 		for await (const chunk of streams.omniscient) {
 			for (const line of chunk.split('\n')) {
 				const { args, kwArgs } = Protocol.parseBattleLine(line);
@@ -61,13 +63,9 @@ export function initiateBattle(interaction: MessageComponentInteraction) {
 			}
 			battle.update();
 		}
-	})();
+	}
 
-	streams.omniscient.write(`>start ${JSON.stringify(spec)}
->player p1 ${JSON.stringify(p1spec)}
->player p2 ${JSON.stringify(p2spec)}`);
-
-	(async () => {
+	async function playerStream() {
 		for await (const chunk of streams.p1) {
 			for (const line of chunk.split('\n')) {
 				const { args, kwArgs } = Protocol.parseBattleLine(line);
@@ -84,5 +82,11 @@ export function initiateBattle(interaction: MessageComponentInteraction) {
 				console.log('switch');
 			}
 		}
-	})();
+	}
+
+	async function startBattle() {
+		await streams.omniscient.write(`>start ${JSON.stringify(spec)}
+>player p1 ${JSON.stringify(p1spec)}
+>player p2 ${JSON.stringify(p2spec)}`);
+	}
 }
