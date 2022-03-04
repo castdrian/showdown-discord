@@ -1,0 +1,12 @@
+version: '3.7'
+
+services:
+  showdown:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    volumes:
+      - ./src:/home/node/app/src
+    container_name: showdown
+    command: npm run start
