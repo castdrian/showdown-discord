@@ -112,3 +112,31 @@ export async function moveChoice(streams: any, battle: Battle, interaction: Comm
 		}
 	});
 }
+
+export async function switchChoice(streams: any, battle: Battle, interaction: CommandInteraction) {
+	const { team } = battle.p1;
+	const builder = new ChoiceBuilder(battle.request!);
+
+	const switch_buttons = [];
+	for (const mon of team) switch_buttons.push({ type: 2, custom_id: mon.name, label: mon.name, style: mon.fainted ? 2 : 1, disabled: mon.fainted });
+
+	const components = [
+		{ type: 1, components: [switch_buttons[0], switch_buttons[1], switch_buttons[2]] },
+		{ type: 1, components: [switch_buttons[3], switch_buttons[4], switch_buttons[5]] }
+	];
+
+	await interaction.editReply({ components });
+
+	const filter = (i: MessageComponentInteraction) => i.user.id === interaction.user.id;
+	const collector = interaction.channel!.createMessageComponentCollector({ filter });
+
+	collector.on('collect', async (i) => {
+		await i.deferUpdate();
+		collector.stop();
+
+		builder.addChoice(`switch ${i.customId}`);
+		const choice = builder.toString();
+		await streams.p1.write(choice);
+		await updateBattleEmbed(battle, interaction, process.battlelog);
+	});
+}

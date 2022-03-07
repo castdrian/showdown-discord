@@ -11,6 +11,7 @@ export class PreHandler implements Handler<void> {
 
 	// @ts-ignore lul
 	'|faint|'(args: Protocol.Args['|faint|']) {
-		// const poke = this.battle.getPokemon(args[1]);
+		process.fainted = true;
+		console.log('fainted');
 	}
 }

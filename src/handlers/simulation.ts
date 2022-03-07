@@ -7,7 +7,7 @@ import { Generations } from '@pkmn/data';
 import { PreHandler } from '#handlers/prehandler';
 import { PostHandler } from '#handlers/posthandler';
 import type { CommandInteraction } from 'discord.js';
-import { moveChoice, updateBattleEmbed } from '#handlers/battlescreen';
+import { moveChoice, switchChoice, updateBattleEmbed } from '#handlers/battlescreen';
 import { default as removeMD } from 'remove-markdown';
 
 export async function initiateBattle(interaction: CommandInteraction, formatid: string, team: PokemonSet[] | null) {
@@ -41,6 +41,7 @@ export async function initiateBattle(interaction: CommandInteraction, formatid: 
 	};
 
 	process.battlelog = [];
+	process.fainted = false;
 
 	await Promise.all([omnicientStream(), playerStream(), startBattle()]);
 
@@ -69,14 +70,20 @@ export async function initiateBattle(interaction: CommandInteraction, formatid: 
 				battle.add(args, kwArgs);
 			}
 			battle.update();
+			console.log(battle.request?.requestType);
 			if (battle.request?.requestType === 'move') {
-				await waitFor(() => process.battlelog.length !== 0);
-				await updateBattleEmbed(battle, interaction, process.battlelog);
-				await moveChoice(streams, battle, interaction);
-				process.battlelog = [];
-			}
-			if (battle.request?.requestType === 'switch') {
-				console.log('switch');
+				if (process.fainted) {
+					process.fainted = false;
+					await waitFor(() => process.battlelog.length !== 0);
+					await updateBattleEmbed(battle, interaction, process.battlelog);
+					await switchChoice(streams, battle, interaction);
+					process.battlelog = [];
+				} else {
+					await waitFor(() => process.battlelog.length !== 0);
+					await updateBattleEmbed(battle, interaction, process.battlelog);
+					await moveChoice(streams, battle, interaction);
+					process.battlelog = [];
+				}
 			}
 		}
 	}
