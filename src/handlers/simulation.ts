@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/explicit-member-accessibility */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 
-import { Dex, Teams, RandomPlayerAI, BattleStreams } from '@pkmn/sim';
+import { Dex, Teams, RandomPlayerAI, BattleStreams, PokemonSet } from '@pkmn/sim';
 import { Protocol, Handler, ArgName, ArgType, BattleArgsKWArgType } from '@pkmn/protocol';
 import { Battle } from '@pkmn/client';
 import { TeamGenerators } from '@pkmn/randoms';
@@ -14,13 +14,13 @@ import type { CommandInteraction } from 'discord.js';
 import { moveChoice, updateBattleEmbed } from '#handlers/battlescreen';
 import { default as removeMD } from 'remove-markdown';
 
-export async function initiateBattle(interaction: CommandInteraction, formatid: string, team: string) {
+export async function initiateBattle(interaction: CommandInteraction, formatid: string, team: PokemonSet[] | null) {
 	Teams.setGeneratorFactory(TeamGenerators);
 	const gens = new Generations(Dex as any);
+	const custom_team = Teams.pack(team);
 
-	if (!team) console.log('No team provided, using random team');
 	const spec = { formatid };
-	const p1spec = { name: interaction.user.username, team: Teams.pack(Teams.generate('gen8randombattle')) };
+	const p1spec = { name: interaction.user.username, team: custom_team ?? Teams.pack(Teams.generate('gen8randombattle')) };
 	const p2spec = { name: 'Showdown! AI', team: Teams.pack(Teams.generate('gen8randombattle')) };
 
 	const streams = BattleStreams.getPlayerStreams(new BattleStreams.BattleStream());

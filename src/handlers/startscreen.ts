@@ -8,7 +8,7 @@ import { Teams, Data, PokemonSet } from '@pkmn/sets';
 
 export async function startScreen(interaction: CommandInteraction) {
 	let formatid = 'gen8randombattle';
-	let team: string;
+	let battle_team: PokemonSet[];
 
 	const embeds = [
 		{
@@ -42,7 +42,7 @@ export async function startScreen(interaction: CommandInteraction) {
 		if (i.customId === 'start') {
 			await i.deferUpdate();
 			collector.stop();
-			await initiateBattle(interaction, formatid, team);
+			await initiateBattle(interaction, formatid, battle_team);
 		}
 		if (i.customId === 'cancel') {
 			await i.deferUpdate();
@@ -105,8 +105,8 @@ export async function startScreen(interaction: CommandInteraction) {
 			const team_name = submit.fields.getTextInputValue('team_name');
 			const team_data = submit.fields.getTextInputValue('team_data');
 
-			const validator = new TeamValidator(formatid);
-			const dex = Dex.forFormat(formatid);
+			const validator = new TeamValidator('gen8customgame');
+			const dex = Dex.forFormat('gen8customgame');
 
 			const team = Teams.importTeam(team_data, dex as Data)?.team as PokemonSet[];
 			const invalid = validator.validateTeam(team);
@@ -119,21 +119,25 @@ export async function startScreen(interaction: CommandInteraction) {
 				});
 			}
 
-			await submit.editReply({ content: `Team ${Formatters.inlineCode(team_name)} imported successfully!` });
-
 			const embeds = [
 				{
 					title: 'Pokémon Showdown! Battle',
 					thumbnail: { url: 'attachment://format.png' },
 					description: `Format: \`[Gen 8] Random Battle\`\nPlayers: ${Formatters.inlineCode(
 						interaction.user.username
-					)} vs. ${Formatters.inlineCode(interaction.client.user!.username)}\nTeam: ${Formatters.inlineCode(team_name)}`,
+					)} vs. ${Formatters.inlineCode(interaction.client.user!.username)}\nTeam: ${Formatters.inlineCode(
+						team_name
+					)}\n${Formatters.codeBlock(
+						`- ${team[0].name}\n- ${team[1].name}\n- ${team[2].name}\n- ${team[3].name}\n- ${team[4].name}\n- ${team[5].name}`
+					)}`,
 					color: '0x5865F2',
 					image: { url: 'attachment://versus.png' }
 				}
 			] as any;
 
-			await interaction.editReply({ embeds });
+			await interaction.editReply({ embeds, files });
+			battle_team = team;
+			await submit.editReply({ content: `Team ${Formatters.inlineCode(team_name)} imported successfully!` });
 		}
 	});
 }
