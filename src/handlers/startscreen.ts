@@ -1,8 +1,10 @@
 import { versusScreen } from '#util/canvas';
-import type { CommandInteraction, MessageComponentInteraction, MessageSelectOption } from 'discord.js';
+import { CommandInteraction, Formatters, MessageComponentInteraction, MessageSelectOption, ModalSubmitInteraction } from 'discord.js';
 import { initiateBattle } from '#handlers/simulation';
 import type { formaticon } from '#types/';
 import { components, modal } from '#constants/components';
+import { Dex, TeamValidator } from '@pkmn/sim';
+import { Teams, Data, PokemonSet } from '@pkmn/sets';
 
 export async function startScreen(interaction: CommandInteraction) {
 	let formatid = 'gen8randombattle';
@@ -12,7 +14,9 @@ export async function startScreen(interaction: CommandInteraction) {
 		{
 			title: 'Pokémon Showdown! Battle',
 			thumbnail: { url: 'attachment://format.png' },
-			description: `Format: \`[Gen 8] Random Battle\`\nPlayers: \`${interaction.user.username}\` vs. \`${interaction.client.user?.username}\``,
+			description: `Format: \`[Gen 8] Random Battle\`\nPlayers: ${Formatters.inlineCode(interaction.user.username)} vs. ${Formatters.inlineCode(
+				interaction.client.user!.username
+			)}\nTeam: \`Random\``,
 			color: '0x5865F2',
 			image: { url: 'attachment://versus.png' }
 		}
@@ -34,7 +38,7 @@ export async function startScreen(interaction: CommandInteraction) {
 	const filter = (i: MessageComponentInteraction) => i.user.id === interaction.user.id;
 	const collector = interaction.channel!.createMessageComponentCollector({ filter });
 
-	collector.on('collect', async (i) => {
+	collector.on('collect', async (i): Promise<any> => {
 		if (i.customId === 'start') {
 			await i.deferUpdate();
 			collector.stop();
@@ -65,7 +69,9 @@ export async function startScreen(interaction: CommandInteraction) {
 					thumbnail: { url: 'attachment://format.png' },
 					description: `Format: \`${
 						(i.component.options as MessageSelectOption[]).find((x) => x.value === i.values[0])?.label
-					}\`\nPlayers: \`${interaction.user.username}\` vs. \`${interaction.client.user?.username}\``,
+					}\`\nPlayers: ${Formatters.inlineCode(interaction.user.username)} vs. ${Formatters.inlineCode(
+						interaction.client.user!.username
+					)}\nTeam: \`Random\``,
 					color: '0x5865F2',
 					image: { url: 'attachment://versus.png' }
 				}
@@ -88,15 +94,46 @@ export async function startScreen(interaction: CommandInteraction) {
 		if (i.customId === 'team') {
 			await i.showModal(modal);
 
-			try {
-				const submit = await interaction.awaitModalSubmit({
-					filter: (i) => i.customId === `modal-${interaction.id}`,
+			const submit = (await interaction
+				.awaitModalSubmit({
+					filter: (i) => i.customId === 'team_import',
 					time: 20000
+				})
+				.catch(() => interaction.followUp({ content: 'Team import timed out.', ephemeral: true }))) as ModalSubmitInteraction;
+			await submit.deferReply({ ephemeral: true });
+
+			const team_name = submit.fields.getTextInputValue('team_name');
+			const team_data = submit.fields.getTextInputValue('team_data');
+
+			const validator = new TeamValidator(formatid);
+			const dex = Dex.forFormat(formatid);
+
+			const team = Teams.importTeam(team_data, dex as Data)?.team as PokemonSet[];
+			const invalid = validator.validateTeam(team);
+
+			if (!team || invalid) {
+				return submit.editReply({
+					content: `Team ${Formatters.inlineCode(team_name)} is invalid:\n\n${Formatters.codeBlock(
+						invalid?.join('\n') ?? 'Invalid Team Data'
+					)}`
 				});
-				await submit.reply({ content: `Team imported successfully!`, ephemeral: true });
-			} catch (e) {
-				await interaction.followUp({ content: 'Team import timed out.', ephemeral: true });
 			}
+
+			await submit.editReply({ content: `Team ${Formatters.inlineCode(team_name)} imported successfully!` });
+
+			const embeds = [
+				{
+					title: 'Pokémon Showdown! Battle',
+					thumbnail: { url: 'attachment://format.png' },
+					description: `Format: \`[Gen 8] Random Battle\`\nPlayers: ${Formatters.inlineCode(
+						interaction.user.username
+					)} vs. ${Formatters.inlineCode(interaction.client.user!.username)}\nTeam: ${Formatters.inlineCode(team_name)}`,
+					color: '0x5865F2',
+					image: { url: 'attachment://versus.png' }
+				}
+			] as any;
+
+			await interaction.editReply({ embeds });
 		}
 	});
 }
