@@ -48,8 +48,7 @@ export const components = [
 				type: 2,
 				custom_id: 'team',
 				label: 'Custom Team',
-				style: 2,
-				disabled: true
+				style: 2
 			},
 			{
 				type: 2,
@@ -60,3 +59,42 @@ export const components = [
 		]
 	}
 ] as any;
+
+const placeholder = 'Greninja @ Focus Sash\nAbility: Battle Bond\nTimid Nature\n- Spikes\n- Taunt\n- Dark Pulse\n- Substitute';
+
+export const modal = {
+	title: 'Import Team',
+	custom_id: 'team_import',
+	components: [
+		{
+			type: 1,
+			components: [
+				{
+					type: 4,
+					custom_id: 'team_name',
+					label: 'Team Name',
+					style: 1,
+					min_length: 1,
+					max_length: 100,
+					placeholder: 'OU Team 1',
+					required: true
+				}
+			]
+		},
+		{
+			type: 1,
+			components: [
+				{
+					type: 4,
+					custom_id: 'team_data',
+					label: 'Team Data',
+					style: 2,
+					min_length: 1,
+					max_length: 4000,
+					placeholder,
+					required: true
+				}
+			]
+		}
+	]
+} as any;

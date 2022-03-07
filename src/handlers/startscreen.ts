@@ -2,10 +2,11 @@ import { versusScreen } from '#util/canvas';
 import type { CommandInteraction, MessageComponentInteraction, MessageSelectOption } from 'discord.js';
 import { initiateBattle } from '#handlers/simulation';
 import type { formaticon } from '#types/';
-import { components } from '#constants/components';
+import { components, modal } from '#constants/components';
 
 export async function startScreen(interaction: CommandInteraction) {
 	let formatid = 'gen8randombattle';
+	let team: string;
 
 	const embeds = [
 		{
@@ -34,13 +35,13 @@ export async function startScreen(interaction: CommandInteraction) {
 	const collector = interaction.channel!.createMessageComponentCollector({ filter });
 
 	collector.on('collect', async (i) => {
-		await i.deferUpdate();
-
 		if (i.customId === 'start') {
+			await i.deferUpdate();
 			collector.stop();
-			await initiateBattle(interaction, formatid);
+			await initiateBattle(interaction, formatid, team);
 		}
 		if (i.customId === 'cancel') {
+			await i.deferUpdate();
 			const embeds = [
 				{
 					title: 'Pokémon Showdown! Battle',
@@ -54,6 +55,7 @@ export async function startScreen(interaction: CommandInteraction) {
 			await interaction.editReply({ embeds, components: [], files: [] });
 		}
 		if (i.customId === 'format') {
+			await i.deferUpdate();
 			if (!i.isSelectMenu()) return;
 			[formatid] = i.values;
 
@@ -82,6 +84,19 @@ export async function startScreen(interaction: CommandInteraction) {
 				{ attachment: thumbnail, name: 'format.png' }
 			];
 			await interaction.editReply({ embeds, files });
+		}
+		if (i.customId === 'team') {
+			await i.showModal(modal);
+
+			try {
+				const submit = await interaction.awaitModalSubmit({
+					filter: (i) => i.customId === `modal-${interaction.id}`,
+					time: 20000
+				});
+				await submit.reply({ content: `Team imported successfully!`, ephemeral: true });
+			} catch (e) {
+				await interaction.followUp({ content: 'Team import timed out.', ephemeral: true });
+			}
 		}
 	});
 }
