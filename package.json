@@ -33,7 +33,7 @@
     "@tommoor/remove-markdown": "^0.3.2",
     "@types/remove-markdown": "^0.3.1",
     "discord-api-types": "^0.27.3",
-    "discord.js": "^13.6.0",
+    "discord.js": "github:monbrey/discord.js#modals",
     "dotenv": "^16.0.0",
     "remove-markdown": "^0.3.0",
     "skia-canvas": "^0.9.29",
