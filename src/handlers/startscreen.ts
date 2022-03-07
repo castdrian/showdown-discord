@@ -100,7 +100,7 @@ export async function startScreen(interaction: CommandInteraction) {
 					time: 20000
 				})
 				.catch(() => interaction.followUp({ content: 'Team import timed out.', ephemeral: true }))) as ModalSubmitInteraction;
-			await submit.deferReply({ ephemeral: true });
+			if (submit) await submit.deferReply({ ephemeral: true });
 
 			const team_name = submit.fields.getTextInputValue('team_name');
 			const team_data = submit.fields.getTextInputValue('team_data');

@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
-/* eslint-disable @typescript-eslint/explicit-member-accessibility */
-/* eslint-disable @typescript-eslint/no-floating-promises */
-
 import { Dex, Teams, RandomPlayerAI, BattleStreams, PokemonSet } from '@pkmn/sim';
 import { Protocol, Handler, ArgName, ArgType, BattleArgsKWArgType } from '@pkmn/protocol';
 import { Battle } from '@pkmn/client';
@@ -26,7 +22,7 @@ export async function initiateBattle(interaction: CommandInteraction, formatid: 
 	const streams = BattleStreams.getPlayerStreams(new BattleStreams.BattleStream());
 
 	const p2 = new RandomPlayerAI(streams.p2);
-	p2.start();
+	void p2.start();
 
 	const battle = new Battle(gens);
 	const formatter = new LogFormatter('p1', battle);
