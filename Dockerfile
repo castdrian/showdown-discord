@@ -7,3 +7,6 @@ COPY . .
 FROM base as production
 ENV NODE_PATH=./build
 RUN npm run start
+
+ARG DISCORD_TOKEN
+ENV DISCORD_TOKEN=$DISCORD_TOKEN
