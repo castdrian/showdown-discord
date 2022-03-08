@@ -3,14 +3,14 @@ import { CommandInteraction, Formatters, MessageComponentInteraction } from 'dis
 import { Sprites } from '@pkmn/img';
 import { ChoiceBuilder } from '@pkmn/view';
 
-export async function updateBattleEmbed(battle: Battle, interaction: CommandInteraction, battlelog: string[]) {
+export async function updateBattleEmbed(battle: Battle, interaction: CommandInteraction) {
 	const activemon = battle.p1.active[0];
 	const opponent = battle.p1.foe.active[0];
 
 	const { url: activesprite } = Sprites.getPokemon(activemon?.species.name as string, { gen: 'ani', shiny: activemon?.shiny, side: 'p1' });
 	const { url: opponentprite } = Sprites.getPokemon(opponent?.species.name as string, { gen: 'ani', shiny: opponent?.shiny, side: 'p2' });
 
-	const log = battlelog.join('');
+	const log = process.battlelog.join('');
 	const embeds = [
 		{
 			author: { name: `${opponent?.name} | ${opponent?.hp}/${opponent?.maxhp} HP`, iconURL: interaction.client.user?.displayAvatarURL() },
@@ -102,7 +102,7 @@ export async function moveChoice(streams: any, battle: Battle, interaction: Comm
 			const choice = builder.toString();
 			streams.p1.write(choice);
 			collector.stop();
-			await updateBattleEmbed(battle, interaction, process.battlelog);
+			await updateBattleEmbed(battle, interaction);
 		}
 		if (i.customId === 'switch') {
 			// switch
@@ -125,7 +125,7 @@ export async function switchChoice(streams: any, battle: Battle, interaction: Co
 		{ type: 1, components: [switch_buttons[3], switch_buttons[4], switch_buttons[5]] }
 	];
 
-	await interaction.editReply({ components });
+	await interaction.editReply({ embeds: [], components });
 
 	const filter = (i: MessageComponentInteraction) => i.user.id === interaction.user.id;
 	const collector = interaction.channel!.createMessageComponentCollector({ filter });
@@ -137,6 +137,5 @@ export async function switchChoice(streams: any, battle: Battle, interaction: Co
 		builder.addChoice(`switch ${i.customId}`);
 		const choice = builder.toString();
 		await streams.p1.write(choice);
-		await updateBattleEmbed(battle, interaction, process.battlelog);
 	});
 }

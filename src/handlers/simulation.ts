@@ -7,8 +7,9 @@ import { Generations } from '@pkmn/data';
 import { PreHandler } from '#handlers/prehandler';
 import { PostHandler } from '#handlers/posthandler';
 import type { CommandInteraction } from 'discord.js';
-import { moveChoice, switchChoice, updateBattleEmbed } from '#handlers/battlescreen';
+import { moveChoice, updateBattleEmbed } from '#handlers/battlescreen';
 import { default as removeMD } from 'remove-markdown';
+import { waitFor } from '#util/functions';
 
 export async function initiateBattle(interaction: CommandInteraction, formatid: string, team: PokemonSet[] | null) {
 	Teams.setGeneratorFactory(TeamGenerators);
@@ -34,14 +35,8 @@ export async function initiateBattle(interaction: CommandInteraction, formatid: 
 		if (k && k in h) (h as any)[k](a, kw);
 	};
 
-	const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-	const waitFor = async function waitFor(f: any) {
-		while (!f()) await sleep(1000);
-		return f();
-	};
-
 	process.battlelog = [];
-	process.fainted = false;
+	process.fainted = null;
 
 	await Promise.all([omnicientStream(), playerStream(), startBattle()]);
 
@@ -70,20 +65,19 @@ export async function initiateBattle(interaction: CommandInteraction, formatid: 
 				battle.add(args, kwArgs);
 			}
 			battle.update();
-			console.log(battle.request?.requestType);
+
 			if (battle.request?.requestType === 'move') {
-				if (process.fainted) {
-					process.fainted = false;
-					await waitFor(() => process.battlelog.length !== 0);
-					await updateBattleEmbed(battle, interaction, process.battlelog);
+				await waitFor(() => process.battlelog.length !== 0);
+				/* 	if (battle.p1.lastPokemon?.name) {
+					process.battlelog = [];
 					await switchChoice(streams, battle, interaction);
-					process.battlelog = [];
-				} else {
 					await waitFor(() => process.battlelog.length !== 0);
-					await updateBattleEmbed(battle, interaction, process.battlelog);
-					await moveChoice(streams, battle, interaction);
-					process.battlelog = [];
-				}
+					await updateBattleEmbed(battle, interaction);
+				} else { */
+				await updateBattleEmbed(battle, interaction);
+				await moveChoice(streams, battle, interaction);
+				process.battlelog = [];
+				// }
 			}
 		}
 	}

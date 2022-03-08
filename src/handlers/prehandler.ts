@@ -5,13 +5,10 @@ import type { Battle } from '@pkmn/client';
 
 export class PreHandler implements Handler<void> {
 	// @ts-ignore whatever this is
-	constructor(private readonly battle: Battle) {
+	constructor(private battle: Battle) {
 		this.battle = battle;
 	}
 
 	// @ts-ignore lul
-	'|faint|'(args: Protocol.Args['|faint|']) {
-		process.fainted = true;
-		console.log('fainted');
-	}
+	'|faint|'(args: Protocol.Args['|faint|']) {}
 }
