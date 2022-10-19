@@ -13,4 +13,4 @@ const client = new SapphireClient({
 });
 
 if (process.env.CI) process.exit(0);
-await client.login();
+await client.login(process.env.CLIENT_TOKEN);

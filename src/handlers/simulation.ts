@@ -7,7 +7,7 @@ import { Generations } from '@pkmn/data';
 import { PreHandler } from '#handlers/prehandler';
 import { PostHandler } from '#handlers/posthandler';
 import type { CommandInteraction } from 'discord.js';
-import { moveChoice, updateBattleEmbed } from '#handlers/battlescreen';
+import { moveChoice, switchChoice, updateBattleEmbed } from '#handlers/battlescreen';
 import { default as removeMD } from 'remove-markdown';
 import { waitFor } from '#util/functions';
 
@@ -76,9 +76,17 @@ export async function initiateBattle(interaction: CommandInteraction, formatid: 
 				} else { */
 				await updateBattleEmbed(battle, interaction);
 				await moveChoice(streams, battle, interaction);
-				process.battlelog = [];
+				// process.battlelog = [];
 				// }
+			} else if (battle.request?.requestType === 'switch') {
+				await waitFor(() => process.battlelog.length !== 0);
+				await switchChoice(streams, battle, interaction);
+				// process.battlelog = [];
+			} else if (battle.request?.requestType === 'wait') {
+				await waitFor(() => process.battlelog.length !== 0);
+				await updateBattleEmbed(battle, interaction);
 			}
+			process.battlelog = [];
 		}
 	}
 
