@@ -28,7 +28,7 @@ export async function initiateBattle(interaction: CommandInteraction, formatid: 
 	const battle = new Battle(gens);
 	const formatter = new LogFormatter('p1', battle);
 
-	const pre = new PreHandler(battle);
+	const pre = new PreHandler(battle, streams, interaction);
 	const post = new PostHandler(battle, streams, interaction);
 
 	const add = <T>(h: Handler<T>, k: ArgName | undefined, a: ArgType, kw: BattleArgsKWArgType) => {
@@ -36,7 +36,6 @@ export async function initiateBattle(interaction: CommandInteraction, formatid: 
 	};
 
 	process.battlelog = [];
-	process.fainted = null;
 
 	await Promise.all([omnicientStream(), playerStream(), startBattle()]);
 

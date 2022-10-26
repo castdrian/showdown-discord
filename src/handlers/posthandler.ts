@@ -5,16 +5,7 @@ import type { Battle } from '@pkmn/client';
 import { waitFor } from '#util/functions';
 import { moveChoice, switchChoice, updateBattleEmbed } from '#handlers/battlescreen';
 import type { CommandInteraction } from 'discord.js';
-import type { ObjectReadStream, ObjectReadWriteStream } from '@pkmn/sim/build/lib/streams';
-
-interface BattleStreams {
-	omniscient: ObjectReadWriteStream<string>;
-	spectator: ObjectReadStream<string>;
-	p1: ObjectReadWriteStream<string>;
-	p2: ObjectReadWriteStream<string>;
-	p3: ObjectReadWriteStream<string>;
-	p4: ObjectReadWriteStream<string>;
-}
+import type { BattleStreams } from '#types/index';
 
 export class PostHandler implements Handler<void> {
 	// @ts-ignore whatever this is

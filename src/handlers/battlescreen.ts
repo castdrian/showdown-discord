@@ -3,7 +3,7 @@ import { CommandInteraction, Formatters, MessageComponentInteraction } from 'dis
 import { Sprites } from '@pkmn/img';
 import { ChoiceBuilder } from '@pkmn/view';
 
-export async function updateBattleEmbed(battle: Battle, interaction: CommandInteraction) {
+export async function updateBattleEmbed(battle: Battle, interaction: CommandInteraction | MessageComponentInteraction) {
 	const activemon = battle.p1.active[0];
 	const opponent = battle.p1.foe.active[0];
 
@@ -102,7 +102,7 @@ export async function moveChoice(streams: any, battle: Battle, interaction: Comm
 			const choice = builder.toString();
 			streams.p1.write(choice);
 			collector.stop();
-			await updateBattleEmbed(battle, interaction);
+			await updateBattleEmbed(battle, i);
 		}
 		if (i.customId === 'switch') {
 			// switch
@@ -113,7 +113,7 @@ export async function moveChoice(streams: any, battle: Battle, interaction: Comm
 	});
 }
 
-export async function switchChoice(streams: any, battle: Battle, interaction: CommandInteraction) {
+export async function switchChoice(streams: any, battle: Battle, interaction: CommandInteraction | MessageComponentInteraction) {
 	const { team } = battle.p1;
 	const builder = new ChoiceBuilder(battle.request!);
 

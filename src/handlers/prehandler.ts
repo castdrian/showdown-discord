@@ -2,17 +2,22 @@
 /* eslint-disable @typescript-eslint/explicit-member-accessibility */
 import type { Handler, Protocol } from '@pkmn/protocol';
 import type { Battle } from '@pkmn/client';
+import type { CommandInteraction } from 'discord.js';
+import type { BattleStreams } from '#types/index';
+import { switchChoice } from '#handlers/battlescreen';
 
 export class PreHandler implements Handler<void> {
 	// @ts-ignore whatever this is
-	constructor(private battle: Battle) {
+	constructor(private readonly battle: Battle, private streams: BattleStreams, private interaction: CommandInteraction) {
 		this.battle = battle;
+		this.streams = streams;
+		this.interaction = interaction;
 	}
 
-	'|faint|'(args: Protocol.Args['|faint|']) {
+	async '|faint|'(args: Protocol.Args['|faint|']) {
 		const poke = this.battle.getPokemon(args[1]);
 		if (poke) {
-			console.log(poke);
+			await switchChoice(this.streams, this.battle, this.interaction);
 		}
 	}
 }
