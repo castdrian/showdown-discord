@@ -7,9 +7,9 @@ import { Generations } from '@pkmn/data';
 import { PreHandler } from '#handlers/prehandler';
 import { PostHandler } from '#handlers/posthandler';
 import type { CommandInteraction } from 'discord.js';
-import { moveChoice, switchChoice, updateBattleEmbed } from '#handlers/battlescreen';
+// import { moveChoice, switchChoice, updateBattleEmbed } from '#handlers/battlescreen';
 import { default as removeMD } from 'remove-markdown';
-import { waitFor } from '#util/functions';
+// import { waitFor } from '#util/functions';
 
 export async function initiateBattle(interaction: CommandInteraction, formatid: string, team: PokemonSet[] | null) {
 	Teams.setGeneratorFactory(TeamGenerators);
@@ -29,7 +29,7 @@ export async function initiateBattle(interaction: CommandInteraction, formatid: 
 	const formatter = new LogFormatter('p1', battle);
 
 	const pre = new PreHandler(battle);
-	const post = new PostHandler(battle);
+	const post = new PostHandler(battle, streams, interaction);
 
 	const add = <T>(h: Handler<T>, k: ArgName | undefined, a: ArgType, kw: BattleArgsKWArgType) => {
 		if (k && k in h) (h as any)[k](a, kw);
@@ -65,28 +65,6 @@ export async function initiateBattle(interaction: CommandInteraction, formatid: 
 				battle.add(args, kwArgs);
 			}
 			battle.update();
-
-			if (battle.request?.requestType === 'move') {
-				await waitFor(() => process.battlelog.length !== 0);
-				/* 	if (battle.p1.lastPokemon?.name) {
-					process.battlelog = [];
-					await switchChoice(streams, battle, interaction);
-					await waitFor(() => process.battlelog.length !== 0);
-					await updateBattleEmbed(battle, interaction);
-				} else { */
-				await updateBattleEmbed(battle, interaction);
-				await moveChoice(streams, battle, interaction);
-				// process.battlelog = [];
-				// }
-			} else if (battle.request?.requestType === 'switch') {
-				await waitFor(() => process.battlelog.length !== 0);
-				await switchChoice(streams, battle, interaction);
-				// process.battlelog = [];
-			} else if (battle.request?.requestType === 'wait') {
-				await waitFor(() => process.battlelog.length !== 0);
-				await updateBattleEmbed(battle, interaction);
-			}
-			process.battlelog = [];
 		}
 	}
 

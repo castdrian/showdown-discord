@@ -9,6 +9,10 @@ export class PreHandler implements Handler<void> {
 		this.battle = battle;
 	}
 
-	// @ts-ignore lul
-	'|faint|'(args: Protocol.Args['|faint|']) {}
+	'|faint|'(args: Protocol.Args['|faint|']) {
+		const poke = this.battle.getPokemon(args[1]);
+		if (poke) {
+			console.log(poke);
+		}
+	}
 }
