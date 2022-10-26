@@ -1,4 +1,6 @@
 FROM node:16 as base
+ARG CI=${CI}
+ENV CI=${CI}
 WORKDIR /home/node/app
 COPY package*.json ./
 RUN npm i
