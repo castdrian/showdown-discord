@@ -20,6 +20,7 @@ env:
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ github.repository }}
+  CI: true
 
 
 jobs:
@@ -36,8 +37,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-        env:
-          CI: ${{ secrets.CI }}
 
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer
@@ -46,15 +45,10 @@ jobs:
         uses: sigstore/cosign-installer@1e95c1de343b5b0c23352d6417ee3e48d5bcd422
         with:
           cosign-release: 'v1.4.0'
-        env:
-          CI: ${{ secrets.CI }}
-
 
       # Workaround: https://github.com/docker/build-push-action/issues/461
       - name: Setup Docker buildx
         uses: docker/setup-buildx-action@79abd3f86f79a9d68a23c75a09a9a85889262adf
-        env:
-          CI: ${{ secrets.CI }}
 
       # Login against a Docker registry except on PR
       # https://github.com/docker/login-action
@@ -65,8 +59,6 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-        env:
-          CI: ${{ secrets.CI }}
 
       # Extract metadata (tags, labels) for Docker
       # https://github.com/docker/metadata-action
@@ -75,8 +67,6 @@ jobs:
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-        env:
-          CI: ${{ secrets.CI }}
 
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
@@ -88,8 +78,6 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-        env:
-          CI: ${{ secrets.CI }}
 
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker
@@ -100,7 +88,6 @@ jobs:
         if: ${{ github.event_name != 'pull_request' }}
         env:
           COSIGN_EXPERIMENTAL: "true"
-          CI: ${{ secrets.CI }}
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
         run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build-and-push.outputs.digest }}
