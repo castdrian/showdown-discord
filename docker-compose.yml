@@ -2,8 +2,6 @@ version: '3.8'
 
 services:
   showdown:
-    environment:
-      - CI=true
     build:
       context: .
       dockerfile: Dockerfile

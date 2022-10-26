@@ -3,7 +3,6 @@ WORKDIR /home/node/app
 COPY package*.json ./
 RUN npm i
 COPY . .
-ARG CI=true
 FROM base as production
 ENV NODE_PATH=./build
 RUN npm run start
