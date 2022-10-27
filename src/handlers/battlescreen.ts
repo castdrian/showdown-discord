@@ -1,17 +1,20 @@
-import type { Battle } from '@pkmn/client';
-import { Formatters, MessageComponentInteraction } from 'discord.js';
+import type { Battle, Pokemon } from '@pkmn/client';
+import { CommandInteraction, Formatters, MessageComponentInteraction } from 'discord.js';
 import { Sprites } from '@pkmn/img';
 import { ChoiceBuilder } from '@pkmn/view';
 
-export async function updateBattleEmbed(battle: Battle, interaction: MessageComponentInteraction) {
-	const activemon = battle.p1.active[0];
+export async function updateBattleEmbed(battle: Battle, interaction: CommandInteraction | MessageComponentInteraction, switchmon?: Pokemon) {
+	const activemon = switchmon ?? battle.p1.active[0];
 	const opponent = battle.p1.foe.active[0];
 
 	const { url: activesprite } = Sprites.getPokemon(activemon?.species.name as string, { gen: 'ani', shiny: activemon?.shiny, side: 'p1' });
 	const { url: opponentprite } = Sprites.getPokemon(opponent?.species.name as string, { gen: 'ani', shiny: opponent?.shiny, side: 'p2' });
 
-	// cut down log to last 15 lines
-	const log = process.battlelog.slice(-10).join('\n');
+	// filter out lines that contain "Showdown! AI withdrew" because somehow it's being sent on sending out a mon
+	const battlelog = process.battlelog.filter((line) => !line.includes('Showdown! AI withdrew'));
+
+	// cut down log to last 10 lines
+	const log = battlelog.slice(-10).join('\n');
 
 	const embeds = [
 		{
@@ -30,7 +33,7 @@ export async function updateBattleEmbed(battle: Battle, interaction: MessageComp
 			components: [
 				{
 					type: 2,
-					custom_id: activemon?.moveSlots[0]?.id,
+					custom_id: activemon?.moveSlots[0]?.id ?? 'move1',
 					// @ts-ignore pp props missing from types
 					label: `${activemon?.moveSlots[0]?.name} ${activemon?.moveSlots[0]?.pp}/${activemon?.moveSlots[0]?.maxpp} PP`,
 					style: 1,
@@ -39,7 +42,7 @@ export async function updateBattleEmbed(battle: Battle, interaction: MessageComp
 				},
 				{
 					type: 2,
-					custom_id: activemon?.moveSlots[1]?.id,
+					custom_id: activemon?.moveSlots[1]?.id ?? 'move2',
 					// @ts-ignore pp props missing from types
 					label: `${activemon?.moveSlots[1]?.name} ${activemon?.moveSlots[1]?.pp}/${activemon?.moveSlots[1]?.maxpp} PP`,
 					style: 1,
@@ -59,7 +62,7 @@ export async function updateBattleEmbed(battle: Battle, interaction: MessageComp
 			components: [
 				{
 					type: 2,
-					custom_id: activemon?.moveSlots[2]?.id,
+					custom_id: activemon?.moveSlots[2]?.id ?? 'move3',
 					// @ts-ignore pp props missing from types
 					label: `${activemon?.moveSlots[2]?.name} ${activemon?.moveSlots[2]?.pp}/${activemon?.moveSlots[2]?.maxpp} PP`,
 					style: 1,
@@ -68,7 +71,7 @@ export async function updateBattleEmbed(battle: Battle, interaction: MessageComp
 				},
 				{
 					type: 2,
-					custom_id: activemon?.moveSlots[3]?.id,
+					custom_id: activemon?.moveSlots[3]?.id ?? 'move4',
 					// @ts-ignore pp props missing from types
 					label: `${activemon?.moveSlots[3]?.name} ${activemon?.moveSlots[3]?.pp}/${activemon?.moveSlots[3]?.maxpp} PP`,
 					style: 1,
@@ -85,7 +88,7 @@ export async function updateBattleEmbed(battle: Battle, interaction: MessageComp
 		}
 	];
 
-	if (interaction.replied) {
+	if (interaction.replied || interaction.isCommand()) {
 		await interaction.editReply({ embeds, components, files: [] });
 	} else {
 		await interaction.update({ embeds, components, files: [] });
@@ -117,7 +120,8 @@ export async function moveChoice(streams: any, battle: Battle, interaction: Mess
 	});
 }
 
-export async function switchChoice(streams: any, battle: Battle, interaction: MessageComponentInteraction) {
+export async function switchChoice(streams: any, battle: Battle, interaction: CommandInteraction) {
+	console.log('switching');
 	const { team } = battle.p1;
 	const builder = new ChoiceBuilder(battle.request!);
 
@@ -129,21 +133,19 @@ export async function switchChoice(streams: any, battle: Battle, interaction: Me
 		{ type: 1, components: [switch_buttons[3], switch_buttons[4], switch_buttons[5]] }
 	];
 
-	if (interaction.replied) {
-		await interaction.editReply({ embeds: [], components });
-	} else {
-		await interaction.update({ embeds: [], components });
-	}
+	await interaction.editReply({ embeds: [], components });
 
 	const filter = (i: MessageComponentInteraction) => i.user.id === interaction.user.id;
 	const collector = interaction.channel!.createMessageComponentCollector({ filter });
 
 	collector.on('collect', async (i) => {
-		await i.deferUpdate();
 		collector.stop();
+		await i.deferUpdate();
 
 		builder.addChoice(`switch ${i.customId}`);
 		const choice = builder.toString();
 		await streams.p1.write(choice);
+		const mon = team.find((m) => m.name === i.customId);
+		await updateBattleEmbed(battle, i, mon);
 	});
 }
