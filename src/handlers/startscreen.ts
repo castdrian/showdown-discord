@@ -40,12 +40,10 @@ export async function startScreen(interaction: CommandInteraction) {
 
 	collector.on('collect', async (i): Promise<any> => {
 		if (i.customId === 'start') {
-			await i.deferUpdate();
 			collector.stop();
-			await initiateBattle(interaction, formatid, battle_team);
+			await initiateBattle(i, formatid, battle_team);
 		}
 		if (i.customId === 'cancel') {
-			await i.deferUpdate();
 			const embeds = [
 				{
 					title: 'Pokémon Showdown! Battle',
@@ -56,7 +54,7 @@ export async function startScreen(interaction: CommandInteraction) {
 			] as any;
 
 			collector.stop();
-			await interaction.editReply({ embeds, components: [], files: [] });
+			await i.update({ embeds, components: [], files: [] });
 		}
 		if (i.customId === 'format') {
 			await i.deferUpdate();

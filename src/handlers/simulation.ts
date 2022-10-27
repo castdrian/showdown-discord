@@ -6,12 +6,12 @@ import { LogFormatter } from '@pkmn/view';
 import { Generations } from '@pkmn/data';
 import { PreHandler } from '#handlers/prehandler';
 import { PostHandler } from '#handlers/posthandler';
-import type { CommandInteraction } from 'discord.js';
+import type { MessageComponentInteraction } from 'discord.js';
 // import { moveChoice, switchChoice, updateBattleEmbed } from '#handlers/battlescreen';
 import { default as removeMD } from 'remove-markdown';
 // import { waitFor } from '#util/functions';
 
-export async function initiateBattle(interaction: CommandInteraction, formatid: string, team: PokemonSet[] | null) {
+export async function initiateBattle(interaction: MessageComponentInteraction, formatid: string, team: PokemonSet[] | null) {
 	Teams.setGeneratorFactory(TeamGenerators);
 	const gens = new Generations(Dex as any);
 	const custom_team = Teams.pack(team);

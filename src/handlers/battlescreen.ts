@@ -1,9 +1,9 @@
 import type { Battle } from '@pkmn/client';
-import { CommandInteraction, Formatters, MessageComponentInteraction } from 'discord.js';
+import { Formatters, MessageComponentInteraction } from 'discord.js';
 import { Sprites } from '@pkmn/img';
 import { ChoiceBuilder } from '@pkmn/view';
 
-export async function updateBattleEmbed(battle: Battle, interaction: CommandInteraction | MessageComponentInteraction) {
+export async function updateBattleEmbed(battle: Battle, interaction: MessageComponentInteraction) {
 	const activemon = battle.p1.active[0];
 	const opponent = battle.p1.foe.active[0];
 
@@ -83,11 +83,15 @@ export async function updateBattleEmbed(battle: Battle, interaction: CommandInte
 		}
 	];
 
-	await interaction.editReply({ embeds, components, files: [] });
+	if (interaction.replied) {
+		await interaction.editReply({ embeds, components, files: [] });
+	} else {
+		await interaction.update({ embeds, components, files: [] });
+	}
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await
-export async function moveChoice(streams: any, battle: Battle, interaction: CommandInteraction) {
+export async function moveChoice(streams: any, battle: Battle, interaction: MessageComponentInteraction) {
 	const activemon = battle.p1.active[0];
 	const builder = new ChoiceBuilder(battle.request!);
 
@@ -95,8 +99,6 @@ export async function moveChoice(streams: any, battle: Battle, interaction: Comm
 	const collector = interaction.channel!.createMessageComponentCollector({ filter });
 
 	collector.on('collect', async (i) => {
-		await i.deferUpdate();
-
 		if (activemon?.moves.includes(i.customId as any)) {
 			builder.addChoice(`move ${i.customId}`);
 			const choice = builder.toString();
@@ -113,7 +115,7 @@ export async function moveChoice(streams: any, battle: Battle, interaction: Comm
 	});
 }
 
-export async function switchChoice(streams: any, battle: Battle, interaction: CommandInteraction | MessageComponentInteraction) {
+export async function switchChoice(streams: any, battle: Battle, interaction: MessageComponentInteraction) {
 	const { team } = battle.p1;
 	const builder = new ChoiceBuilder(battle.request!);
 
@@ -125,7 +127,7 @@ export async function switchChoice(streams: any, battle: Battle, interaction: Co
 		{ type: 1, components: [switch_buttons[3], switch_buttons[4], switch_buttons[5]] }
 	];
 
-	await interaction.editReply({ embeds: [], components });
+	await interaction.update({ embeds: [], components });
 
 	const filter = (i: MessageComponentInteraction) => i.user.id === interaction.user.id;
 	const collector = interaction.channel!.createMessageComponentCollector({ filter });
