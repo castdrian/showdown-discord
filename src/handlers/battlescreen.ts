@@ -1,5 +1,5 @@
 import type { Battle, Pokemon } from '@pkmn/client';
-import { CommandInteraction, Formatters, MessageComponentInteraction } from 'discord.js';
+import { CommandInteraction, Formatters, Message, MessageComponentInteraction } from 'discord.js';
 import { Sprites } from '@pkmn/img';
 import { ChoiceBuilder } from '@pkmn/view';
 
@@ -90,6 +90,8 @@ export async function updateBattleEmbed(battle: Battle, interaction: CommandInte
 
 	if (interaction.replied || interaction.isCommand()) {
 		await interaction.editReply({ embeds, components, files: [] });
+	} else if (interaction.deferred || interaction.isCommand()) {
+		await interaction.editReply({ embeds, components, files: [] });
 	} else {
 		await interaction.update({ embeds, components, files: [] });
 	}
@@ -120,7 +122,7 @@ export async function moveChoice(streams: any, battle: Battle, interaction: Mess
 	});
 }
 
-export async function switchChoice(streams: any, battle: Battle, interaction: CommandInteraction) {
+export async function switchChoice(streams: any, battle: Battle, interaction: MessageComponentInteraction) {
 	console.log('switching');
 	const { team } = battle.p1;
 	const builder = new ChoiceBuilder(battle.request!);
@@ -133,7 +135,9 @@ export async function switchChoice(streams: any, battle: Battle, interaction: Co
 		{ type: 1, components: [switch_buttons[3], switch_buttons[4], switch_buttons[5]] }
 	];
 
-	await interaction.editReply({ embeds: [], components });
+	console.log('sending switch embed');
+	await (interaction.message as Message).edit({ embeds: [], components });
+	console.log('sent switch embed');
 
 	const filter = (i: MessageComponentInteraction) => i.user.id === interaction.user.id;
 	const collector = interaction.channel!.createMessageComponentCollector({ filter });
@@ -145,7 +149,5 @@ export async function switchChoice(streams: any, battle: Battle, interaction: Co
 		builder.addChoice(`switch ${i.customId}`);
 		const choice = builder.toString();
 		await streams.p1.write(choice);
-		const mon = team.find((m) => m.name === i.customId);
-		await updateBattleEmbed(battle, i, mon);
 	});
 }

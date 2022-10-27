@@ -6,17 +6,12 @@ import { LogFormatter } from '@pkmn/view';
 import { Generations } from '@pkmn/data';
 import { PreHandler } from '#handlers/prehandler';
 import { PostHandler } from '#handlers/posthandler';
-import type { CommandInteraction, MessageComponentInteraction } from 'discord.js';
+import type { MessageComponentInteraction } from 'discord.js';
 // import { moveChoice, switchChoice, updateBattleEmbed } from '#handlers/battlescreen';
 import { default as removeMD } from 'remove-markdown';
 // import { waitFor } from '#util/functions';
 
-export async function initiateBattle(
-	command: CommandInteraction,
-	interaction: MessageComponentInteraction,
-	formatid: string,
-	team: PokemonSet[] | null
-) {
+export async function initiateBattle(interaction: MessageComponentInteraction, formatid: string, team: PokemonSet[] | null) {
 	Teams.setGeneratorFactory(TeamGenerators);
 	const gens = new Generations(Dex as any);
 	const custom_team = Teams.pack(team);
@@ -33,8 +28,8 @@ export async function initiateBattle(
 	const battle = new Battle(gens);
 	const formatter = new LogFormatter('p1', battle);
 
-	const pre = new PreHandler(battle, streams, command);
-	const post = new PostHandler(battle, streams, interaction, command);
+	const pre = new PreHandler(battle, streams, interaction);
+	const post = new PostHandler(battle, streams, interaction);
 
 	const add = <T>(h: Handler<T>, k: ArgName | undefined, a: ArgType, kw: BattleArgsKWArgType) => {
 		if (k && k in h) (h as any)[k](a, kw);

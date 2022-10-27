@@ -41,7 +41,7 @@ export async function startScreen(interaction: CommandInteraction) {
 	collector.on('collect', async (i): Promise<any> => {
 		if (i.customId === 'start') {
 			collector.stop();
-			await initiateBattle(interaction, i, formatid, battle_team);
+			await initiateBattle(i, formatid, battle_team);
 		}
 		if (i.customId === 'cancel') {
 			const embeds = [
