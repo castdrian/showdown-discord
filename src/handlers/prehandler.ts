@@ -16,7 +16,7 @@ export class PreHandler implements Handler<void> {
 
 	async '|faint|'(args: Protocol.Args['|faint|']) {
 		const poke = this.battle.getPokemon(args[1]);
-		if (poke) {
+		if (poke?.side === this.battle.p1) {
 			await switchChoice(this.streams, this.battle, this.interaction);
 		}
 	}

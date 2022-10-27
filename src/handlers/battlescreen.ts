@@ -10,7 +10,9 @@ export async function updateBattleEmbed(battle: Battle, interaction: MessageComp
 	const { url: activesprite } = Sprites.getPokemon(activemon?.species.name as string, { gen: 'ani', shiny: activemon?.shiny, side: 'p1' });
 	const { url: opponentprite } = Sprites.getPokemon(opponent?.species.name as string, { gen: 'ani', shiny: opponent?.shiny, side: 'p2' });
 
-	const log = process.battlelog.join('');
+	// cut down log to last 15 lines
+	const log = process.battlelog.slice(-10).join('\n');
+
 	const embeds = [
 		{
 			author: { name: `${opponent?.name} | ${opponent?.hp}/${opponent?.maxhp} HP`, iconURL: interaction.client.user?.displayAvatarURL() },
