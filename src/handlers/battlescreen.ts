@@ -129,7 +129,11 @@ export async function switchChoice(streams: any, battle: Battle, interaction: Me
 		{ type: 1, components: [switch_buttons[3], switch_buttons[4], switch_buttons[5]] }
 	];
 
-	await interaction.update({ embeds: [], components });
+	if (interaction.replied) {
+		await interaction.editReply({ embeds: [], components });
+	} else {
+		await interaction.update({ embeds: [], components });
+	}
 
 	const filter = (i: MessageComponentInteraction) => i.user.id === interaction.user.id;
 	const collector = interaction.channel!.createMessageComponentCollector({ filter });
