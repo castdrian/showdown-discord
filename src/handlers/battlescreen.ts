@@ -1,9 +1,9 @@
 import type { Battle, Pokemon } from '@pkmn/client';
-import { CommandInteraction, Formatters, Message, MessageComponentInteraction } from 'discord.js';
+import { Formatters, Message, MessageComponentInteraction, User } from 'discord.js';
 import { Sprites } from '@pkmn/img';
 import { ChoiceBuilder } from '@pkmn/view';
 
-export async function updateBattleEmbed(battle: Battle, interaction: CommandInteraction | MessageComponentInteraction, switchmon?: Pokemon) {
+export async function updateBattleEmbed(battle: Battle, message: Message, user: User, switchmon?: Pokemon) {
 	const activemon = switchmon ?? battle.p1.active[0];
 	const opponent = battle.p1.foe.active[0];
 
@@ -18,12 +18,12 @@ export async function updateBattleEmbed(battle: Battle, interaction: CommandInte
 
 	const embeds = [
 		{
-			author: { name: `${opponent?.name} | ${opponent?.hp}/${opponent?.maxhp} HP`, iconURL: interaction.client.user?.displayAvatarURL() },
+			author: { name: `${opponent?.name} | ${opponent?.hp}/${opponent?.maxhp} HP`, iconURL: message.client.user?.displayAvatarURL() },
 			thumbnail: { url: opponentprite },
 			color: '0x5865F2',
 			description: Formatters.codeBlock(log),
 			image: { url: activesprite },
-			footer: { text: `${activemon?.name} | ${activemon?.hp}/${activemon?.maxhp} HP`, iconURL: interaction.user?.displayAvatarURL() }
+			footer: { text: `${activemon?.name} | ${activemon?.hp}/${activemon?.maxhp} HP`, iconURL: user.displayAvatarURL() }
 		}
 	] as any;
 
@@ -88,30 +88,25 @@ export async function updateBattleEmbed(battle: Battle, interaction: CommandInte
 		}
 	];
 
-	if (interaction.replied || interaction.isCommand()) {
-		await interaction.editReply({ embeds, components, files: [] });
-	} else if (interaction.deferred || interaction.isCommand()) {
-		await interaction.editReply({ embeds, components, files: [] });
-	} else {
-		await interaction.update({ embeds, components, files: [] });
-	}
+	await message.edit({ embeds, components, files: [] });
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await
-export async function moveChoice(streams: any, battle: Battle, interaction: MessageComponentInteraction) {
+export async function moveChoice(streams: any, battle: Battle, message: Message, user: User) {
 	const activemon = battle.p1.active[0];
 	const builder = new ChoiceBuilder(battle.request!);
 
-	const filter = (i: MessageComponentInteraction) => i.user.id === interaction.user.id;
-	const collector = interaction.channel!.createMessageComponentCollector({ filter });
+	const filter = (i: MessageComponentInteraction) => i.user.id === user.id;
+	const collector = message.channel!.createMessageComponentCollector({ filter });
 
 	collector.on('collect', async (i) => {
 		if (activemon?.moves.includes(i.customId as any)) {
+			await i.deferUpdate();
 			builder.addChoice(`move ${i.customId}`);
 			const choice = builder.toString();
 			streams.p1.write(choice);
 			collector.stop();
-			await updateBattleEmbed(battle, i);
+			await updateBattleEmbed(battle, message, user);
 		}
 		if (i.customId === 'switch') {
 			// switch
@@ -122,7 +117,7 @@ export async function moveChoice(streams: any, battle: Battle, interaction: Mess
 	});
 }
 
-export async function switchChoice(streams: any, battle: Battle, interaction: MessageComponentInteraction) {
+export async function switchChoice(streams: any, battle: Battle, message: Message, user: User) {
 	console.log('switching');
 	const { team } = battle.p1;
 	const builder = new ChoiceBuilder(battle.request!);
@@ -136,11 +131,11 @@ export async function switchChoice(streams: any, battle: Battle, interaction: Me
 	];
 
 	console.log('sending switch embed');
-	await (interaction.message as Message).edit({ embeds: [], components });
+	await message.edit({ embeds: [], components });
 	console.log('sent switch embed');
 
-	const filter = (i: MessageComponentInteraction) => i.user.id === interaction.user.id;
-	const collector = interaction.channel!.createMessageComponentCollector({ filter });
+	const filter = (i: MessageComponentInteraction) => i.user.id === user.id;
+	const collector = message.channel!.createMessageComponentCollector({ filter });
 
 	collector.on('collect', async (i) => {
 		collector.stop();

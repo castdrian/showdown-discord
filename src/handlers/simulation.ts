@@ -6,18 +6,18 @@ import { LogFormatter } from '@pkmn/view';
 import { Generations } from '@pkmn/data';
 import { PreHandler } from '#handlers/prehandler';
 import { PostHandler } from '#handlers/posthandler';
-import type { MessageComponentInteraction } from 'discord.js';
+import type { Message, User } from 'discord.js';
 // import { moveChoice, switchChoice, updateBattleEmbed } from '#handlers/battlescreen';
 import { default as removeMD } from 'remove-markdown';
 // import { waitFor } from '#util/functions';
 
-export async function initiateBattle(interaction: MessageComponentInteraction, formatid: string, team: PokemonSet[] | null) {
+export async function initiateBattle(message: Message, user: User, formatid: string, team: PokemonSet[] | null) {
 	Teams.setGeneratorFactory(TeamGenerators);
 	const gens = new Generations(Dex as any);
 	const custom_team = Teams.pack(team);
 
 	const spec = { formatid };
-	const p1spec = { name: interaction.user.username, team: custom_team ?? Teams.pack(Teams.generate('gen8randombattle')) };
+	const p1spec = { name: user.username, team: custom_team ?? Teams.pack(Teams.generate('gen8randombattle')) };
 	const p2spec = { name: 'Showdown! AI', team: Teams.pack(Teams.generate('gen8randombattle')) };
 
 	const streams = BattleStreams.getPlayerStreams(new BattleStreams.BattleStream());
@@ -28,8 +28,8 @@ export async function initiateBattle(interaction: MessageComponentInteraction, f
 	const battle = new Battle(gens);
 	const formatter = new LogFormatter('p1', battle);
 
-	const pre = new PreHandler(battle, streams, interaction);
-	const post = new PostHandler(battle, streams, interaction);
+	const pre = new PreHandler(battle, streams, message, user);
+	const post = new PostHandler(battle, streams, message, user);
 
 	const add = <T>(h: Handler<T>, k: ArgName | undefined, a: ArgType, kw: BattleArgsKWArgType) => {
 		if (k && k in h) (h as any)[k](a, kw);

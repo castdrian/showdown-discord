@@ -1,5 +1,5 @@
 import { versusScreen } from '#util/canvas';
-import { CommandInteraction, Formatters, MessageComponentInteraction, MessageSelectOption, ModalSubmitInteraction } from 'discord.js';
+import { CommandInteraction, Formatters, Message, MessageComponentInteraction, MessageSelectOption, ModalSubmitInteraction } from 'discord.js';
 import { initiateBattle } from '#handlers/simulation';
 import type { formaticon } from '#types/';
 import { components, modal } from '#constants/components';
@@ -41,7 +41,11 @@ export async function startScreen(interaction: CommandInteraction) {
 	collector.on('collect', async (i): Promise<any> => {
 		if (i.customId === 'start') {
 			collector.stop();
-			await initiateBattle(i, formatid, battle_team);
+			await i.deferUpdate();
+			const message = await interaction.fetchReply();
+			if (message instanceof Message) {
+				await initiateBattle(message, interaction.user, formatid, battle_team);
+			}
 		}
 		if (i.customId === 'cancel') {
 			const embeds = [
