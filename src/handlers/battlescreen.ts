@@ -1,7 +1,8 @@
 import type { Battle, Pokemon } from '@pkmn/client';
-import { Formatters, Message, MessageComponentInteraction, User } from 'discord.js';
+import type { Message, MessageComponentInteraction, User } from 'discord.js';
 import { Sprites } from '@pkmn/img';
 import { ChoiceBuilder } from '@pkmn/view';
+import { formatBattleLog } from '#util/ansi';
 
 export async function updateBattleEmbed(battle: Battle, message: Message, user: User, switchmon?: Pokemon) {
 	const activemon = switchmon ?? battle.p1.active[0];
@@ -10,22 +11,12 @@ export async function updateBattleEmbed(battle: Battle, message: Message, user: 
 	const { url: activesprite } = Sprites.getPokemon(activemon?.species.name as string, { gen: 'ani', shiny: activemon?.shiny, side: 'p1' });
 	const { url: opponentprite } = Sprites.getPokemon(opponent?.species.name as string, { gen: 'ani', shiny: opponent?.shiny, side: 'p2' });
 
-	// filter out lines that contain "Showdown! AI withdrew" because somehow it's being sent on sending out a mon
-	const battlelog = process.battlelog.filter((line) => !line.includes('Showdown! AI withdrew'));
-
-	// if there are more than 2 linebreaks in a row, replace them with 2 linebreaks
-	// cut down log to last 10 lines
-	const log = battlelog
-		.slice(-10)
-		.join('\n')
-		.replace(/\n{3,}/g, '\n\n');
-
 	const embeds = [
 		{
 			author: { name: `${opponent?.name} | ${opponent?.hp}/${opponent?.maxhp} HP`, iconURL: message.client.user?.displayAvatarURL() },
 			thumbnail: { url: opponentprite },
 			color: '0x5865F2',
-			description: Formatters.codeBlock(log),
+			description: formatBattleLog(process.battlelog, battle),
 			image: { url: activesprite },
 			footer: { text: `${activemon?.name} | ${activemon?.hp}/${activemon?.maxhp} HP`, iconURL: user.displayAvatarURL() }
 		}
