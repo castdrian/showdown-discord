@@ -13,8 +13,12 @@ export async function updateBattleEmbed(battle: Battle, message: Message, user: 
 	// filter out lines that contain "Showdown! AI withdrew" because somehow it's being sent on sending out a mon
 	const battlelog = process.battlelog.filter((line) => !line.includes('Showdown! AI withdrew'));
 
+	// if there are more than 2 linebreaks in a row, replace them with 2 linebreaks
 	// cut down log to last 10 lines
-	const log = battlelog.slice(-10).join('\n');
+	const log = battlelog
+		.slice(-10)
+		.join('\n')
+		.replace(/\n{3,}/g, '\n\n');
 
 	const embeds = [
 		{

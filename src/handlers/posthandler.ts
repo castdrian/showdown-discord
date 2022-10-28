@@ -26,12 +26,10 @@ export class PostHandler implements Handler<void> {
 			await waitFor(() => process.battlelog.length !== 0);
 			await updateBattleEmbed(this.battle, this.message, this.user);
 			await moveChoice(this.streams, this.battle, this.message, this.user);
-			process.battlelog = [];
 		} else if (this.battle.request?.requestType === 'switch') {
 			console.log('switchchoice');
 			await waitFor(() => process.battlelog.length !== 0);
 			await switchChoice(this.streams, this.battle, this.message, this.user);
-			process.battlelog = [];
 		} else if (this.battle.request?.requestType === 'wait') {
 			await waitFor(() => process.battlelog.length !== 0);
 			await updateBattleEmbed(this.battle, this.message, this.user);
@@ -42,9 +40,13 @@ export class PostHandler implements Handler<void> {
 		console.log('switch event');
 		console.log(args);
 		const poke = this.battle.getPokemon(args[1]);
-		if (poke?.side === this.battle.p1 && this.battle.p1.lastPokemon?.fainted) {
-			await waitFor(() => process.battlelog.length !== 0);
-			await updateBattleEmbed(this.battle, this.message, this.user);
+		if (poke?.side === this.battle.p1 && this.battle.p1.lastPokemon) {
+			console.log('switch done');
+			console.log('updating battle embed');
+			if (this.battle.p1.active[0]?.name === this.battle.p1.lastPokemon.name) {
+				this.battle.p1.active[0] = this.battle.p1.lastPokemon;
+				await updateBattleEmbed(this.battle, this.message, this.user);
+			}
 		}
 	}
 }
