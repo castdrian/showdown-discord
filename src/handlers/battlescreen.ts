@@ -18,12 +18,20 @@ export async function updateBattleEmbed(
 
 	const embeds = [
 		{
-			author: { name: `${opponent?.name} | ${opponent?.hp}/${opponent?.maxhp} HP`, iconURL: message.client.user?.displayAvatarURL() },
+			author: {
+				name: `${opponent?.name} | ${opponent?.hp}/${opponent?.maxhp} HP ${opponent?.status ? `| ${opponent.status.toUpperCase()}` : ''}`,
+				iconURL: message.client.user?.displayAvatarURL()
+			},
 			thumbnail: { url: opponentprite },
 			color: '0x5865F2',
 			description: formatBattleLog(process.battlelog, battle),
 			image: { url: activesprite },
-			footer: { text: `${activemon?.name} | ${activemon?.hp}/${activemon?.maxhp} HP`, iconURL: user.displayAvatarURL() }
+			footer: {
+				text: `${activemon?.name} | ${activemon?.hp}/${activemon?.maxhp} HP ${
+					activemon?.status ? `| ${activemon.status.toUpperCase()}` : ''
+				}`,
+				iconURL: user.displayAvatarURL()
+			}
 		}
 	] as any;
 
