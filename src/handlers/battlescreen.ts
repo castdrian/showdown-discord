@@ -95,20 +95,21 @@ export async function moveChoice(streams: any, battle: Battle, message: Message,
 	const collector = message.channel!.createMessageComponentCollector({ filter });
 
 	collector.on('collect', async (i) => {
+		await i.deferUpdate();
 		if (activemon?.moves.includes(i.customId as any)) {
-			await i.deferUpdate();
+			collector.stop();
 			builder.addChoice(`move ${i.customId}`);
 			const choice = builder.toString();
 			streams.p1.write(choice);
-			collector.stop();
 			await updateBattleEmbed(battle, message, user);
 		}
 		if (i.customId === 'switch') {
-			// switch
+			collector.stop();
+			await switchChoice(streams, battle, message, user);
 		}
 		if (i.customId === 'forfeit') {
-			await i.deferUpdate();
-			await forfeitBattle(streams, i);
+			const forfeit = await forfeitBattle(streams, i, battle, message, user);
+			if (forfeit) collector.stop();
 		}
 	});
 }
@@ -119,7 +120,11 @@ export async function switchChoice(streams: any, battle: Battle, message: Messag
 	const builder = new ChoiceBuilder(battle.request!);
 
 	const switch_buttons = [];
-	for (const mon of team) switch_buttons.push({ type: 2, custom_id: mon.name, label: mon.name, style: mon.fainted ? 2 : 1, disabled: mon.fainted });
+	for (const mon of team) {
+		if (mon.name === battle.p1.active[0]?.name)
+			switch_buttons.push({ type: 2, custom_id: mon.name, label: mon.name, style: mon.fainted ? 2 : 1, disabled: true });
+		else switch_buttons.push({ type: 2, custom_id: mon.name, label: mon.name, style: mon.fainted ? 2 : 1, disabled: mon.fainted });
+	}
 
 	const components = [
 		{ type: 1, components: [switch_buttons[0], switch_buttons[1], switch_buttons[2]] },
@@ -143,9 +148,9 @@ export async function switchChoice(streams: any, battle: Battle, message: Messag
 	});
 }
 
-async function forfeitBattle(streams: any, interaction: MessageComponentInteraction) {
+async function forfeitBattle(streams: any, interaction: MessageComponentInteraction, battle: Battle, message: Message, user: User): Promise<boolean> {
 	await interaction.followUp({
-		content: 'Do you wish to forfeit the battle?',
+		content: 'Do you wish to forfeit this battle?',
 		components: [
 			{
 				type: 1,
@@ -171,19 +176,23 @@ async function forfeitBattle(streams: any, interaction: MessageComponentInteract
 	const filter = (i: MessageComponentInteraction) => i.user.id === interaction.user.id;
 	const collector = interaction.channel!.createMessageComponentCollector({ filter });
 
+	let choice = false;
+
 	collector.on('collect', async (i) => {
 		collector.stop();
-		await i.deferUpdate();
-
 		if (i.customId === 'yes') {
+			choice = true;
 			process.battlelog.push(`${interaction.user.username} forfeited.`);
 			await streams.omniscient.write(`>forcewin p2`);
 			// @ts-ignore delete ephemeral message
 			await interaction.client.api.webhooks(i.client.user!.id, i.token).messages('@original').delete();
 		}
 		if (i.customId === 'no') {
+			await updateBattleEmbed(battle, message, user);
 			// @ts-ignore delete ephemeral message
 			await interaction.client.api.webhooks(i.client.user!.id, i.token).messages('@original').delete();
 		}
 	});
+
+	return choice;
 }
