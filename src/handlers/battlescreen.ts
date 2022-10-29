@@ -82,7 +82,8 @@ export async function updateBattleEmbed(
 					type: 2,
 					custom_id: 'switch',
 					label: 'Switch',
-					style: 3
+					style: 3,
+					disabled: activemon?.trapped
 				}
 			]
 		}
@@ -110,7 +111,7 @@ export async function moveChoice(streams: any, battle: Battle, message: Message,
 		}
 		if (i.customId === 'switch') {
 			collector.stop();
-			await switchChoice(streams, battle, message, user);
+			await switchChoice(streams, battle, message, user, true);
 		}
 		if (i.customId === 'forfeit') {
 			const forfeit = await forfeitBattle(streams, i, battle, message, user);
@@ -119,7 +120,7 @@ export async function moveChoice(streams: any, battle: Battle, message: Message,
 	});
 }
 
-export async function switchChoice(streams: any, battle: Battle, message: Message, user: User) {
+export async function switchChoice(streams: any, battle: Battle, message: Message, user: User, allowCancel = false) {
 	console.log('switching');
 	const { team } = battle.p1;
 	const builder = new ChoiceBuilder(battle.request!);
@@ -133,7 +134,8 @@ export async function switchChoice(streams: any, battle: Battle, message: Messag
 
 	const components = [
 		{ type: 1, components: [switch_buttons[0], switch_buttons[1], switch_buttons[2]] },
-		{ type: 1, components: [switch_buttons[3], switch_buttons[4], switch_buttons[5]] }
+		{ type: 1, components: [switch_buttons[3], switch_buttons[4], switch_buttons[5]] },
+		...(allowCancel ? [{ type: 1, components: [{ type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 }] }] : [])
 	];
 
 	console.log('sending switch embed');
@@ -147,9 +149,14 @@ export async function switchChoice(streams: any, battle: Battle, message: Messag
 		collector.stop();
 		await i.deferUpdate();
 
-		builder.addChoice(`switch ${i.customId}`);
-		const choice = builder.toString();
-		await streams.p1.write(choice);
+		if (i.customId === 'cancel') {
+			await updateBattleEmbed(battle, message, user);
+			await moveChoice(streams, battle, message, user);
+		} else {
+			builder.addChoice(`switch ${i.customId}`);
+			const choice = builder.toString();
+			await streams.p1.write(choice);
+		}
 	});
 }
 
