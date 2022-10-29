@@ -1,11 +1,11 @@
-import type { Battle, Pokemon } from '@pkmn/client';
+import type { Battle } from '@pkmn/client';
 import type { Message, MessageComponentInteraction, User } from 'discord.js';
 import { Sprites } from '@pkmn/img';
 import { ChoiceBuilder } from '@pkmn/view';
 import { formatBattleLog } from '#util/ansi';
 
-export async function updateBattleEmbed(battle: Battle, message: Message, user: User, switchmon?: Pokemon) {
-	const activemon = switchmon ?? battle.p1.active[0];
+export async function updateBattleEmbed(battle: Battle, message: Message, user: User, clearcomponents?: boolean) {
+	const activemon = battle.p1.active[0];
 	const opponent = battle.p1.foe.active[0];
 
 	const { url: activesprite } = Sprites.getPokemon(activemon?.species.name as string, { gen: 'ani', shiny: activemon?.shiny, side: 'p1' });
@@ -83,7 +83,7 @@ export async function updateBattleEmbed(battle: Battle, message: Message, user: 
 		}
 	];
 
-	await message.edit({ embeds, components, files: [] });
+	await message.edit({ embeds, components: clearcomponents ? [] : components, files: [] });
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await

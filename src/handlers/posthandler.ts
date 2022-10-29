@@ -49,4 +49,16 @@ export class PostHandler implements Handler<void> {
 			}
 		}
 	}
+
+	async '|win|'(args: Protocol.Args['|win|']) {
+		console.log(args);
+		process.battlelog.push(`${args[1]} won the battle!`);
+		await updateBattleEmbed(this.battle, this.message, this.user, true);
+	}
+
+	async '|tie|'(args: Protocol.Args['|tie|']) {
+		console.log(args);
+		process.battlelog.push(`The battle ended in a tie!`);
+		await updateBattleEmbed(this.battle, this.message, this.user, true);
+	}
 }
