@@ -1,10 +1,15 @@
 import type { Battle } from '@pkmn/client';
-import type { Message, MessageComponentInteraction, User } from 'discord.js';
+import type { BaseMessageComponentOptions, Message, MessageActionRow, MessageActionRowOptions, MessageComponentInteraction, User } from 'discord.js';
 import { Sprites } from '@pkmn/img';
 import { ChoiceBuilder } from '@pkmn/view';
 import { formatBattleLog } from '#util/ansi';
 
-export async function updateBattleEmbed(battle: Battle, message: Message, user: User, clearcomponents?: boolean) {
+export async function updateBattleEmbed(
+	battle: Battle,
+	message: Message,
+	user: User,
+	extComponents?: (MessageActionRow | (Required<BaseMessageComponentOptions> & MessageActionRowOptions))[]
+): Promise<void> {
 	const activemon = battle.p1.active[0];
 	const opponent = battle.p1.foe.active[0];
 
@@ -83,7 +88,7 @@ export async function updateBattleEmbed(battle: Battle, message: Message, user: 
 		}
 	];
 
-	await message.edit({ embeds, components: clearcomponents ? [] : components, files: [] });
+	await message.edit({ embeds, components: extComponents ?? components, files: [] });
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await
@@ -132,7 +137,7 @@ export async function switchChoice(streams: any, battle: Battle, message: Messag
 	];
 
 	console.log('sending switch embed');
-	await message.edit({ embeds: [], components });
+	await updateBattleEmbed(battle, message, user, components);
 	console.log('sent switch embed');
 
 	const filter = (i: MessageComponentInteraction) => i.user.id === user.id;
