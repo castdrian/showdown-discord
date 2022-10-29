@@ -29,7 +29,7 @@ export async function startScreen(interaction: CommandInteraction) {
 	];
 
 	await interaction.editReply({ embeds, components, files });
-	await interaction.followUp({
+	const { id } = await interaction.followUp({
 		content:
 			'[info] This application is experimental and may break at any time.\n[info] You may just want to play [Pokémon Showdown](https://play.pokemonshowdown.com).',
 		ephemeral: true
@@ -42,6 +42,8 @@ export async function startScreen(interaction: CommandInteraction) {
 		if (i.customId === 'start') {
 			collector.stop();
 			await i.deferUpdate();
+			// @ts-ignore delete ephemeral message
+			await interaction.client.api.webhooks(i.client.user!.id, interaction.token).messages(id).delete();
 			const message = await interaction.fetchReply();
 			if (message instanceof Message) {
 				await initiateBattle(message, interaction.user, formatid, battle_team);
