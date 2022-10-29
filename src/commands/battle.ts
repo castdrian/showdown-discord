@@ -15,7 +15,7 @@ export class Battle extends Command {
 				description: 'Start a Showdown! battle'
 			},
 			{
-				guildIds: ['709061970078335027'],
+				guildIds: process.env.DEV_GUILD_ID ? [process.env.DEV_GUILD_ID] : undefined,
 				behaviorWhenNotIdentical: RegisterBehavior.Overwrite
 			}
 		);
