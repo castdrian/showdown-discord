@@ -107,7 +107,8 @@ export async function moveChoice(streams: any, battle: Battle, message: Message,
 			// switch
 		}
 		if (i.customId === 'forfeit') {
-			// forfeit
+			await i.deferUpdate();
+			await forfeitBattle(streams, i);
 		}
 	});
 }
@@ -139,5 +140,50 @@ export async function switchChoice(streams: any, battle: Battle, message: Messag
 		builder.addChoice(`switch ${i.customId}`);
 		const choice = builder.toString();
 		await streams.p1.write(choice);
+	});
+}
+
+async function forfeitBattle(streams: any, interaction: MessageComponentInteraction) {
+	await interaction.followUp({
+		content: 'Do you wish to forfeit the battle?',
+		components: [
+			{
+				type: 1,
+				components: [
+					{
+						type: 2,
+						custom_id: 'yes',
+						label: 'Yes',
+						style: 3
+					},
+					{
+						type: 2,
+						custom_id: 'no',
+						label: 'No',
+						style: 4
+					}
+				]
+			}
+		],
+		ephemeral: true
+	});
+
+	const filter = (i: MessageComponentInteraction) => i.user.id === interaction.user.id;
+	const collector = interaction.channel!.createMessageComponentCollector({ filter });
+
+	collector.on('collect', async (i) => {
+		collector.stop();
+		await i.deferUpdate();
+
+		if (i.customId === 'yes') {
+			process.battlelog.push(`${interaction.user.username} forfeited.`);
+			await streams.omniscient.write(`>forcewin p2`);
+			// @ts-ignore delete ephemeral message
+			await interaction.client.api.webhooks(i.client.user!.id, i.token).messages('@original').delete();
+		}
+		if (i.customId === 'no') {
+			// @ts-ignore delete ephemeral message
+			await interaction.client.api.webhooks(i.client.user!.id, i.token).messages('@original').delete();
+		}
 	});
 }
