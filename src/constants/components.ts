@@ -52,6 +52,12 @@ export const components = [
 			},
 			{
 				type: 2,
+				custom_id: 'romaji',
+				label: 'Romaji: Off',
+				style: 2
+			},
+			{
+				type: 2,
 				custom_id: 'cancel',
 				label: 'Cancel',
 				style: 4

@@ -35,6 +35,7 @@
     "discord-api-types": "^0.27.3",
     "discord.js": "github:monbrey/discord.js#modals",
     "dotenv": "^16.0.0",
+    "pkmn-romaji": "^1.0.0",
     "remove-markdown": "^0.3.0",
     "skia-canvas": "^0.9.29",
     "tslib": "^2.3.1"

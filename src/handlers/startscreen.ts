@@ -5,10 +5,14 @@ import type { formaticon } from '#types/';
 import { components, modal } from '#constants/components';
 import { Dex, TeamValidator } from '@pkmn/sim';
 import { Teams, Data, PokemonSet } from '@pkmn/sets';
+import { fetchRomaji, RomajiMon, RomajiMove } from 'pkmn-romaji';
 
 export async function startScreen(interaction: CommandInteraction) {
 	let formatid = 'gen8randombattle';
 	let battle_team: PokemonSet[];
+	process.romaji = false;
+	process.romajiMons = (await fetchRomaji({ allMons: true })) as RomajiMon[];
+	process.romajiMoves = (await fetchRomaji({ allMoves: true })) as RomajiMove[];
 
 	const embeds = [
 		{
@@ -61,6 +65,12 @@ export async function startScreen(interaction: CommandInteraction) {
 
 			collector.stop();
 			await i.update({ embeds, components: [], files: [] });
+		}
+		if (i.customId === 'romaji') {
+			process.romaji = !process.romaji;
+			// change the button label to reflect the new state of the romaji toggle and update the message with the new label
+			components[1].components[2].label = process.romaji ? 'Romaji: On' : 'Romaji: Off';
+			await i.update({ components });
 		}
 		if (i.customId === 'format') {
 			await i.deferUpdate();

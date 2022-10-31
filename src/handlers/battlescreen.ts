@@ -3,6 +3,7 @@ import type { BaseMessageComponentOptions, Message, MessageActionRow, MessageAct
 import { Sprites } from '@pkmn/img';
 import { ChoiceBuilder } from '@pkmn/view';
 import { formatBattleLog } from '#util/ansi';
+import type { MoveName } from '@pkmn/dex';
 
 export async function updateBattleEmbed(
 	battle: Battle,
@@ -10,6 +11,32 @@ export async function updateBattleEmbed(
 	user: User,
 	extComponents?: (MessageActionRow | (Required<BaseMessageComponentOptions> & MessageActionRowOptions))[]
 ): Promise<void> {
+	if (process.romaji && process.romajiMons && process.romajiMoves) {
+		// overwrite active mons and moves with romaji
+		for (const mon of battle.p1.active) {
+			if (mon) {
+				mon.name = process.romajiMons.find((m) => m.name.toLowerCase() === mon.name.toLowerCase())?.trademark ?? mon.name;
+				for (const move of mon.moveSlots) {
+					move.name =
+						(process.romajiMoves.find((m) => m.move.replace(/\s/g, '').toLowerCase() === move.name.replace(/\s/g, '').toLowerCase())
+							?.romaji as MoveName) ?? move.name;
+				}
+			}
+		}
+
+		// repeat for foe
+		for (const mon of battle.p1.foe.active) {
+			if (mon) {
+				mon.name = process.romajiMons.find((m) => m.name.toLowerCase() === mon.name.toLowerCase())?.trademark ?? mon.name;
+				for (const move of mon.moveSlots) {
+					move.name =
+						(process.romajiMoves.find((m) => m.move.replace(/\s/g, '').toLowerCase() === move.name.replace(/\s/g, '').toLowerCase())
+							?.romaji as MoveName) ?? move.name;
+				}
+			}
+		}
+	}
+
 	const activemon = battle.p1.active[0];
 	const opponent = battle.p1.foe.active[0];
 
