@@ -4,6 +4,7 @@ import { Sprites } from '@pkmn/img';
 import { ChoiceBuilder } from '@pkmn/view';
 import { formatBattleLog } from '#util/ansi';
 import type { MoveName } from '@pkmn/dex';
+import { Dex } from '@pkmn/sim';
 
 export async function updateBattleEmbed(
 	battle: Battle,
@@ -39,6 +40,8 @@ export async function updateBattleEmbed(
 
 	const activemon = battle.p1.active[0];
 	const opponent = battle.p1.foe.active[0];
+	console.log(activemon?.maxMoves);
+	console.log('max moves');
 
 	const { url: activesprite } = Sprites.getPokemon(activemon?.species.name as string, { gen: 'ani', shiny: activemon?.shiny, side: 'p1' });
 	const { url: opponentprite } = Sprites.getPokemon(opponent?.species.name as string, { gen: 'ani', shiny: opponent?.shiny, side: 'p2' });
@@ -203,6 +206,15 @@ export async function moveChoice(streams: any, battle: Battle, message: Message,
 			collector.stop();
 			await switchChoice(streams, battle, message, user, true);
 		}
+		if (i.customId === 'dynamax') {
+			collector.stop();
+			await activateGimmick('max', streams, battle, message, user);
+		}
+		if (i.customId === 'cancel') {
+			collector.stop();
+			await updateBattleEmbed(battle, message, user);
+			await moveChoice(streams, battle, message, user);
+		}
 		if (i.customId === 'forfeit') {
 			const forfeit = await forfeitBattle(streams, i, battle, message, user);
 			if (forfeit) collector.stop();
@@ -301,4 +313,66 @@ async function forfeitBattle(streams: any, interaction: MessageComponentInteract
 	});
 
 	return choice;
+}
+
+export async function activateGimmick(gimmick: string, streams: any, battle: Battle, message: Message, user: User) {
+	if (gimmick === 'max') {
+		// use .maxMoves to replace the move buttons with max move buttons
+		const components: any = [
+			{
+				type: 1,
+				components: [
+					{
+						type: 2,
+						custom_id: battle.p1.active[0]?.maxMoves?.[0].id,
+						label: `${Dex.moves.get(battle.p1.active[0]?.maxMoves?.[0].id)?.name} ${
+							// @ts-ignore typings are wrong
+							battle.p1.active[0]?.moveSlots[0]?.pp
+							// @ts-ignore typings are wrong
+						}/${battle.p1.active[0]?.moveSlots[0]?.maxpp} PP`,
+						style: 1
+					},
+					{
+						type: 2,
+						custom_id: battle.p1.active[0]?.maxMoves?.[1].id,
+						label: `${Dex.moves.get(battle.p1.active[0]?.maxMoves?.[1].id)?.name} ${
+							// @ts-ignore typings are wrong
+							battle.p1.active[0]?.moveSlots[1]?.pp
+							// @ts-ignore typings are wrong
+						}/${battle.p1.active[0]?.moveSlots[1]?.maxpp} PP`,
+						style: 1
+					}
+				]
+			},
+			{
+				type: 1,
+				components: [
+					{
+						type: 2,
+						custom_id: battle.p1.active[0]?.maxMoves?.[2].id,
+						label: `${Dex.moves.get(battle.p1.active[0]?.maxMoves?.[2].id)?.name} ${
+							// @ts-ignore typings are wrong
+							battle.p1.active[0]?.moveSlots[2]?.pp
+							// @ts-ignore typings are wrong
+						}/${battle.p1.active[0]?.moveSlots[2]?.maxpp} PP`,
+						style: 1
+					},
+					{
+						type: 2,
+						custom_id: battle.p1.active[0]?.maxMoves?.[3].id,
+						label: `${Dex.moves.get(battle.p1.active[0]?.maxMoves?.[3].id)?.name} ${
+							// @ts-ignore typings are wrong
+							battle.p1.active[0]?.moveSlots[3]?.pp
+							// @ts-ignore typings are wrong
+						}/${battle.p1.active[0]?.moveSlots[3]?.maxpp} PP`,
+						style: 1
+					},
+					{ type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 }
+				]
+			}
+		];
+
+		await updateBattleEmbed(battle, message, user, components);
+		await moveChoice(streams, battle, message, user);
+	}
 }
