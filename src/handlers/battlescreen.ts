@@ -48,8 +48,16 @@ export async function updateBattleEmbed(
 	console.log(activemon?.maxMoves);
 	console.log('max moves');
 
-	const { url: activesprite } = Sprites.getPokemon(activemon?.species.name as string, { gen: 'ani', shiny: activemon?.shiny, side: 'p1' });
-	const { url: opponentprite } = Sprites.getPokemon(opponent?.species.name as string, { gen: 'ani', shiny: opponent?.shiny, side: 'p2' });
+	const {
+		url: activesprite,
+		w: activewidth,
+		h: activeheight
+	} = Sprites.getPokemon(activemon?.species.name as string, { gen: 'ani', shiny: activemon?.shiny, side: 'p1' });
+	const { url: opponentsprite } = Sprites.getPokemon(opponent?.species.name as string, {
+		gen: 'ani',
+		shiny: opponent?.shiny,
+		side: 'p2'
+	});
 
 	const embeds = [
 		{
@@ -57,10 +65,15 @@ export async function updateBattleEmbed(
 				name: `${opponent?.name} | ${opponent?.hp}/${opponent?.maxhp} HP ${opponent?.status ? `| ${opponent.status.toUpperCase()}` : ''}`,
 				iconURL: message.client.user?.displayAvatarURL()
 			},
-			thumbnail: { url: opponentprite },
+			thumbnail: { url: opponentsprite },
 			color: '0x5865F2',
 			description: formatBattleLog(process.battlelog, battle),
-			image: { url: activesprite },
+			// change width and height to 1.5x the original when process.isMax is true
+			image: {
+				url: activesprite,
+				width: process.isMax ? activewidth * 1.5 : activewidth,
+				height: process.isMax ? activeheight * 1.5 : activeheight
+			},
 			footer: {
 				text: `${activemon?.name} | ${activemon?.hp}/${activemon?.maxhp} HP ${
 					activemon?.status ? `| ${activemon.status.toUpperCase()}` : ''
@@ -183,6 +196,26 @@ export async function updateBattleEmbed(
 			: [])
 	];
 	if (components) {
+		components = fixCustomId(components) as any;
+	}
+
+	// if process.isMax is true, overwrite the components with the result of maxMoves(battle) and add the switch and forfeit buttons into the components and run them through fixCustomId
+	if (process.isMax) {
+		components = maxMoves(battle);
+		// add the switch button to the first row and the forfeit button to the second row
+		components[0].components.push({
+			type: 2,
+			custom_id: 'switch',
+			label: 'Switch',
+			style: 3,
+			disabled: activemon?.trapped
+		});
+		components[1].components.push({
+			type: 2,
+			custom_id: 'forfeit',
+			label: 'Forfeit',
+			style: 4
+		});
 		components = fixCustomId(components) as any;
 	}
 
@@ -333,8 +366,8 @@ async function activateGimmick(gimmick: string, streams: any, battle: Battle, me
 	if (gimmick === 'max') {
 		// const components is the result of maxMoves(battle) plus a cancel button { type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 }
 		const components = maxMoves(battle);
-		// now insert the cancel button
-		components.push({ type: 1, components: [{ type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 }] });
+		// now insert the cancel button at row 2
+		components[1].components.push({ type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 });
 
 		await updateBattleEmbed(battle, message, user, components);
 		await moveChoice(streams, battle, message, user, gimmick);
