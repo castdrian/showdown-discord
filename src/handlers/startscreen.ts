@@ -43,9 +43,9 @@ export async function startScreen(interaction: CommandInteraction) {
 	const collector = interaction.channel!.createMessageComponentCollector({ filter });
 
 	collector.on('collect', async (i): Promise<any> => {
-		if (!i.deferred && !i.replied) await i.deferUpdate();
 		console.log(i.deferred, i.replied);
 		console.log(i);
+		if (!i.deferred && !i.replied) await i.deferUpdate();
 		if (i.customId === 'start') {
 			collector.stop();
 			// @ts-ignore delete ephemeral message

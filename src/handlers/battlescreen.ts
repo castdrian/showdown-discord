@@ -339,7 +339,15 @@ export async function activateGimmick(gimmick: string, streams: any, battle: Bat
 					{
 						type: 2,
 						custom_id: battle.p1.active[0]?.maxMoves?.[0].id,
-						label: `${Dex.moves.get(battle.p1.active[0]?.maxMoves?.[0].id)?.name} ${
+						label: `${
+							process.romaji
+								? process.romajiMoves.find(
+										(m) =>
+											m.move.replace(/\s/g, '').toLowerCase() ===
+											Dex.moves.get(battle.p1.active[0]?.maxMoves?.[0].id)?.name.replace(/\s/g, '').toLowerCase()
+								  )?.romaji ?? Dex.moves.get(battle.p1.active[0]?.maxMoves?.[0].id).name
+								: Dex.moves.get(battle.p1.active[0]?.maxMoves?.[0].id).name
+						} ${
 							// @ts-ignore typings are wrong
 							battle.p1.active[0]?.moveSlots[0]?.pp
 							// @ts-ignore typings are wrong
@@ -349,7 +357,15 @@ export async function activateGimmick(gimmick: string, streams: any, battle: Bat
 					{
 						type: 2,
 						custom_id: battle.p1.active[0]?.maxMoves?.[1].id,
-						label: `${Dex.moves.get(battle.p1.active[0]?.maxMoves?.[1].id)?.name} ${
+						label: `${
+							process.romaji
+								? process.romajiMoves.find(
+										(m) =>
+											m.move.replace(/\s/g, '').toLowerCase() ===
+											Dex.moves.get(battle.p1.active[0]?.maxMoves?.[1].id)?.name.replace(/\s/g, '').toLowerCase()
+								  )?.romaji ?? Dex.moves.get(battle.p1.active[0]?.maxMoves?.[1].id).name
+								: Dex.moves.get(battle.p1.active[0]?.maxMoves?.[1].id).name
+						} ${
 							// @ts-ignore typings are wrong
 							battle.p1.active[0]?.moveSlots[1]?.pp
 							// @ts-ignore typings are wrong
@@ -364,7 +380,15 @@ export async function activateGimmick(gimmick: string, streams: any, battle: Bat
 					{
 						type: 2,
 						custom_id: battle.p1.active[0]?.maxMoves?.[2].id,
-						label: `${Dex.moves.get(battle.p1.active[0]?.maxMoves?.[2].id)?.name} ${
+						label: `${
+							process.romaji
+								? process.romajiMoves.find(
+										(m) =>
+											m.move.replace(/\s/g, '').toLowerCase() ===
+											Dex.moves.get(battle.p1.active[0]?.maxMoves?.[2].id)?.name.replace(/\s/g, '').toLowerCase()
+								  )?.romaji ?? Dex.moves.get(battle.p1.active[0]?.maxMoves?.[2].id).name
+								: Dex.moves.get(battle.p1.active[0]?.maxMoves?.[2].id).name
+						} ${
 							// @ts-ignore typings are wrong
 							battle.p1.active[0]?.moveSlots[2]?.pp
 							// @ts-ignore typings are wrong
@@ -374,7 +398,15 @@ export async function activateGimmick(gimmick: string, streams: any, battle: Bat
 					{
 						type: 2,
 						custom_id: battle.p1.active[0]?.maxMoves?.[3].id,
-						label: `${Dex.moves.get(battle.p1.active[0]?.maxMoves?.[3].id)?.name} ${
+						label: `${
+							process.romaji
+								? process.romajiMoves.find(
+										(m) =>
+											m.move.replace(/\s/g, '').toLowerCase() ===
+											Dex.moves.get(battle.p1.active[0]?.maxMoves?.[3].id)?.name.replace(/\s/g, '').toLowerCase()
+								  )?.romaji ?? Dex.moves.get(battle.p1.active[0]?.maxMoves?.[3].id).name
+								: Dex.moves.get(battle.p1.active[0]?.maxMoves?.[3].id).name
+						} ${
 							// @ts-ignore typings are wrong
 							battle.p1.active[0]?.moveSlots[3]?.pp
 							// @ts-ignore typings are wrong
