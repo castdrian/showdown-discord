@@ -162,9 +162,13 @@ export async function switchChoice(streams: any, battle: Battle, message: Messag
 
 	const switch_buttons = [];
 	for (const mon of team) {
+		let label = mon.name;
+		if (process.romaji && process.romajiMons && process.romajiMoves) {
+			label = process.romajiMons.find((m) => m.name.toLowerCase() === mon.name.toLowerCase())?.trademark ?? mon.name;
+		}
 		if (mon.name === battle.p1.active[0]?.name)
-			switch_buttons.push({ type: 2, custom_id: mon.name, label: mon.name, style: mon.fainted ? 2 : 1, disabled: true });
-		else switch_buttons.push({ type: 2, custom_id: mon.name, label: mon.name, style: mon.fainted ? 2 : 1, disabled: mon.fainted });
+			switch_buttons.push({ type: 2, custom_id: mon.name, label, style: mon.fainted ? 2 : 1, disabled: true });
+		else switch_buttons.push({ type: 2, custom_id: mon.name, label, style: mon.fainted ? 2 : 1, disabled: mon.fainted });
 	}
 
 	const components = [
