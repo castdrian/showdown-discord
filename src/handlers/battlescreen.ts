@@ -338,7 +338,7 @@ export async function activateGimmick(gimmick: string, streams: any, battle: Bat
 				components: [
 					{
 						type: 2,
-						custom_id: battle.p1.active[0]?.maxMoves?.[0].id,
+						custom_id: battle.p1.active[0]?.moveSlots?.[0].id,
 						label: `${
 							process.romaji
 								? process.romajiMoves.find(
@@ -356,7 +356,7 @@ export async function activateGimmick(gimmick: string, streams: any, battle: Bat
 					},
 					{
 						type: 2,
-						custom_id: battle.p1.active[0]?.maxMoves?.[1].id,
+						custom_id: battle.p1.active[0]?.moveSlots?.[1].id,
 						label: `${
 							process.romaji
 								? process.romajiMoves.find(
@@ -379,7 +379,7 @@ export async function activateGimmick(gimmick: string, streams: any, battle: Bat
 				components: [
 					{
 						type: 2,
-						custom_id: battle.p1.active[0]?.maxMoves?.[2].id,
+						custom_id: battle.p1.active[0]?.moveSlots?.[2].id,
 						label: `${
 							process.romaji
 								? process.romajiMoves.find(
@@ -397,7 +397,7 @@ export async function activateGimmick(gimmick: string, streams: any, battle: Bat
 					},
 					{
 						type: 2,
-						custom_id: battle.p1.active[0]?.maxMoves?.[3].id,
+						custom_id: battle.p1.active[0]?.moveSlots?.[3].id,
 						label: `${
 							process.romaji
 								? process.romajiMoves.find(

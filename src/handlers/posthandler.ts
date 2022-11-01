@@ -61,4 +61,14 @@ export class PostHandler implements Handler<void> {
 		process.battlelog.push(`The battle ended in a tie!`);
 		await updateBattleEmbed(this.battle, this.message, this.user, []);
 	}
+
+	'|detailschange|'(args: Protocol.Args['|detailschange|']) {
+		console.log('detailschange event');
+		console.log(args);
+	}
+
+	'|-formechange|'(args: Protocol.Args['|-formechange|']) {
+		console.log('formechange event');
+		console.log(args);
+	}
 }
