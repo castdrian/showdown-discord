@@ -7,9 +7,7 @@ import { Generations } from '@pkmn/data';
 import { PreHandler } from '#handlers/prehandler';
 import { PostHandler } from '#handlers/posthandler';
 import type { Message, User } from 'discord.js';
-// import { moveChoice, switchChoice, updateBattleEmbed } from '#handlers/battlescreen';
 import { default as removeMD } from 'remove-markdown';
-// import { waitFor } from '#util/functions';
 
 export async function initiateBattle(message: Message, user: User, formatid: string, team: PokemonSet[] | null) {
 	Teams.setGeneratorFactory(TeamGenerators);

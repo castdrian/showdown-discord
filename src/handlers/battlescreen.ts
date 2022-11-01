@@ -329,96 +329,101 @@ async function forfeitBattle(streams: any, interaction: MessageComponentInteract
 	return choice;
 }
 
-export async function activateGimmick(gimmick: string, streams: any, battle: Battle, message: Message, user: User) {
+async function activateGimmick(gimmick: string, streams: any, battle: Battle, message: Message, user: User) {
 	if (gimmick === 'max') {
-		// use .maxMoves to replace the move buttons with max move buttons
-		const components: any = [
-			{
-				type: 1,
-				components: [
-					{
-						type: 2,
-						custom_id: battle.p1.active[0]?.moveSlots?.[0].id,
-						label: `${
-							process.romaji
-								? process.romajiMoves.find(
-										(m) =>
-											m.move.replace(/\s/g, '').toLowerCase() ===
-											Dex.moves.get(battle.p1.active[0]?.maxMoves?.[0].id)?.name.replace(/\s/g, '').toLowerCase()
-								  )?.romaji ?? Dex.moves.get(battle.p1.active[0]?.maxMoves?.[0].id).name
-								: Dex.moves.get(battle.p1.active[0]?.maxMoves?.[0].id).name
-						} ${
-							// @ts-ignore typings are wrong
-							battle.p1.active[0]?.moveSlots[0]?.pp
-							// @ts-ignore typings are wrong
-						}/${battle.p1.active[0]?.moveSlots[0]?.maxpp} PP`,
-						style: 1
-					},
-					{
-						type: 2,
-						custom_id: battle.p1.active[0]?.moveSlots?.[1].id,
-						label: `${
-							process.romaji
-								? process.romajiMoves.find(
-										(m) =>
-											m.move.replace(/\s/g, '').toLowerCase() ===
-											Dex.moves.get(battle.p1.active[0]?.maxMoves?.[1].id)?.name.replace(/\s/g, '').toLowerCase()
-								  )?.romaji ?? Dex.moves.get(battle.p1.active[0]?.maxMoves?.[1].id).name
-								: Dex.moves.get(battle.p1.active[0]?.maxMoves?.[1].id).name
-						} ${
-							// @ts-ignore typings are wrong
-							battle.p1.active[0]?.moveSlots[1]?.pp
-							// @ts-ignore typings are wrong
-						}/${battle.p1.active[0]?.moveSlots[1]?.maxpp} PP`,
-						style: 1
-					}
-				]
-			},
-			{
-				type: 1,
-				components: [
-					{
-						type: 2,
-						custom_id: battle.p1.active[0]?.moveSlots?.[2].id,
-						label: `${
-							process.romaji
-								? process.romajiMoves.find(
-										(m) =>
-											m.move.replace(/\s/g, '').toLowerCase() ===
-											Dex.moves.get(battle.p1.active[0]?.maxMoves?.[2].id)?.name.replace(/\s/g, '').toLowerCase()
-								  )?.romaji ?? Dex.moves.get(battle.p1.active[0]?.maxMoves?.[2].id).name
-								: Dex.moves.get(battle.p1.active[0]?.maxMoves?.[2].id).name
-						} ${
-							// @ts-ignore typings are wrong
-							battle.p1.active[0]?.moveSlots[2]?.pp
-							// @ts-ignore typings are wrong
-						}/${battle.p1.active[0]?.moveSlots[2]?.maxpp} PP`,
-						style: 1
-					},
-					{
-						type: 2,
-						custom_id: battle.p1.active[0]?.moveSlots?.[3].id,
-						label: `${
-							process.romaji
-								? process.romajiMoves.find(
-										(m) =>
-											m.move.replace(/\s/g, '').toLowerCase() ===
-											Dex.moves.get(battle.p1.active[0]?.maxMoves?.[3].id)?.name.replace(/\s/g, '').toLowerCase()
-								  )?.romaji ?? Dex.moves.get(battle.p1.active[0]?.maxMoves?.[3].id).name
-								: Dex.moves.get(battle.p1.active[0]?.maxMoves?.[3].id).name
-						} ${
-							// @ts-ignore typings are wrong
-							battle.p1.active[0]?.moveSlots[3]?.pp
-							// @ts-ignore typings are wrong
-						}/${battle.p1.active[0]?.moveSlots[3]?.maxpp} PP`,
-						style: 1
-					},
-					{ type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 }
-				]
-			}
-		];
+		// const components is the result of maxMoves(battle) plus a cancel button { type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 }
+		const components = maxMoves(battle);
+		// now insert the cancel button
+		components.push({ type: 1, components: [{ type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 }] });
 
 		await updateBattleEmbed(battle, message, user, components);
 		await moveChoice(streams, battle, message, user, gimmick);
 	}
+}
+
+function maxMoves(battle: Battle): any {
+	return [
+		{
+			type: 1,
+			components: [
+				{
+					type: 2,
+					custom_id: battle.p1.active[0]?.moveSlots?.[0].id,
+					label: `${
+						process.romaji
+							? process.romajiMoves.find(
+									(m) =>
+										m.move.replace(/\s/g, '').toLowerCase() ===
+										Dex.moves.get(battle.p1.active[0]?.maxMoves?.[0].id)?.name.replace(/\s/g, '').toLowerCase()
+							  )?.romaji ?? Dex.moves.get(battle.p1.active[0]?.maxMoves?.[0].id).name
+							: Dex.moves.get(battle.p1.active[0]?.maxMoves?.[0].id).name
+					} ${
+						// @ts-ignore typings are wrong
+						battle.p1.active[0]?.moveSlots[0]?.pp
+						// @ts-ignore typings are wrong
+					}/${battle.p1.active[0]?.moveSlots[0]?.maxpp} PP`,
+					style: 1
+				},
+				{
+					type: 2,
+					custom_id: battle.p1.active[0]?.moveSlots?.[1].id,
+					label: `${
+						process.romaji
+							? process.romajiMoves.find(
+									(m) =>
+										m.move.replace(/\s/g, '').toLowerCase() ===
+										Dex.moves.get(battle.p1.active[0]?.maxMoves?.[1].id)?.name.replace(/\s/g, '').toLowerCase()
+							  )?.romaji ?? Dex.moves.get(battle.p1.active[0]?.maxMoves?.[1].id).name
+							: Dex.moves.get(battle.p1.active[0]?.maxMoves?.[1].id).name
+					} ${
+						// @ts-ignore typings are wrong
+						battle.p1.active[0]?.moveSlots[1]?.pp
+						// @ts-ignore typings are wrong
+					}/${battle.p1.active[0]?.moveSlots[1]?.maxpp} PP`,
+					style: 1
+				}
+			]
+		},
+		{
+			type: 1,
+			components: [
+				{
+					type: 2,
+					custom_id: battle.p1.active[0]?.moveSlots?.[2].id,
+					label: `${
+						process.romaji
+							? process.romajiMoves.find(
+									(m) =>
+										m.move.replace(/\s/g, '').toLowerCase() ===
+										Dex.moves.get(battle.p1.active[0]?.maxMoves?.[2].id)?.name.replace(/\s/g, '').toLowerCase()
+							  )?.romaji ?? Dex.moves.get(battle.p1.active[0]?.maxMoves?.[2].id).name
+							: Dex.moves.get(battle.p1.active[0]?.maxMoves?.[2].id).name
+					} ${
+						// @ts-ignore typings are wrong
+						battle.p1.active[0]?.moveSlots[2]?.pp
+						// @ts-ignore typings are wrong
+					}/${battle.p1.active[0]?.moveSlots[2]?.maxpp} PP`,
+					style: 1
+				},
+				{
+					type: 2,
+					custom_id: battle.p1.active[0]?.moveSlots?.[3].id,
+					label: `${
+						process.romaji
+							? process.romajiMoves.find(
+									(m) =>
+										m.move.replace(/\s/g, '').toLowerCase() ===
+										Dex.moves.get(battle.p1.active[0]?.maxMoves?.[3].id)?.name.replace(/\s/g, '').toLowerCase()
+							  )?.romaji ?? Dex.moves.get(battle.p1.active[0]?.maxMoves?.[3].id).name
+							: Dex.moves.get(battle.p1.active[0]?.maxMoves?.[3].id).name
+					} ${
+						// @ts-ignore typings are wrong
+						battle.p1.active[0]?.moveSlots[3]?.pp
+						// @ts-ignore typings are wrong
+					}/${battle.p1.active[0]?.moveSlots[3]?.maxpp} PP`,
+					style: 1
+				}
+			]
+		}
+	];
 }
