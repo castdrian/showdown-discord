@@ -18,16 +18,16 @@ export const fixCustomId = (components: any): MessageEditOptions['components'] =
 				components: c.components.map((c: any) => {
 					return {
 						...c,
-						// generate unique snowflake
-						uniqueId: BigInt(Math.floor(Math.random() * 2 ** 64)).toString(16)
+						// generate unique numerical id
+						uniqueId: Math.floor(Math.random() * 100000000000000000)
 					};
 				})
 			};
 		}
 		return {
 			...c,
-			// generate unique snowflake
-			uniqueId: BigInt(Math.floor(Math.random() * 2 ** 64)).toString(16)
+			// generate unique numerical snowflake
+			uniqueId: Math.floor(Math.random() * 100000000000000000)
 		};
 	});
 
@@ -54,10 +54,7 @@ export const fixCustomId = (components: any): MessageEditOptions['components'] =
 
 // function to get the original custom_id from the modified one
 export const getCustomId = (customId: string) => {
-	// match the snowflake at the end of the string
-	const match = customId.match(/([0-9a-f]{16})$/);
-	if (!match) return customId;
-	const uniqueId = match[1];
-	// remove the unique id from the custom_id
-	return customId.replace(uniqueId, '');
+	// the unique id is produced by BigInt(Date.now()).toString(2)
+	// so now we match all the numbers in the string and remove them since our custom_id doesn't contain any numbers
+	return customId.replace(/[0-9]/g, '');
 };

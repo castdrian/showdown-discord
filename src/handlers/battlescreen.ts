@@ -76,7 +76,7 @@ export async function updateBattleEmbed(
 			components: [
 				{
 					type: 2,
-					custom_id: activemon?.moveSlots[0]?.id ?? 'move1',
+					custom_id: activemon?.moveSlots[0]?.id ?? 'movea',
 					// @ts-ignore pp props missing from types
 					label: `${activemon?.moveSlots[0]?.name} ${activemon?.moveSlots[0]?.pp}/${activemon?.moveSlots[0]?.maxpp} PP`,
 					style: 1,
@@ -85,7 +85,7 @@ export async function updateBattleEmbed(
 				},
 				{
 					type: 2,
-					custom_id: activemon?.moveSlots[1]?.id ?? 'move2',
+					custom_id: activemon?.moveSlots[1]?.id ?? 'moveb',
 					// @ts-ignore pp props missing from types
 					label: `${activemon?.moveSlots[1]?.name} ${activemon?.moveSlots[1]?.pp}/${activemon?.moveSlots[1]?.maxpp} PP`,
 					style: 1,
@@ -105,7 +105,7 @@ export async function updateBattleEmbed(
 			components: [
 				{
 					type: 2,
-					custom_id: activemon?.moveSlots[2]?.id ?? 'move3',
+					custom_id: activemon?.moveSlots[2]?.id ?? 'movec',
 					// @ts-ignore pp props missing from types
 					label: `${activemon?.moveSlots[2]?.name} ${activemon?.moveSlots[2]?.pp}/${activemon?.moveSlots[2]?.maxpp} PP`,
 					style: 1,
@@ -114,7 +114,7 @@ export async function updateBattleEmbed(
 				},
 				{
 					type: 2,
-					custom_id: activemon?.moveSlots[3]?.id ?? 'move4',
+					custom_id: activemon?.moveSlots[3]?.id ?? 'moved',
 					// @ts-ignore pp props missing from types
 					label: `${activemon?.moveSlots[3]?.name} ${activemon?.moveSlots[3]?.pp}/${activemon?.moveSlots[3]?.maxpp} PP`,
 					style: 1,
