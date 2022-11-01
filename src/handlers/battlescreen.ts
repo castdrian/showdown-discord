@@ -5,6 +5,7 @@ import { ChoiceBuilder } from '@pkmn/view';
 import { formatBattleLog } from '#util/ansi';
 import type { MoveName } from '@pkmn/dex';
 import { Dex } from '@pkmn/sim';
+import { fixCustomId, getCustomId } from '#util/functions';
 
 export async function updateBattleEmbed(
 	battle: Battle,
@@ -12,6 +13,10 @@ export async function updateBattleEmbed(
 	user: User,
 	extComponents?: (MessageActionRow | (Required<BaseMessageComponentOptions> & MessageActionRowOptions))[]
 ): Promise<void> {
+	if (extComponents) {
+		extComponents = fixCustomId(extComponents);
+	}
+
 	if (process.romaji && process.romajiMons && process.romajiMoves) {
 		// overwrite active mons and moves with romaji
 		for (const mon of battle.p1.active) {
@@ -65,7 +70,7 @@ export async function updateBattleEmbed(
 		}
 	] as any;
 
-	const components = [
+	let components = [
 		{
 			type: 1,
 			components: [
@@ -136,7 +141,7 @@ export async function updateBattleEmbed(
 								? [
 										{
 											type: 2,
-											custom_id: 'dynamax',
+											custom_id: 'dmax',
 											label: process.romaji ? 'Daimax' : 'Dynamax',
 											style: 2,
 											disabled: !activemon?.canDynamax
@@ -147,7 +152,7 @@ export async function updateBattleEmbed(
 								? [
 										{
 											type: 2,
-											custom_id: 'gigantamax',
+											custom_id: 'gmax',
 											label: process.romaji ? 'Kyodaimax' : 'Gigantamax',
 											style: 2,
 											disabled: !activemon?.canGigantamax
@@ -181,12 +186,15 @@ export async function updateBattleEmbed(
 			  ]
 			: [])
 	];
+	if (components) {
+		components = fixCustomId(components) as any;
+	}
 
 	await message.edit({ embeds, components: extComponents ?? components, files: [] });
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await
-export async function moveChoice(streams: any, battle: Battle, message: Message, user: User) {
+export async function moveChoice(streams: any, battle: Battle, message: Message, user: User, gimmick?: string) {
 	const activemon = battle.p1.active[0];
 	const builder = new ChoiceBuilder(battle.request!);
 
@@ -195,27 +203,33 @@ export async function moveChoice(streams: any, battle: Battle, message: Message,
 
 	collector.on('collect', async (i) => {
 		await i.deferUpdate();
-		if (activemon?.moves.includes(i.customId as any)) {
+		// retrieve the original custom id
+		const customId = getCustomId(i.customId);
+		console.log(customId);
+		if (activemon?.moves.includes(customId as any)) {
 			collector.stop();
-			builder.addChoice(`move ${i.customId}`);
+			if (gimmick) builder.addChoice(`move ${customId} ${gimmick}`);
+			else builder.addChoice(`move ${customId}`);
 			const choice = builder.toString();
 			streams.p1.write(choice);
 			await updateBattleEmbed(battle, message, user);
 		}
-		if (i.customId === 'switch') {
+		if (customId === 'switch') {
 			collector.stop();
 			await switchChoice(streams, battle, message, user, true);
 		}
-		if (i.customId === 'dynamax') {
+		if (customId === 'dmax' || customId === 'gmax' || customId === 'mega' || customId === 'zmove') {
 			collector.stop();
-			await activateGimmick('max', streams, battle, message, user);
+			// if custom id is dmax or gmax return max, otherwise return custom id
+			const choice = customId === 'dmax' || customId === 'gmax' ? 'max' : customId;
+			await activateGimmick(choice, streams, battle, message, user);
 		}
-		if (i.customId === 'cancel') {
+		if (customId === 'cancel') {
 			collector.stop();
 			await updateBattleEmbed(battle, message, user);
 			await moveChoice(streams, battle, message, user);
 		}
-		if (i.customId === 'forfeit') {
+		if (customId === 'forfeit') {
 			const forfeit = await forfeitBattle(streams, i, battle, message, user);
 			if (forfeit) collector.stop();
 		}
@@ -252,14 +266,17 @@ export async function switchChoice(streams: any, battle: Battle, message: Messag
 	const collector = message.channel!.createMessageComponentCollector({ filter });
 
 	collector.on('collect', async (i) => {
-		collector.stop();
 		await i.deferUpdate();
+		// retrieve the original custom id
+		const customId = getCustomId(i.customId);
 
-		if (i.customId === 'cancel') {
+		if (customId === 'cancel') {
+			collector.stop();
 			await updateBattleEmbed(battle, message, user);
 			await moveChoice(streams, battle, message, user);
 		} else {
-			builder.addChoice(`switch ${i.customId}`);
+			collector.stop();
+			builder.addChoice(`switch ${customId}`);
 			const choice = builder.toString();
 			await streams.p1.write(choice);
 		}
@@ -298,14 +315,17 @@ async function forfeitBattle(streams: any, interaction: MessageComponentInteract
 
 	collector.on('collect', async (i) => {
 		collector.stop();
-		if (i.customId === 'yes') {
+		// retrieve the original custom id
+		const customId = getCustomId(i.customId);
+
+		if (customId === 'yes') {
 			choice = true;
 			process.battlelog.push(`${interaction.user.username} forfeited.`);
 			await streams.omniscient.write(`>forcewin p2`);
 			// @ts-ignore delete ephemeral message
 			await interaction.client.api.webhooks(i.client.user!.id, i.token).messages('@original').delete();
 		}
-		if (i.customId === 'no') {
+		if (customId === 'no') {
 			await updateBattleEmbed(battle, message, user);
 			// @ts-ignore delete ephemeral message
 			await interaction.client.api.webhooks(i.client.user!.id, i.token).messages('@original').delete();
@@ -373,6 +393,6 @@ export async function activateGimmick(gimmick: string, streams: any, battle: Bat
 		];
 
 		await updateBattleEmbed(battle, message, user, components);
-		await moveChoice(streams, battle, message, user);
+		await moveChoice(streams, battle, message, user, gimmick);
 	}
 }

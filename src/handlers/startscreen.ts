@@ -43,9 +43,11 @@ export async function startScreen(interaction: CommandInteraction) {
 	const collector = interaction.channel!.createMessageComponentCollector({ filter });
 
 	collector.on('collect', async (i): Promise<any> => {
+		if (!i.deferred && !i.replied) await i.deferUpdate();
+		console.log(i.deferred, i.replied);
+		console.log(i);
 		if (i.customId === 'start') {
 			collector.stop();
-			await i.deferUpdate();
 			// @ts-ignore delete ephemeral message
 			await interaction.client.api.webhooks(i.client.user!.id, interaction.token).messages(id).delete();
 			const message = await interaction.fetchReply();
@@ -64,16 +66,15 @@ export async function startScreen(interaction: CommandInteraction) {
 			] as any;
 
 			collector.stop();
-			await i.update({ embeds, components: [], files: [] });
+			await i.editReply({ embeds, components: [], files: [] });
 		}
 		if (i.customId === 'romaji') {
 			process.romaji = !process.romaji;
 			// change the button label to reflect the new state of the romaji toggle and update the message with the new label
 			components[1].components[2].label = process.romaji ? 'Romaji: On' : 'Romaji: Off';
-			await i.update({ components });
+			await i.editReply({ components });
 		}
 		if (i.customId === 'format') {
-			await i.deferUpdate();
 			if (!i.isSelectMenu()) return;
 			[formatid] = i.values;
 
