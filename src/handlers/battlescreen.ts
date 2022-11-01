@@ -121,7 +121,62 @@ export async function updateBattleEmbed(
 					disabled: activemon?.trapped
 				}
 			]
-		}
+		},
+		// add another row if the mon can dynamax, gigantamax, mega evolve, or use z move
+		...(activemon?.canDynamax || activemon?.canGigantamax || activemon?.canMegaEvo || activemon?.zMoves?.length
+			? [
+					{
+						type: 1,
+						components: [
+							// add buttons dynamically based on what the mon can do
+							...(activemon?.canDynamax
+								? [
+										{
+											type: 2,
+											custom_id: 'dynamax',
+											label: process.romaji ? 'Daimax' : 'Dynamax',
+											style: 2,
+											disabled: !activemon?.canDynamax
+										}
+								  ]
+								: []),
+							...(activemon?.canGigantamax
+								? [
+										{
+											type: 2,
+											custom_id: 'gigantamax',
+											label: process.romaji ? 'Kyodaimax' : 'Gigantamax',
+											style: 2,
+											disabled: !activemon?.canGigantamax
+										}
+								  ]
+								: []),
+							...(activemon?.canMegaEvo
+								? [
+										{
+											type: 2,
+											custom_id: 'mega',
+											label: process.romaji ? 'Mega Shinka' : 'Mega Evolve',
+											style: 2,
+											disabled: !activemon?.canMegaEvo
+										}
+								  ]
+								: []),
+							...(activemon?.zMoves?.length
+								? [
+										{
+											type: 2,
+											custom_id: 'zmove',
+											label: process.romaji ? 'Z Waza' : 'Z-Move',
+											style: 2,
+											disabled: !activemon?.zMoves?.length
+										}
+								  ]
+								: [])
+						]
+					}
+			  ]
+			: [])
 	];
 
 	await message.edit({ embeds, components: extComponents ?? components, files: [] });
