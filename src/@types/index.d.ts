@@ -7,6 +7,7 @@ declare global {
 			romaji: boolean;
 			romajiMons: RomajiMon[];
 			romajiMoves: RomajiMove[];
+			isMax: boolean;
 		}
 	}
 }

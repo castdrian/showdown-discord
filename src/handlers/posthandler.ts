@@ -71,4 +71,32 @@ export class PostHandler implements Handler<void> {
 		console.log('formechange event');
 		console.log(args);
 	}
+
+	'|-start|'(args: Protocol.Args['|-start|']) {
+		console.log('-start event');
+		console.log(args);
+		// looks like this: [ '-start', 'p1a: Dracozolt', 'Dynamax' ]
+		// destructure index 1 and 2
+		const [, pokemon, effect] = args;
+		// if effect is Dynamax or Gmax, and the pokemon is on side p1a, then set process.isMax to true
+		if (effect === 'Dynamax' || effect === 'Gmax') {
+			if (pokemon.startsWith('p1a')) {
+				process.isMax = true;
+			}
+		}
+	}
+
+	'|-end|'(args: Protocol.Args['|-end|']) {
+		console.log('-end event');
+		console.log(args);
+		// looks like this: [ '-end', 'p1a: Dracozolt', 'Dynamax' ]
+		// destructure index 1 and 2
+		const [, pokemon, effect] = args;
+		// if effect is Dynamax or Gmax, and the pokemon is on side p1a, then set process.isMax to false
+		if (effect === 'Dynamax' || effect === 'Gmax') {
+			if (pokemon.startsWith('p1a')) {
+				process.isMax = false;
+			}
+		}
+	}
 }
