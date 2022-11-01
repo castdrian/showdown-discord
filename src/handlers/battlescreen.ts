@@ -137,25 +137,21 @@ export async function updateBattleEmbed(
 						type: 1,
 						components: [
 							// add buttons dynamically based on what the mon can do
-							...(activemon?.canDynamax
+							// if can dynamax or gigantamax, add a button for that, if can gigantamax label it as such otherwise label it as dynamax, also if romaji is available use that instead of the name
+							...(activemon?.canDynamax || activemon?.canGigantamax
 								? [
 										{
 											type: 2,
-											custom_id: 'dmax',
-											label: process.romaji ? 'Daimax' : 'Dynamax',
+											custom_id: 'max',
+											label: process.romaji
+												? activemon?.canGigantamax
+													? 'Kyodaimax'
+													: 'Daimax'
+												: activemon?.canGigantamax
+												? 'Gigantamax'
+												: 'Dynamax',
 											style: 2,
-											disabled: !activemon?.canDynamax
-										}
-								  ]
-								: []),
-							...(activemon?.canGigantamax
-								? [
-										{
-											type: 2,
-											custom_id: 'gmax',
-											label: process.romaji ? 'Kyodaimax' : 'Gigantamax',
-											style: 2,
-											disabled: !activemon?.canGigantamax
+											disabled: !activemon?.canDynamax && !activemon?.canGigantamax
 										}
 								  ]
 								: []),
@@ -218,11 +214,9 @@ export async function moveChoice(streams: any, battle: Battle, message: Message,
 			collector.stop();
 			await switchChoice(streams, battle, message, user, true);
 		}
-		if (customId === 'dmax' || customId === 'gmax' || customId === 'mega' || customId === 'zmove') {
+		if (customId === 'max' || customId === 'mega' || customId === 'zmove') {
 			collector.stop();
-			// if custom id is dmax or gmax return max, otherwise return custom id
-			const choice = customId === 'dmax' || customId === 'gmax' ? 'max' : customId;
-			await activateGimmick(choice, streams, battle, message, user);
+			await activateGimmick(customId, streams, battle, message, user);
 		}
 		if (customId === 'cancel') {
 			collector.stop();
