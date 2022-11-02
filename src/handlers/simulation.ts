@@ -6,7 +6,7 @@ import { LogFormatter } from '@pkmn/view';
 import { Generations } from '@pkmn/data';
 import { PreHandler } from '#handlers/prehandler';
 import { PostHandler } from '#handlers/posthandler';
-import type { Message, User } from 'discord.js';
+import { Message, MessageAttachment, User } from 'discord.js';
 import { default as removeMD } from 'remove-markdown';
 
 export async function initiateBattle(message: Message, user: User, formatid: string, team: PokemonSet[] | null) {
@@ -69,5 +69,7 @@ export async function initiateBattle(message: Message, user: User, formatid: str
 		await streams.omniscient.write(`>start ${JSON.stringify(spec)}
 >player p1 ${JSON.stringify(p1spec)}
 >player p2 ${JSON.stringify(p2spec)}`);
+		const file = new MessageAttachment('http://play.pokemonshowdown.com/audio/xy-trainer.mp3', 'Battle Theme.mp3');
+		await message.channel.send({ files: [file] });
 	}
 }
