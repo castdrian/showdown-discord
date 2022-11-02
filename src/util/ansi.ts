@@ -24,23 +24,48 @@ export function formatBattleLog(log: string[], battle: Battle): string {
 	str = str.replace(/\|\|−(\d+\/\d+)\|\|(\d+\.?\d*%)\|\|/g, (_match, _hp, percent) => `${MAGENTA_BOLD}${percent}${RESET}`);
 
 	// use ansi escape codes to format every instance the names of the active mons red bold
-	const p1 = battle.p1.active[0]!;
-	const p2 = battle.p2.active[0]!;
+	const p1mons = battle.p1.team;
+	const p1romajimons = [];
+	const p2mons = battle.p2.team;
+	const p2romajimons = [];
 
 	// apply romaji mode if it is enabled
 	if (process.romaji && process.romajiMons && process.romajiMoves) {
 		// replace all instances of the mons' names with their romaji names
-		const p1eng = process.romajiMons.find((m) => m.trademark.toLowerCase() === p1.name.toLowerCase())?.name;
-		const p2eng = process.romajiMons.find((m) => m.trademark.toLowerCase() === p2.name.toLowerCase())?.name;
 
-		if (p1eng && p2eng) {
-			str = str.replace(new RegExp(p1eng, 'g'), p1.name);
-			str = str.replace(new RegExp(p2eng, 'g'), p2.name);
+		for (const mon of p1mons) {
+			const romaji = process.romajiMons.find((r) => r.name.toLowerCase() === mon.species.name.toLowerCase())?.trademark;
+			if (romaji) {
+				str = str.replace(new RegExp(mon.species.name, 'g'), romaji);
+				p1romajimons.push(romaji);
+			}
+		}
+
+		for (const mon of p2mons) {
+			const romaji = process.romajiMons.find((r) => r.name.toLowerCase() === mon.species.name.toLowerCase())?.trademark;
+			if (romaji) {
+				str = str.replace(new RegExp(mon.species.name, 'g'), romaji);
+				p2romajimons.push(romaji);
+			}
 		}
 	}
 
-	str = str.replace(new RegExp(p1.name, 'g'), `${RED_BOLD}${p1.name}${RESET}`);
-	str = str.replace(new RegExp(p2.name, 'g'), `${RED_BOLD}${p2.name}${RESET}`);
+	// replace all mon names and all romaji mon names with red bold names
+	for (const mon of p1mons) {
+		str = str.replace(new RegExp(mon.species.name, 'g'), `${RED_BOLD}${mon.species.name}${RESET}`);
+	}
+
+	for (const mon of p2mons) {
+		str = str.replace(new RegExp(mon.species.name, 'g'), `${RED_BOLD}${mon.species.name}${RESET}`);
+	}
+
+	for (const romaji of p1romajimons) {
+		str = str.replace(new RegExp(romaji, 'g'), `${RED_BOLD}${romaji}${RESET}`);
+	}
+
+	for (const romaji of p2romajimons) {
+		str = str.replace(new RegExp(romaji, 'g'), `${RED_BOLD}${romaji}${RESET}`);
+	}
 
 	// format the player names cyan bold
 	str = str.replace(new RegExp(battle.p1.name, 'g'), `${CYAN_BOLD}${battle.p1.name}${RESET}`);
@@ -50,7 +75,7 @@ export function formatBattleLog(log: string[], battle: Battle): string {
 	str = str.replace(/(Turn )(\d+)/g, `${WHITE_BOLD}$1$2${RESET}`);
 
 	// format all moves from both active mons blue bold
-	const moveIDs = [...p1.moves, ...p2.moves].map((move) => move);
+	const moveIDs = [...battle.p1.active[0]!.moves, ...battle.p2.active[0]!.moves].map((move) => move);
 	const moveNames = moveIDs.map((move) => Dex.moves.get(move).name);
 
 	for (let move of moveNames) {
