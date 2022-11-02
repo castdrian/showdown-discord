@@ -47,7 +47,7 @@ export const components = [
 			{
 				type: 2,
 				custom_id: 'team',
-				label: 'Custom Team',
+				label: 'Import Team',
 				style: 2
 			},
 			{
@@ -66,8 +66,6 @@ export const components = [
 	}
 ] as any;
 
-const placeholder = 'Greninja @ Focus Sash\nAbility: Battle Bond\nTimid Nature\n- Spikes\n- Taunt\n- Dark Pulse\n- Substitute';
-
 export const modal = {
 	title: 'Import Team',
 	custom_id: 'team_import',
@@ -77,27 +75,12 @@ export const modal = {
 			components: [
 				{
 					type: 4,
-					custom_id: 'team_name',
-					label: 'Team Name',
+					custom_id: 'paste_url',
+					label: 'pokepast.es URL',
 					style: 1,
 					min_length: 1,
 					max_length: 100,
-					placeholder: 'OU Team 1',
-					required: true
-				}
-			]
-		},
-		{
-			type: 1,
-			components: [
-				{
-					type: 4,
-					custom_id: 'team_data',
-					label: 'Team Data',
-					style: 2,
-					min_length: 1,
-					max_length: 4000,
-					placeholder,
+					placeholder: 'https://pokepast.es/...',
 					required: true
 				}
 			]

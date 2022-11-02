@@ -26,3 +26,10 @@ export interface BattleStreams {
 	p3: ObjectReadWriteStream<string>;
 	p4: ObjectReadWriteStream<string>;
 }
+
+export interface PokePasteResponse {
+	author: string;
+	notes: string;
+	paste: string;
+	title: string;
+}

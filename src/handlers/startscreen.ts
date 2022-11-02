@@ -1,11 +1,12 @@
 import { versusScreen } from '#util/canvas';
 import { CommandInteraction, Formatters, Message, MessageComponentInteraction, MessageSelectOption, ModalSubmitInteraction } from 'discord.js';
 import { initiateBattle } from '#handlers/simulation';
-import type { formaticon } from '#types/';
+import type { formaticon, PokePasteResponse } from '#types/';
 import { components, modal } from '#constants/components';
 import { Dex, TeamValidator } from '@pkmn/sim';
 import { Teams, Data, PokemonSet } from '@pkmn/sets';
 import { fetchRomaji, RomajiMon, RomajiMove } from 'pkmn-romaji';
+import { request } from 'undici';
 
 export async function startScreen(interaction: CommandInteraction) {
 	let formatid = 'gen8randombattle';
@@ -43,8 +44,8 @@ export async function startScreen(interaction: CommandInteraction) {
 	const collector = message!.createMessageComponentCollector({ filter });
 
 	collector.on('collect', async (i): Promise<any> => {
-		await i.deferUpdate();
 		if (i.customId === 'start') {
+			await i.deferUpdate();
 			collector.stop();
 			// @ts-ignore delete ephemeral message
 			await interaction.client.api.webhooks(i.client.user!.id, interaction.token).messages(id).delete();
@@ -54,6 +55,7 @@ export async function startScreen(interaction: CommandInteraction) {
 			}
 		}
 		if (i.customId === 'cancel') {
+			await i.deferUpdate();
 			const embeds = [
 				{
 					title: 'Pokémon Showdown! Battle',
@@ -67,12 +69,14 @@ export async function startScreen(interaction: CommandInteraction) {
 			await i.editReply({ embeds, components: [], files: [] });
 		}
 		if (i.customId === 'romaji') {
+			await i.deferUpdate();
 			process.romaji = !process.romaji;
 			// change the button label to reflect the new state of the romaji toggle and update the message with the new label
 			components[1].components[2].label = process.romaji ? 'Romaji: On' : 'Romaji: Off';
 			await i.editReply({ components });
 		}
 		if (i.customId === 'format') {
+			await i.deferUpdate();
 			if (!i.isSelectMenu()) return;
 			[formatid] = i.values;
 
@@ -115,18 +119,28 @@ export async function startScreen(interaction: CommandInteraction) {
 				.catch(() => interaction.followUp({ content: 'Team import timed out.', ephemeral: true }))) as ModalSubmitInteraction;
 			if (submit) await submit.deferReply({ ephemeral: true });
 
-			const team_name = submit.fields.getTextInputValue('team_name');
-			const team_data = submit.fields.getTextInputValue('team_data');
+			const rawUrl = submit.fields.getTextInputValue('paste_url');
+			// validate pokepaste url
+			if (!rawUrl.startsWith('https://pokepast.es/')) {
+				return submit.editReply({ content: 'Invalid URL. Please try again.' });
+			}
+
+			// fetch the url and append /json to the end
+			const { body, statusCode } = await request(`${rawUrl}/json`);
+			if (statusCode !== 200) {
+				return submit.editReply({ content: 'Invalid URL. Please try again.' });
+			}
+			const pasteTeam: PokePasteResponse = await body.json();
 
 			const validator = new TeamValidator('gen8customgame');
 			const dex = Dex.forFormat('gen8customgame');
 
-			const team = Teams.importTeam(team_data, dex as Data)?.team as PokemonSet[];
+			const team = Teams.importTeam(pasteTeam.paste, dex as Data)?.team as PokemonSet[];
 			const invalid = validator.validateTeam(team);
 
 			if (!team || invalid) {
 				return submit.editReply({
-					content: `Team ${Formatters.inlineCode(team_name)} is invalid:\n\n${Formatters.codeBlock(
+					content: `Team ${Formatters.inlineCode(pasteTeam.title)} is invalid:\n\n${Formatters.codeBlock(
 						invalid?.join('\n') ?? 'Invalid Team Data'
 					)}`
 				});
@@ -139,9 +153,11 @@ export async function startScreen(interaction: CommandInteraction) {
 					description: `Format: \`[Gen 8] Random Battle\`\nPlayers: ${Formatters.inlineCode(
 						interaction.user.username
 					)} vs. ${Formatters.inlineCode(interaction.client.user!.username)}\nTeam: ${Formatters.inlineCode(
-						team_name
+						pasteTeam.title
 					)}\n${Formatters.codeBlock(
-						`- ${team[0].name}\n- ${team[1].name}\n- ${team[2].name}\n- ${team[3].name}\n- ${team[4].name}\n- ${team[5].name}`
+						// iterate over the team and format it into a readable string
+						// eslint-disable-next-line no-negated-condition
+						team.map((x) => `${x.name} ${x.name !== x.species ? `(${x.species})` : ''}`).join('\n')
 					)}`,
 					color: '0x5865F2',
 					image: { url: 'attachment://versus.png' }
@@ -150,7 +166,7 @@ export async function startScreen(interaction: CommandInteraction) {
 
 			await interaction.editReply({ embeds, files });
 			battle_team = team;
-			await submit.editReply({ content: `Team ${Formatters.inlineCode(team_name)} imported successfully!` });
+			await submit.editReply({ content: `Team ${Formatters.inlineCode(pasteTeam.title)} imported successfully!` });
 		}
 	});
 }
