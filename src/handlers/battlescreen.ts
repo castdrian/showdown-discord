@@ -6,6 +6,7 @@ import { formatBattleLog } from '#util/ansi';
 import type { MoveName } from '@pkmn/dex';
 import { Dex } from '@pkmn/sim';
 import { fixCustomId, getCustomId } from '#util/functions';
+import { maxSprite } from '#util/canvas';
 
 export async function updateBattleEmbed(
 	battle: Battle,
@@ -68,12 +69,8 @@ export async function updateBattleEmbed(
 			thumbnail: { url: opponentsprite },
 			color: '0x5865F2',
 			description: formatBattleLog(process.battlelog, battle),
-			// change width and height to 1.5x the original when process.isMax is true
-			image: {
-				url: activesprite,
-				width: process.isMax ? activewidth * 1.5 : activewidth,
-				height: process.isMax ? activeheight * 1.5 : activeheight
-			},
+			// when process.isMax is true take 'max.gif' from the messageattachment that maxSprite() returns
+			image: process.isMax ? { url: 'attachment://max.gif' } : { url: activesprite },
 			footer: {
 				text: `${activemon?.name} | ${activemon?.hp}/${activemon?.maxhp} HP ${
 					activemon?.status ? `| ${activemon.status.toUpperCase()}` : ''
@@ -198,6 +195,7 @@ export async function updateBattleEmbed(
 	if (components) {
 		components = fixCustomId(components) as any;
 	}
+	let files: any = [];
 
 	// if process.isMax is true, overwrite the components with the result of maxMoves(battle) and add the switch and forfeit buttons into the components and run them through fixCustomId
 	if (process.isMax) {
@@ -217,9 +215,15 @@ export async function updateBattleEmbed(
 			style: 4
 		});
 		components = fixCustomId(components) as any;
+
+		// overwrite the files with the result of maxSprite()
+		if (!process.maxSprite) {
+			process.maxSprite = await maxSprite(activesprite, activewidth, activeheight);
+		}
+		files = [process.maxSprite];
 	}
 
-	await message.edit({ embeds, components: extComponents ?? components, files: [] });
+	await message.edit({ embeds, components: extComponents ?? components, files });
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await

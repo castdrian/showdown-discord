@@ -1,5 +1,7 @@
-import type { CommandInteraction } from 'discord.js';
+import { CommandInteraction, MessageAttachment } from 'discord.js';
 import { Canvas, loadImage } from 'skia-canvas';
+import { request } from 'undici';
+import { default as sharp } from 'sharp';
 
 export async function versusScreen(interaction: CommandInteraction): Promise<Buffer> {
 	const canvas = new Canvas(3500, 1968);
@@ -16,4 +18,19 @@ export async function versusScreen(interaction: CommandInteraction): Promise<Buf
 
 	const buffer = await canvas.toBuffer('png');
 	return buffer;
+}
+
+export async function maxSprite(url: string, width: number, height: number): Promise<MessageAttachment> {
+	// get buffer from url with undici request
+	const { body } = await request(url);
+	const buffer = await body.arrayBuffer();
+	const resizedBuffer = await sharp(Buffer.from(buffer), {
+		animated: true
+	})
+		.resize(width * 2, height * 2)
+		.gif()
+		.toBuffer();
+
+	// return attachment
+	return new MessageAttachment(resizedBuffer, 'max.gif');
 }
