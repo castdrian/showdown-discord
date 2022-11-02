@@ -32,7 +32,7 @@ export async function startScreen(interaction: CommandInteraction) {
 		{ attachment: './data/images/swsh.png', name: 'format.png' }
 	];
 
-	await interaction.editReply({ embeds, components, files });
+	const message = (await interaction.editReply({ embeds, components, files })) as Message;
 	const { id } = await interaction.followUp({
 		content:
 			'[info] This application is very experimental and may break at any time.\n[info] You may just want to play [Pokémon Showdown](https://play.pokemonshowdown.com).',
@@ -40,12 +40,10 @@ export async function startScreen(interaction: CommandInteraction) {
 	});
 
 	const filter = (i: MessageComponentInteraction) => i.user.id === interaction.user.id;
-	const collector = interaction.channel!.createMessageComponentCollector({ filter });
+	const collector = message!.createMessageComponentCollector({ filter });
 
 	collector.on('collect', async (i): Promise<any> => {
-		console.log(i.deferred, i.replied);
-		console.log(i);
-		if (!i.deferred && !i.replied) await i.deferUpdate();
+		await i.deferUpdate();
 		if (i.customId === 'start') {
 			collector.stop();
 			// @ts-ignore delete ephemeral message

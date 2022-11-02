@@ -232,7 +232,7 @@ export async function moveChoice(streams: any, battle: Battle, message: Message,
 	const builder = new ChoiceBuilder(battle.request!);
 
 	const filter = (i: MessageComponentInteraction) => i.user.id === user.id;
-	const collector = message.channel!.createMessageComponentCollector({ filter });
+	const collector = message!.createMessageComponentCollector({ filter });
 
 	collector.on('collect', async (i) => {
 		await i.deferUpdate();
@@ -294,7 +294,7 @@ export async function switchChoice(streams: any, battle: Battle, message: Messag
 	console.log('sent switch embed');
 
 	const filter = (i: MessageComponentInteraction) => i.user.id === user.id;
-	const collector = message.channel!.createMessageComponentCollector({ filter });
+	const collector = message!.createMessageComponentCollector({ filter });
 
 	collector.on('collect', async (i) => {
 		await i.deferUpdate();
@@ -315,7 +315,7 @@ export async function switchChoice(streams: any, battle: Battle, message: Messag
 }
 
 async function forfeitBattle(streams: any, interaction: MessageComponentInteraction, battle: Battle, message: Message, user: User): Promise<boolean> {
-	await interaction.followUp({
+	const msg = (await interaction.followUp({
 		content: 'Do you wish to forfeit this battle?',
 		components: [
 			{
@@ -337,10 +337,10 @@ async function forfeitBattle(streams: any, interaction: MessageComponentInteract
 			}
 		],
 		ephemeral: true
-	});
+	})) as Message;
 
 	const filter = (i: MessageComponentInteraction) => i.user.id === interaction.user.id;
-	const collector = interaction.channel!.createMessageComponentCollector({ filter });
+	const collector = msg!.createMessageComponentCollector({ filter });
 
 	let choice = false;
 
@@ -354,12 +354,12 @@ async function forfeitBattle(streams: any, interaction: MessageComponentInteract
 			process.battlelog.push(`${interaction.user.username} forfeited.`);
 			await streams.omniscient.write(`>forcewin p2`);
 			// @ts-ignore delete ephemeral message
-			await interaction.client.api.webhooks(i.client.user!.id, i.token).messages('@original').delete();
+			await interaction.client.api.webhooks(i.client.user!.id, interaction.token).messages(msg.id).delete();
 		}
 		if (customId === 'no') {
 			await updateBattleEmbed(battle, message, user);
 			// @ts-ignore delete ephemeral message
-			await interaction.client.api.webhooks(i.client.user!.id, i.token).messages('@original').delete();
+			await interaction.client.api.webhooks(i.client.user!.id, interaction.token).messages(msg.id).delete();
 		}
 	});
 
