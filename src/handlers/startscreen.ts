@@ -60,6 +60,7 @@ export async function startScreen(interaction: CommandInteraction) {
 			const message = await interaction.fetchReply();
 			if (message instanceof Message) {
 				await initiateBattle(message, interaction.user, formatid, battle_team);
+				process.romaji = false;
 				const file = new MessageAttachment('http://play.pokemonshowdown.com/audio/xy-trainer.mp3', 'Battle Theme.mp3');
 				await message.channel.send({ files: [file] });
 			}

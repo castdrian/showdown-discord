@@ -34,29 +34,47 @@ export function formatBattleLog(log: string[], battle: Battle): string {
 		// replace all instances of the mons' names with their romaji names
 
 		for (const mon of p1mons) {
-			const romaji = process.romajiMons.find((r) => r.name.toLowerCase() === mon.species.name.toLowerCase())?.trademark;
-			if (romaji) {
-				str = str.replace(new RegExp(mon.species.name, 'g'), romaji);
-				p1romajimons.push(romaji);
+			const romajiSpecies = process.romajiMons.find((r) => r.name.toLowerCase() === mon.baseSpeciesForme.toLowerCase())?.trademark;
+			// const ident is originalIdent property, which looks like this originalIdent: 'p1: Sceptile', so we split it by the colon and take the second element
+			const ident = mon.originalIdent.split(':')[1].trim();
+			const romajiIdent = process.romajiMons.find((r) => r.name.toLowerCase() === ident.toLowerCase())?.trademark;
+			if (romajiSpecies) {
+				str = str.replace(new RegExp(mon.baseSpeciesForme, 'g'), romajiSpecies);
+				p1romajimons.push(romajiSpecies);
+			}
+			if (romajiIdent) {
+				str = str.replace(new RegExp(ident, 'g'), romajiIdent);
+				p1romajimons.push(romajiIdent);
 			}
 		}
 
 		for (const mon of p2mons) {
-			const romaji = process.romajiMons.find((r) => r.name.toLowerCase() === mon.species.name.toLowerCase())?.trademark;
-			if (romaji) {
-				str = str.replace(new RegExp(mon.species.name, 'g'), romaji);
-				p2romajimons.push(romaji);
+			const romajiSpecies = process.romajiMons.find((r) => r.name.toLowerCase() === mon.baseSpeciesForme.toLowerCase())?.trademark;
+			// const ident is originalIdent property, which looks like this originalIdent: 'p1: Sceptile', so we split it by the colon and take the second element
+			const ident = mon.originalIdent.split(':')[1].trim();
+			const romajiIdent = process.romajiMons.find((r) => r.name.toLowerCase() === ident.toLowerCase())?.trademark;
+			if (romajiSpecies) {
+				str = str.replace(new RegExp(mon.baseSpeciesForme, 'g'), romajiSpecies);
+				p2romajimons.push(romajiSpecies);
+			}
+			if (romajiIdent) {
+				str = str.replace(new RegExp(ident, 'g'), romajiIdent);
+				p2romajimons.push(romajiIdent);
 			}
 		}
 	}
 
 	// replace all mon names and all romaji mon names with red bold names
 	for (const mon of p1mons) {
-		str = str.replace(new RegExp(mon.species.name, 'g'), `${RED_BOLD}${mon.species.name}${RESET}`);
+		const ident = mon.originalIdent.split(':')[1].trim();
+		str = str.replace(new RegExp(mon.baseSpeciesForme, 'g'), `${RED_BOLD}${mon.baseSpeciesForme}${RESET}`);
+		str = str.replace(new RegExp(ident, 'g'), `${RED_BOLD}${ident}${RESET}`);
 	}
 
 	for (const mon of p2mons) {
-		str = str.replace(new RegExp(mon.species.name, 'g'), `${RED_BOLD}${mon.species.name}${RESET}`);
+		const ident = mon.originalIdent.split(':')[1].trim();
+		str = str.replace(new RegExp(mon.baseSpeciesForme, 'g'), `${RED_BOLD}${mon.baseSpeciesForme}${RESET}`);
+		str = str.replace(new RegExp(ident, 'g'), `${RED_BOLD}${ident}${RESET}`);
 	}
 
 	for (const romaji of p1romajimons) {

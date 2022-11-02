@@ -1,4 +1,4 @@
-import type { Battle } from '@pkmn/client';
+import type { Battle, Pokemon } from '@pkmn/client';
 import type { BaseMessageComponentOptions, Message, MessageActionRow, MessageActionRowOptions, MessageComponentInteraction, User } from 'discord.js';
 import { Sprites } from '@pkmn/img';
 import { ChoiceBuilder } from '@pkmn/view';
@@ -53,8 +53,8 @@ export async function updateBattleEmbed(
 		url: activesprite,
 		w: activewidth,
 		h: activeheight
-	} = Sprites.getPokemon(activemon?.species.name as string, { gen: 'ani', shiny: activemon?.shiny, side: 'p1' });
-	const { url: opponentsprite } = Sprites.getPokemon(opponent?.species.name as string, {
+	} = Sprites.getPokemon(activemon?.baseSpeciesForme as string, { gen: 'ani', shiny: activemon?.shiny, side: 'p1' });
+	const { url: opponentsprite } = Sprites.getPokemon(opponent?.baseSpeciesForme as string, {
 		gen: 'ani',
 		shiny: opponent?.shiny,
 		side: 'p2'
@@ -80,118 +80,7 @@ export async function updateBattleEmbed(
 		}
 	] as any;
 
-	let components = [
-		{
-			type: 1,
-			components: [
-				{
-					type: 2,
-					custom_id: activemon?.moveSlots[0]?.id ?? 'movea',
-					// @ts-ignore pp props missing from types
-					label: `${activemon?.moveSlots[0]?.name} ${activemon?.moveSlots[0]?.pp}/${activemon?.moveSlots[0]?.maxpp} PP`,
-					style: 1,
-					// @ts-ignore disbaled prop missing from types
-					disabled: activemon?.moveSlots[0]?.disabled
-				},
-				{
-					type: 2,
-					custom_id: activemon?.moveSlots[1]?.id ?? 'moveb',
-					// @ts-ignore pp props missing from types
-					label: `${activemon?.moveSlots[1]?.name} ${activemon?.moveSlots[1]?.pp}/${activemon?.moveSlots[1]?.maxpp} PP`,
-					style: 1,
-					// @ts-ignore disbaled prop missing from types
-					disabled: activemon?.moveSlots[1]?.disabled
-				},
-				{
-					type: 2,
-					custom_id: 'forfeit',
-					label: 'Forfeit',
-					style: 4
-				}
-			]
-		},
-		{
-			type: 1,
-			components: [
-				{
-					type: 2,
-					custom_id: activemon?.moveSlots[2]?.id ?? 'movec',
-					// @ts-ignore pp props missing from types
-					label: `${activemon?.moveSlots[2]?.name} ${activemon?.moveSlots[2]?.pp}/${activemon?.moveSlots[2]?.maxpp} PP`,
-					style: 1,
-					// @ts-ignore disbaled prop missing from types
-					disabled: activemon?.moveSlots[2]?.disabled
-				},
-				{
-					type: 2,
-					custom_id: activemon?.moveSlots[3]?.id ?? 'moved',
-					// @ts-ignore pp props missing from types
-					label: `${activemon?.moveSlots[3]?.name} ${activemon?.moveSlots[3]?.pp}/${activemon?.moveSlots[3]?.maxpp} PP`,
-					style: 1,
-					// @ts-ignore disbaled prop missing from types
-					disabled: activemon?.moveSlots[3]?.disabled
-				},
-				{
-					type: 2,
-					custom_id: 'switch',
-					label: 'Switch',
-					style: 3,
-					disabled: activemon?.trapped
-				}
-			]
-		},
-		// add another row if the mon can dynamax, gigantamax, mega evolve, or use z move
-		...(activemon?.canDynamax || activemon?.canGigantamax || activemon?.canMegaEvo || activemon?.zMoves?.length
-			? [
-					{
-						type: 1,
-						components: [
-							// add buttons dynamically based on what the mon can do
-							// if can dynamax or gigantamax, add a button for that, if can gigantamax label it as such otherwise label it as dynamax, also if romaji is available use that instead of the name
-							...(activemon?.canDynamax || activemon?.canGigantamax
-								? [
-										{
-											type: 2,
-											custom_id: 'max',
-											label: process.romaji
-												? activemon?.canGigantamax
-													? 'Kyodaimax'
-													: 'Daimax'
-												: activemon?.canGigantamax
-												? 'Gigantamax'
-												: 'Dynamax',
-											style: 2,
-											disabled: !activemon?.canDynamax && !activemon?.canGigantamax
-										}
-								  ]
-								: []),
-							...(activemon?.canMegaEvo
-								? [
-										{
-											type: 2,
-											custom_id: 'mega',
-											label: process.romaji ? 'Mega Shinka' : 'Mega Evolve',
-											style: 2,
-											disabled: !activemon?.canMegaEvo
-										}
-								  ]
-								: []),
-							...(activemon?.zMoves?.length
-								? [
-										{
-											type: 2,
-											custom_id: 'zmove',
-											label: process.romaji ? 'Z Waza' : 'Z-Move',
-											style: 2,
-											disabled: !activemon?.zMoves?.length
-										}
-								  ]
-								: [])
-						]
-					}
-			  ]
-			: [])
-	];
+	let components = generateMoveButtons(activemon!);
 	if (components) {
 		components = fixCustomId(components) as any;
 	}
@@ -376,6 +265,131 @@ async function activateGimmick(gimmick: string, streams: any, battle: Battle, me
 		await updateBattleEmbed(battle, message, user, components);
 		await moveChoice(streams, battle, message, user, gimmick);
 	}
+	if (gimmick === 'mega') {
+		const components = generateMoveButtons(battle.p1.active[0]!);
+		// now insert the cancel button at row 2
+		components[1].components.push({ type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 });
+		// remove row 3 (the mega button) which is at index 2
+		components.splice(2, 1);
+
+		await updateBattleEmbed(battle, message, user, components);
+		await moveChoice(streams, battle, message, user, gimmick);
+	}
+}
+
+function generateMoveButtons(activemon: Pokemon): any {
+	return [
+		{
+			type: 1,
+			components: [
+				{
+					type: 2,
+					custom_id: activemon?.moveSlots[0]?.id ?? 'movea',
+					// @ts-ignore pp props missing from types
+					label: `${activemon?.moveSlots[0]?.name} ${activemon?.moveSlots[0]?.pp}/${activemon?.moveSlots[0]?.maxpp} PP`,
+					style: 1,
+					// @ts-ignore disbaled prop missing from types
+					disabled: activemon?.moveSlots[0]?.disabled
+				},
+				{
+					type: 2,
+					custom_id: activemon?.moveSlots[1]?.id ?? 'moveb',
+					// @ts-ignore pp props missing from types
+					label: `${activemon?.moveSlots[1]?.name} ${activemon?.moveSlots[1]?.pp}/${activemon?.moveSlots[1]?.maxpp} PP`,
+					style: 1,
+					// @ts-ignore disbaled prop missing from types
+					disabled: activemon?.moveSlots[1]?.disabled
+				},
+				{
+					type: 2,
+					custom_id: 'forfeit',
+					label: 'Forfeit',
+					style: 4
+				}
+			]
+		},
+		{
+			type: 1,
+			components: [
+				{
+					type: 2,
+					custom_id: activemon?.moveSlots[2]?.id ?? 'movec',
+					// @ts-ignore pp props missing from types
+					label: `${activemon?.moveSlots[2]?.name} ${activemon?.moveSlots[2]?.pp}/${activemon?.moveSlots[2]?.maxpp} PP`,
+					style: 1,
+					// @ts-ignore disbaled prop missing from types
+					disabled: activemon?.moveSlots[2]?.disabled
+				},
+				{
+					type: 2,
+					custom_id: activemon?.moveSlots[3]?.id ?? 'moved',
+					// @ts-ignore pp props missing from types
+					label: `${activemon?.moveSlots[3]?.name} ${activemon?.moveSlots[3]?.pp}/${activemon?.moveSlots[3]?.maxpp} PP`,
+					style: 1,
+					// @ts-ignore disbaled prop missing from types
+					disabled: activemon?.moveSlots[3]?.disabled
+				},
+				{
+					type: 2,
+					custom_id: 'switch',
+					label: 'Switch',
+					style: 3,
+					disabled: activemon?.trapped
+				}
+			]
+		},
+		// add another row if the mon can dynamax, gigantamax, mega evolve, or use z move
+		...(activemon?.canDynamax || activemon?.canGigantamax || activemon?.canMegaEvo || activemon?.zMoves?.length
+			? [
+					{
+						type: 1,
+						components: [
+							// add buttons dynamically based on what the mon can do
+							// if can dynamax or gigantamax, add a button for that, if can gigantamax label it as such otherwise label it as dynamax, also if romaji is available use that instead of the name
+							...(activemon?.canDynamax || activemon?.canGigantamax
+								? [
+										{
+											type: 2,
+											custom_id: 'max',
+											label: process.romaji
+												? activemon?.canGigantamax
+													? 'Kyodaimax'
+													: 'Daimax'
+												: activemon?.canGigantamax
+												? 'Gigantamax'
+												: 'Dynamax',
+											style: 2,
+											disabled: !activemon?.canDynamax && !activemon?.canGigantamax
+										}
+								  ]
+								: []),
+							...(activemon?.canMegaEvo
+								? [
+										{
+											type: 2,
+											custom_id: 'mega',
+											label: process.romaji ? 'Mega Shinka' : 'Mega Evolve',
+											style: 2,
+											disabled: !activemon?.canMegaEvo
+										}
+								  ]
+								: []),
+							...(activemon?.zMoves?.length
+								? [
+										{
+											type: 2,
+											custom_id: 'zmove',
+											label: process.romaji ? 'Z Waza' : 'Z-Move',
+											style: 2,
+											disabled: !activemon?.zMoves?.length
+										}
+								  ]
+								: [])
+						]
+					}
+			  ]
+			: [])
+	];
 }
 
 function maxMoves(battle: Battle): any {
