@@ -95,18 +95,20 @@ export function formatBattleLog(log: string[], battle: Battle): string {
 	str = str.replace(/(Turn )(\d+)/g, `${WHITE_BOLD}$1$2${RESET}`);
 
 	// format all moves from both active mons blue bold
-	const moveIDs = [...battle.p1.active[0]!.moves, ...battle.p2.active[0]!.moves].map((move) => move);
-	const moveNames = moveIDs.map((move) => Dex.moves.get(move).name);
+	if (battle.p1.active[0]?.moves && battle.p2.active[0]?.moves) {
+		const moveIDs = [...battle.p1.active[0].moves, ...battle.p2.active[0].moves].map((move) => move);
+		const moveNames = moveIDs.map((move) => Dex.moves.get(move).name);
 
-	for (let move of moveNames) {
-		if (process.romaji && process.romajiMons && process.romajiMoves) {
-			const romajiMove =
-				(process.romajiMoves.find((m) => m.move.replace(/\s/g, '').toLowerCase() === move.replace(/\s/g, '').toLowerCase())
-					?.romaji as MoveName) ?? move;
-			str = str.replace(new RegExp(move, 'g'), romajiMove);
-			move = romajiMove;
+		for (let move of moveNames) {
+			if (process.romaji && process.romajiMons && process.romajiMoves) {
+				const romajiMove =
+					(process.romajiMoves.find((m) => m.move.replace(/\s/g, '').toLowerCase() === move.replace(/\s/g, '').toLowerCase())
+						?.romaji as MoveName) ?? move;
+				str = str.replace(new RegExp(move, 'g'), romajiMove);
+				move = romajiMove;
+			}
+			str = str.replace(new RegExp(move, 'g'), `${BLUE_BOLD}${move}${RESET}`);
 		}
-		str = str.replace(new RegExp(move, 'g'), `${BLUE_BOLD}${move}${RESET}`);
 	}
 
 	// format all abilities and base abilities from both teams green bold and items yellow bold respectively

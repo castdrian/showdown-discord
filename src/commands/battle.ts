@@ -9,8 +9,14 @@ export class Battle extends Command {
 		const message = await interaction.fetchReply();
 
 		// attach global rejection handler and global uncaught exception handler
-		process.on('unhandledRejection', (err) => sendErrorToUser(err, message as Message, interaction));
-		process.on('uncaughtException', (err) => sendErrorToUser(err, message as Message, interaction));
+		process.on('unhandledRejection', (err: any) => {
+			this.container.logger.error(err);
+			sendErrorToUser(err, message as Message, interaction);
+		});
+		process.on('uncaughtException', (err) => {
+			this.container.logger.error(err);
+			sendErrorToUser(err, message as Message, interaction);
+		});
 
 		// try catch the entire thing and send an error message if it fails
 		try {
