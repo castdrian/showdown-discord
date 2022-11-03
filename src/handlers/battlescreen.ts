@@ -45,9 +45,12 @@ export async function updateBattleEmbed(
 	}
 
 	const activemon = battle.p1.active[0];
+	console.log(activemon);
 	const opponent = battle.p1.foe.active[0];
 	console.log(activemon?.maxMoves);
 	console.log('max moves');
+	console.log(activemon?.zMoves);
+	console.log('z moves');
 
 	const {
 		url: activesprite,
