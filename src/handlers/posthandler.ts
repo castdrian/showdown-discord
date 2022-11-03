@@ -24,7 +24,7 @@ export class PostHandler implements Handler<void> {
 		console.log('turn');
 		if (this.battle.request?.requestType === 'move') {
 			await waitFor(() => process.battlelog.length !== 0);
-			await updateBattleEmbed(this.battle, this.message, this.user);
+			await updateBattleEmbed(this.battle, this.message);
 			await moveChoice(this.streams, this.battle, this.message, this.user);
 		} else if (this.battle.request?.requestType === 'switch') {
 			console.log('switchchoice');
@@ -32,7 +32,7 @@ export class PostHandler implements Handler<void> {
 			await switchChoice(this.streams, this.battle, this.message, this.user);
 		} else if (this.battle.request?.requestType === 'wait') {
 			await waitFor(() => process.battlelog.length !== 0);
-			await updateBattleEmbed(this.battle, this.message, this.user);
+			await updateBattleEmbed(this.battle, this.message);
 		}
 	}
 
@@ -45,7 +45,7 @@ export class PostHandler implements Handler<void> {
 			console.log('updating battle embed');
 			if (this.battle.p1.active[0]?.name === this.battle.p1.lastPokemon.name) {
 				this.battle.p1.active[0] = this.battle.p1.lastPokemon;
-				await updateBattleEmbed(this.battle, this.message, this.user);
+				await updateBattleEmbed(this.battle, this.message);
 			}
 		}
 	}
@@ -53,13 +53,13 @@ export class PostHandler implements Handler<void> {
 	async '|win|'(args: Protocol.Args['|win|']) {
 		console.log(args);
 		process.battlelog.push(`${args[1]} won the battle!`);
-		await updateBattleEmbed(this.battle, this.message, this.user, []);
+		await updateBattleEmbed(this.battle, this.message, []);
 	}
 
 	async '|tie|'(args: Protocol.Args['|tie|']) {
 		console.log(args);
 		process.battlelog.push(`The battle ended in a tie!`);
-		await updateBattleEmbed(this.battle, this.message, this.user, []);
+		await updateBattleEmbed(this.battle, this.message, []);
 	}
 
 	'|detailschange|'(args: Protocol.Args['|detailschange|']) {

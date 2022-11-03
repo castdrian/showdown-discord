@@ -1,4 +1,4 @@
-import type { Battle } from '@pkmn/client';
+import type { Battle, Side } from '@pkmn/client';
 import { Dex, MoveName } from '@pkmn/dex';
 import { Formatters } from 'discord.js';
 
@@ -167,4 +167,60 @@ export function formatBattleLog(log: string[], battle: Battle): string {
 	// format as ansi code block
 	const result = Formatters.codeBlock('ansi', str);
 	return result;
+}
+
+export function generateSideState(side: Side) {
+	const mon = side.active[0] ?? side.lastPokemon;
+	if (!mon) return '';
+
+	// function to calculate hp color based on percentage
+	const hpColor = (hp: number, maxhp: number) => {
+		const ratio = hp / maxhp;
+		if (ratio > 0.5) return GREEN_BOLD;
+		if (ratio > 0.2) return YELLOW_BOLD;
+		return RED_BOLD;
+	};
+
+	const HP_COLORS = {
+		g: GREEN_BOLD,
+		y: YELLOW_BOLD,
+		r: RED_BOLD,
+		// if empty string, calculate color based on percentage
+		'': hpColor(mon.hp, mon.maxhp)
+	};
+
+	const STATUS_COLORS = {
+		brn: RED_BOLD,
+		par: YELLOW_BOLD,
+		psn: MAGENTA_BOLD,
+		tox: MAGENTA_BOLD,
+		slp: BLUE_BOLD,
+		frz: CYAN_BOLD
+	};
+
+	const status = mon.status ? STATUS_COLORS[mon.status] + mon.status.toUpperCase() + RESET : '';
+	const HP_COLOR = HP_COLORS[mon.hpcolor];
+
+	const monString = `${WHITE_BOLD}${mon.name}${RESET} ${HP_COLOR}${mon.hp}${RESET}/${HP_COLOR}${mon.maxhp}${RESET} ${WHITE_BOLD}HP${RESET} ${
+		mon.status ? `${status}` : ''
+	}`;
+	const ansi = Formatters.codeBlock('ansi', monString);
+
+	const normalBall = '<:normalball:1037794399347822622>';
+	const statusBall = '<:statusball:1037794402657128570>';
+	const faintedBall = '<:faintedball:1037794395908477029>';
+
+	const teamStatusString = side.team
+		.map((mon) => {
+			if (mon.fainted) return faintedBall;
+			if (mon.status) return statusBall;
+			return normalBall;
+		})
+		// if side.n is 1 and side.team.length is less than 6, add normal balls to fill up the rest of the team
+		.concat(Array(side.n === 1 && side.team.length < 6 ? 6 - side.team.length : 0).fill(normalBall))
+		.join(' ');
+
+	// if side is not player swap ansi and teamStatusString order
+	if (side.n === 1) return `${teamStatusString}\n${ansi}`;
+	return `${ansi}\n${teamStatusString}`;
 }

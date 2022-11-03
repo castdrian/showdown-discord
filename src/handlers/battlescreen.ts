@@ -2,7 +2,7 @@ import type { Battle, Pokemon } from '@pkmn/client';
 import type { BaseMessageComponentOptions, Message, MessageActionRow, MessageActionRowOptions, MessageComponentInteraction, User } from 'discord.js';
 import { Sprites } from '@pkmn/img';
 import { ChoiceBuilder } from '@pkmn/view';
-import { formatBattleLog } from '#util/ansi';
+import { formatBattleLog, generateSideState } from '#util/ansi';
 import type { MoveName } from '@pkmn/dex';
 import { Dex } from '@pkmn/sim';
 import { fixCustomId, getCustomId } from '#util/functions';
@@ -11,7 +11,6 @@ import { maxSprite } from '#util/canvas';
 export async function updateBattleEmbed(
 	battle: Battle,
 	message: Message,
-	user: User,
 	extComponents?: (MessageActionRow | (Required<BaseMessageComponentOptions> & MessageActionRowOptions))[]
 ): Promise<void> {
 	if (extComponents) {
@@ -45,7 +44,6 @@ export async function updateBattleEmbed(
 	}
 
 	const activemon = battle.p1.active[0];
-	console.log(activemon);
 	const opponent = battle.p1.foe.active[0];
 	console.log(activemon?.maxMoves);
 	console.log('max moves');
@@ -65,22 +63,12 @@ export async function updateBattleEmbed(
 
 	const embeds = [
 		{
-			author: {
-				name: `${opponent?.name} | ${opponent?.hp}/${opponent?.maxhp} HP ${opponent?.status ? `| ${opponent.status.toUpperCase()}` : ''}`,
-				iconURL: message.client.user?.displayAvatarURL()
-			},
 			thumbnail: { url: opponentsprite },
 			color: '0x5865F2',
-			description: formatBattleLog(process.battlelog, battle),
+			description: `${generateSideState(battle.p2)}\n${formatBattleLog(process.battlelog, battle)}\n${generateSideState(battle.p1)}`,
 			// when process.isMax is true take 'max.gif' from the messageattachment that maxSprite() returns
 			// only show image if active mon is not fainted, if it is fainted image is undefined
-			image: activemon?.fainted ? undefined : { url: process.isMax ? 'attachment://max.gif' : activesprite },
-			footer: {
-				text: `${activemon?.name} | ${activemon?.hp}/${activemon?.maxhp} HP ${
-					activemon?.status ? `| ${activemon.status.toUpperCase()}` : ''
-				}`,
-				iconURL: user.displayAvatarURL()
-			}
+			image: activemon?.fainted ? undefined : { url: process.isMax ? 'attachment://max.gif' : activesprite }
 		}
 	] as any;
 
@@ -138,7 +126,7 @@ export async function moveChoice(streams: any, battle: Battle, message: Message,
 			else builder.addChoice(`move ${customId}`);
 			const choice = builder.toString();
 			streams.p1.write(choice);
-			await updateBattleEmbed(battle, message, user);
+			await updateBattleEmbed(battle, message);
 		}
 		if (customId === 'switch') {
 			collector.stop();
@@ -150,11 +138,11 @@ export async function moveChoice(streams: any, battle: Battle, message: Message,
 		}
 		if (customId === 'cancel') {
 			collector.stop();
-			await updateBattleEmbed(battle, message, user);
+			await updateBattleEmbed(battle, message);
 			await moveChoice(streams, battle, message, user);
 		}
 		if (customId === 'forfeit') {
-			const forfeit = await forfeitBattle(streams, i, battle, message, user);
+			const forfeit = await forfeitBattle(streams, i, battle, message);
 			if (forfeit) collector.stop();
 		}
 	});
@@ -183,7 +171,7 @@ export async function switchChoice(streams: any, battle: Battle, message: Messag
 	];
 
 	console.log('sending switch embed');
-	await updateBattleEmbed(battle, message, user, components);
+	await updateBattleEmbed(battle, message, components);
 	console.log('sent switch embed');
 
 	const filter = (i: MessageComponentInteraction) => i.user.id === user.id;
@@ -196,7 +184,7 @@ export async function switchChoice(streams: any, battle: Battle, message: Messag
 
 		if (customId === 'cancel') {
 			collector.stop();
-			await updateBattleEmbed(battle, message, user);
+			await updateBattleEmbed(battle, message);
 			await moveChoice(streams, battle, message, user);
 		} else {
 			collector.stop();
@@ -207,7 +195,7 @@ export async function switchChoice(streams: any, battle: Battle, message: Messag
 	});
 }
 
-async function forfeitBattle(streams: any, interaction: MessageComponentInteraction, battle: Battle, message: Message, user: User): Promise<boolean> {
+async function forfeitBattle(streams: any, interaction: MessageComponentInteraction, battle: Battle, message: Message): Promise<boolean> {
 	const msg = (await interaction.followUp({
 		content: 'Do you wish to forfeit this battle?',
 		components: [
@@ -250,7 +238,7 @@ async function forfeitBattle(streams: any, interaction: MessageComponentInteract
 			await interaction.client.api.webhooks(i.client.user!.id, interaction.token).messages(msg.id).delete();
 		}
 		if (customId === 'no') {
-			await updateBattleEmbed(battle, message, user);
+			await updateBattleEmbed(battle, message);
 			// @ts-ignore delete ephemeral message
 			await interaction.client.api.webhooks(i.client.user!.id, interaction.token).messages(msg.id).delete();
 		}
@@ -266,7 +254,7 @@ async function activateGimmick(gimmick: string, streams: any, battle: Battle, me
 		// now insert the cancel button at row 2
 		components[1].components.push({ type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 });
 
-		await updateBattleEmbed(battle, message, user, components);
+		await updateBattleEmbed(battle, message, components);
 		await moveChoice(streams, battle, message, user, gimmick);
 	}
 	if (gimmick === 'mega') {
@@ -276,7 +264,7 @@ async function activateGimmick(gimmick: string, streams: any, battle: Battle, me
 		// remove row 3 (the mega button) which is at index 2
 		components.splice(2, 1);
 
-		await updateBattleEmbed(battle, message, user, components);
+		await updateBattleEmbed(battle, message, components);
 		await moveChoice(streams, battle, message, user, gimmick);
 	}
 }
