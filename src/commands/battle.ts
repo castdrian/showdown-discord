@@ -1,48 +1,24 @@
 import { type ApplicationCommandRegistry, Command, RegisterBehavior } from '@sapphire/framework';
-import { CommandInteraction, Formatters, Message, MessageAttachment } from 'discord.js';
-import newGithubIssueUrl from 'new-github-issue-url';
+import { CommandInteraction, Message } from 'discord.js';
 import { startScreen } from '#handlers/startscreen';
+import { sendErrorToUser } from '#util/functions';
 
 export class Battle extends Command {
 	public override async chatInputRun(interaction: CommandInteraction) {
 		await interaction.deferReply();
 		const message = await interaction.fetchReply();
 
+		// attach global rejection handler and global uncaught exception handler
+		process.on('unhandledRejection', (err) => sendErrorToUser(err, message as Message, interaction));
+		process.on('uncaughtException', (err) => sendErrorToUser(err, message as Message, interaction));
+
 		// try catch the entire thing and send an error message if it fails
 		try {
 			// do the battle stuff
 			await startScreen(interaction);
 		} catch (error: any) {
-			// send pretty formatted error message including attachment of stack trace and link to open a new issue
 			if (message instanceof Message) {
-				const components = [
-					{
-						type: 1,
-						components: [
-							{
-								type: 2,
-								label: 'Report Issue',
-								style: 5,
-								url: newGithubIssueUrl({
-									user: 'castdrian',
-									repo: 'showdown',
-									title: `Error: ${error.message}`,
-									body: `**Describe the issue:**\n\n**To Reproduce:**\n\n**Expected behavior:**\n\n**Screenshots:**\n\n**Additional context:**\n\n**Upload Stack Trace:**`
-								})
-							}
-						]
-					}
-				] as any;
-				await message.reply({
-					// ansi red bold error message
-					content: `An error occurred while running the simulation:\n${Formatters.codeBlock(
-						'ansi',
-						`\u001b[1;31m${error.message}\u001b[0m`
-					)}`,
-					components,
-					files: [new MessageAttachment(Buffer.from(error.stack), 'stacktrace.txt')]
-				});
-				await interaction.deleteReply();
+				await sendErrorToUser(error, message, interaction);
 			}
 		}
 	}

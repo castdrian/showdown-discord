@@ -7,6 +7,7 @@ import { Dex, TeamValidator } from '@pkmn/sim';
 import { Teams, Data, PokemonSet } from '@pkmn/sets';
 import { fetchRomaji, RomajiMon, RomajiMove } from 'pkmn-romaji';
 import { request } from 'undici';
+import { sendErrorToUser } from '#util/functions';
 
 export async function startScreen(interaction: CommandInteraction) {
 	let formatid = 'gen8randombattle';
@@ -51,7 +52,9 @@ export async function startScreen(interaction: CommandInteraction) {
 			await interaction.client.api.webhooks(i.client.user!.id, interaction.token).messages(id).delete();
 			const message = await interaction.fetchReply();
 			if (message instanceof Message) {
-				await initiateBattle(message, interaction.user, formatid, battle_team);
+				await initiateBattle(interaction, message, interaction.user, formatid, battle_team).catch((err) =>
+					sendErrorToUser(err, message, interaction)
+				);
 				process.romaji = false;
 			}
 		}

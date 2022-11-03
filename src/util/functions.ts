@@ -1,4 +1,5 @@
-import type { MessageEditOptions } from 'discord.js';
+import { CommandInteraction, Formatters, Message, MessageAttachment, MessageEditOptions } from 'discord.js';
+import newGithubIssueUrl from 'new-github-issue-url';
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -58,3 +59,32 @@ export const getCustomId = (customId: string) => {
 	// so now we match all the numbers in the string and remove them since our custom_id doesn't contain any numbers
 	return customId.replace(/[0-9]/g, '');
 };
+
+export async function sendErrorToUser(error: any, message: Message, interaction: CommandInteraction) {
+	// send pretty formatted error message including attachment of stack trace and link to open a new issue
+	const components = [
+		{
+			type: 1,
+			components: [
+				{
+					type: 2,
+					label: 'Report Issue',
+					style: 5,
+					url: newGithubIssueUrl({
+						user: 'castdrian',
+						repo: 'showdown',
+						title: `Error: ${error.message}`,
+						body: `**Describe the issue:**\n\n**To Reproduce:**\n\n**Expected behavior:**\n\n**Screenshots:**\n\n**Additional context:**\n\n**Upload Stack Trace:**`
+					})
+				}
+			]
+		}
+	] as any;
+	await message.reply({
+		// ansi red bold error message
+		content: `An error occurred while running the simulation:\n${Formatters.codeBlock('ansi', `\u001b[1;31m${error.message}\u001b[0m`)}`,
+		components,
+		files: [new MessageAttachment(Buffer.from(error.stack), 'stacktrace.txt')]
+	});
+	await interaction.deleteReply();
+}
