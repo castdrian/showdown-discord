@@ -73,7 +73,8 @@ export async function updateBattleEmbed(
 			color: '0x5865F2',
 			description: formatBattleLog(process.battlelog, battle),
 			// when process.isMax is true take 'max.gif' from the messageattachment that maxSprite() returns
-			image: process.isMax ? { url: 'attachment://max.gif' } : { url: activesprite },
+			// only show image if active mon is not fainted, if it is fainted image is undefined
+			image: activemon?.fainted ? undefined : { url: process.isMax ? 'attachment://max.gif' : activesprite },
 			footer: {
 				text: `${activemon?.name} | ${activemon?.hp}/${activemon?.maxhp} HP ${
 					activemon?.status ? `| ${activemon.status.toUpperCase()}` : ''
