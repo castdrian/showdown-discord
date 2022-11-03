@@ -4,6 +4,8 @@ import { Formatters } from 'discord.js';
 
 const RED_BOLD = '\u001b[1;31m';
 const BLUE_BOLD = '\u001b[1;34m';
+const GREEN_BOLD = '\u001b[1;32m';
+const YELLOW_BOLD = '\u001b[1;33m';
 const MAGENTA_BOLD = '\u001b[1;35m';
 const CYAN_BOLD = '\u001b[1;36m';
 const WHITE_BOLD = '\u001b[1;37m';
@@ -105,6 +107,59 @@ export function formatBattleLog(log: string[], battle: Battle): string {
 			move = romajiMove;
 		}
 		str = str.replace(new RegExp(move, 'g'), `${BLUE_BOLD}${move}${RESET}`);
+	}
+
+	// format all abilities and base abilities from both teams green bold and items yellow bold respectively
+	for (const mon of battle.p1.team) {
+		if (mon) {
+			const abilityID = mon.ability;
+			const baseAbilityID = mon.baseAbility;
+			const abilityName = Dex.abilities.get(abilityID).name;
+			const baseAbilityName = Dex.abilities.get(baseAbilityID).name;
+
+			if (abilityName && baseAbilityName) {
+				// eslint-disable-next-line no-negated-condition
+				if (abilityName !== baseAbilityName) {
+					str = str.replace(new RegExp(abilityName, 'g'), `${GREEN_BOLD}${abilityName}${RESET}`);
+					str = str.replace(new RegExp(baseAbilityName, 'g'), `${GREEN_BOLD}${baseAbilityName}${RESET}`);
+				} else {
+					str = str.replace(new RegExp(abilityName, 'g'), `${GREEN_BOLD}${abilityName}${RESET}`);
+				}
+			}
+
+			const itemID = mon.item;
+			const itemName = Dex.items.get(itemID).name;
+
+			if (itemName) {
+				str = str.replace(new RegExp(itemName, 'g'), `${YELLOW_BOLD}${itemName}${RESET}`);
+			}
+		}
+	}
+
+	for (const mon of battle.p2.team) {
+		if (mon) {
+			const abilityID = mon.ability;
+			const baseAbilityID = mon.baseAbility;
+			const abilityName = Dex.abilities.get(abilityID).name;
+			const baseAbilityName = Dex.abilities.get(baseAbilityID).name;
+
+			if (abilityName && baseAbilityName) {
+				// eslint-disable-next-line no-negated-condition
+				if (abilityName !== baseAbilityName) {
+					str = str.replace(new RegExp(abilityName, 'g'), `${GREEN_BOLD}${abilityName}${RESET}`);
+					str = str.replace(new RegExp(baseAbilityName, 'g'), `${GREEN_BOLD}${baseAbilityName}${RESET}`);
+				} else {
+					str = str.replace(new RegExp(abilityName, 'g'), `${GREEN_BOLD}${abilityName}${RESET}`);
+				}
+			}
+
+			const itemID = mon.item;
+			const itemName = Dex.items.get(itemID).name;
+
+			if (itemName) {
+				str = str.replace(new RegExp(itemName, 'g'), `${YELLOW_BOLD}${itemName}${RESET}`);
+			}
+		}
 	}
 
 	// format as ansi code block
