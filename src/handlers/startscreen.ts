@@ -131,62 +131,64 @@ export async function startScreen(interaction: CommandInteraction) {
 		if (i.customId === 'team') {
 			await i.showModal(modal);
 
-			const submit = (await interaction
+			const submit = await interaction
 				.awaitModalSubmit({
 					filter: (i) => i.customId === 'team_import',
 					time: 20000
 				})
-				.catch(() => interaction.followUp({ content: 'Team import timed out.', ephemeral: true }))) as ModalSubmitInteraction;
-			if (submit) await submit.deferReply({ ephemeral: true });
+				.catch(() => interaction.followUp({ content: 'Team import timed out.', ephemeral: true }));
+			if (submit instanceof ModalSubmitInteraction) {
+				await submit.deferReply({ ephemeral: true });
 
-			const rawUrl = submit.fields.getTextInputValue('paste_url');
-			// validate pokepaste url
-			if (!rawUrl.startsWith('https://pokepast.es/')) {
-				return submit.editReply({ content: 'Invalid URL. Please try again.' });
-			}
-
-			// fetch the url and append /json to the end
-			const { body, statusCode } = await request(`${rawUrl}/json`);
-			if (statusCode !== 200) {
-				return submit.editReply({ content: 'Invalid URL. Please try again.' });
-			}
-			const pasteTeam: PokePasteResponse = await body.json();
-
-			const validator = new TeamValidator('gen8customgame');
-			const dex = Dex.forFormat('gen8customgame');
-
-			const team = Teams.importTeam(pasteTeam.paste, dex as Data)?.team as PokemonSet[];
-			const invalid = validator.validateTeam(team);
-
-			if (!team || invalid) {
-				return submit.editReply({
-					content: `Team ${Formatters.inlineCode(pasteTeam.title)} is invalid:\n\n${Formatters.codeBlock(
-						invalid?.join('\n') ?? 'Invalid Team Data'
-					)}`
-				});
-			}
-
-			const embeds = [
-				{
-					title: 'Pokémon Showdown! Battle',
-					thumbnail: { url: 'attachment://format.png' },
-					description: `Format: \`[Gen 8] Random Battle\`\nPlayers: ${Formatters.inlineCode(
-						interaction.user.username
-					)} vs. ${Formatters.inlineCode(interaction.client.user!.username)}\nTeam: ${Formatters.inlineCode(
-						pasteTeam.title
-					)}\n${Formatters.codeBlock(
-						// iterate over the team and format it into a readable string
-						// eslint-disable-next-line no-negated-condition
-						team.map((x) => `${x.name} ${x.name !== x.species ? `(${x.species})` : ''}`).join('\n')
-					)}`,
-					color: '0x5865F2',
-					image: { url: 'attachment://versus.png' }
+				const rawUrl = submit.fields.getTextInputValue('paste_url');
+				// validate pokepaste url
+				if (!rawUrl.startsWith('https://pokepast.es/')) {
+					return submit.editReply({ content: 'Invalid URL. Please try again.' });
 				}
-			] as any;
 
-			await interaction.editReply({ embeds, files });
-			battle_team = team;
-			await submit.editReply({ content: `Team ${Formatters.inlineCode(pasteTeam.title)} imported successfully!` });
+				// fetch the url and append /json to the end
+				const { body, statusCode } = await request(`${rawUrl}/json`);
+				if (statusCode !== 200) {
+					return submit.editReply({ content: 'Invalid URL. Please try again.' });
+				}
+				const pasteTeam: PokePasteResponse = await body.json();
+
+				const validator = new TeamValidator('gen8customgame');
+				const dex = Dex.forFormat('gen8customgame');
+
+				const team = Teams.importTeam(pasteTeam.paste, dex as Data)?.team as PokemonSet[];
+				const invalid = validator.validateTeam(team);
+
+				if (!team || invalid) {
+					return submit.editReply({
+						content: `Team ${Formatters.inlineCode(pasteTeam.title)} is invalid:\n\n${Formatters.codeBlock(
+							invalid?.join('\n') ?? 'Invalid Team Data'
+						)}`
+					});
+				}
+
+				const embeds = [
+					{
+						title: 'Pokémon Showdown! Battle',
+						thumbnail: { url: 'attachment://format.png' },
+						description: `Format: \`[Gen 8] Random Battle\`\nPlayers: ${Formatters.inlineCode(
+							interaction.user.username
+						)} vs. ${Formatters.inlineCode(interaction.client.user!.username)}\nTeam: ${Formatters.inlineCode(
+							pasteTeam.title
+						)}\n${Formatters.codeBlock(
+							// iterate over the team and format it into a readable string
+							// eslint-disable-next-line no-negated-condition
+							team.map((x) => `${x.name} ${x.name !== x.species ? `(${x.species})` : ''}`).join('\n')
+						)}`,
+						color: '0x5865F2',
+						image: { url: 'attachment://versus.png' }
+					}
+				] as any;
+
+				await interaction.editReply({ embeds, files });
+				battle_team = team;
+				await submit.editReply({ content: `Team ${Formatters.inlineCode(pasteTeam.title)} imported successfully!` });
+			}
 		}
 	});
 }
