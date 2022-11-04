@@ -367,6 +367,7 @@ function generateMoveButtons(activemon: Pokemon): any {
 												? 'Gigantamax'
 												: 'Dynamax',
 											style: 2,
+											emoji: '<:dmax:1038101514142617650>',
 											disabled: !activemon?.canDynamax && !activemon?.canGigantamax
 										}
 								  ]
@@ -378,6 +379,7 @@ function generateMoveButtons(activemon: Pokemon): any {
 											custom_id: 'mega',
 											label: process.romaji ? 'Mega Shinka' : 'Mega Evolve',
 											style: 2,
+											emoji: '<:megaevo:1038102161122414602>',
 											disabled: !activemon?.canMegaEvo
 										}
 								  ]
@@ -389,6 +391,7 @@ function generateMoveButtons(activemon: Pokemon): any {
 											custom_id: 'zmove',
 											label: process.romaji ? 'Z Waza' : 'Z-Move',
 											style: 2,
+											emoji: '<:zpower:1038102607027261540>',
 											disabled: !activemon?.zMoves?.length
 										}
 								  ]
