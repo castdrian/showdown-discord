@@ -23,6 +23,13 @@ export class PostHandler implements Handler<void> {
 	async '|turn|'() {
 		console.log('turn');
 		if (this.battle.request?.requestType === 'move') {
+			// @ts-ignore missing types
+			console.log(this.battle.request.active[0]?.canZMove);
+			console.log(this.battle.request.active[0]?.zMoves);
+			// @ts-ignore missing types
+			this.battle.p1.active[0].canZMove = this.battle.request.active[0].canZMove;
+			// @ts-ignore missing types
+			this.battle.p1.active[0].zMoves = this.battle.request.active[0].zMoves;
 			await waitFor(() => process.battlelog.length !== 0);
 			await updateBattleEmbed(this.battle, this.message);
 			await moveChoice(this.streams, this.battle, this.message, this.user);

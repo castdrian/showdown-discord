@@ -268,6 +268,16 @@ async function activateGimmick(gimmick: string, streams: any, battle: Battle, me
 		await updateBattleEmbed(battle, message, components);
 		await moveChoice(streams, battle, message, user, gimmick);
 	}
+	if (gimmick === 'zmove') {
+		const components = zMoves(battle);
+		// now insert the cancel button at row 2
+		components[1].components.push({ type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 });
+		// remove row 3 (the zmove button) which is at index 2
+		components.splice(2, 1);
+
+		await updateBattleEmbed(battle, message, components);
+		await moveChoice(streams, battle, message, user, gimmick);
+	}
 }
 
 function generateMoveButtons(activemon: Pokemon): any {
@@ -436,8 +446,7 @@ function maxMoves(battle: Battle): any {
 						// @ts-ignore typings are wrong
 					}/${battle.p1.active[0]?.moveSlots[0]?.maxpp} PP`,
 					style: 1,
-					emoji: type1,
-					disabled: !battle.p1.active[0]?.maxMoves?.[0].disabled
+					emoji: type1
 				},
 				{
 					type: 2,
@@ -456,8 +465,7 @@ function maxMoves(battle: Battle): any {
 						// @ts-ignore typings are wrong
 					}/${battle.p1.active[0]?.moveSlots[1]?.maxpp} PP`,
 					style: 1,
-					emoji: type2,
-					disabled: !battle.p1.active[0]?.maxMoves?.[1].disabled
+					emoji: type2
 				}
 			]
 		},
@@ -481,8 +489,7 @@ function maxMoves(battle: Battle): any {
 						// @ts-ignore typings are wrong
 					}/${battle.p1.active[0]?.moveSlots[2]?.maxpp} PP`,
 					style: 1,
-					emoji: type3,
-					disabled: !battle.p1.active[0]?.maxMoves?.[2].disabled
+					emoji: type3
 				},
 				{
 					type: 2,
@@ -501,10 +508,121 @@ function maxMoves(battle: Battle): any {
 						// @ts-ignore typings are wrong
 					}/${battle.p1.active[0]?.moveSlots[3]?.maxpp} PP`,
 					style: 1,
-					emoji: type4,
-					disabled: !battle.p1.active[0]?.maxMoves?.[3].disabled
+					emoji: type4
 				}
 			]
 		}
 	];
+}
+
+function zMoves(battle: Battle): any {
+	// get the type of each move
+	const moveTypes = battle.p1.active[0]?.moves.map((move) => {
+		const moveType = Dex.moves.get(move)?.type;
+		return moveType;
+	});
+	// get emojis from constants
+	const type1 = moveTypes?.[0] ? typeEmotes[moveTypes[0].toLowerCase()] : undefined;
+	const type2 = moveTypes?.[1] ? typeEmotes[moveTypes[1].toLowerCase()] : undefined;
+	const type3 = moveTypes?.[2] ? typeEmotes[moveTypes[2].toLowerCase()] : undefined;
+	const type4 = moveTypes?.[3] ? typeEmotes[moveTypes[3].toLowerCase()] : undefined;
+
+	if (battle.p1.active[0]?.zMoves?.length) {
+		// replace entries in battle.p1.active[0]?.zMoves with the moveSlot data if the index is null
+		for (let i = 0; i < battle.p1.active[0]?.zMoves?.length; i++) {
+			if (battle.p1.active[0]?.zMoves?.[i] === null) {
+				// @ts-ignore lol
+				battle.p1.active[0].zMoves[i] = battle.p1.active[0]?.moveSlots[i];
+			}
+		}
+
+		return [
+			{
+				type: 1,
+				components: [
+					{
+						type: 2,
+						custom_id: battle.p1.active[0]?.moveSlots?.[0].id,
+						label: `${
+							process.romaji
+								? process.romajiMoves.find(
+										(m) =>
+											m.move.replace(/\s/g, '').toLowerCase() ===
+											battle.p1.active[0]?.zMoves?.[0]?.name.replace(/\s/g, '').toLowerCase()
+								  )?.romaji ?? battle.p1.active[0]?.zMoves?.[0]?.name
+								: battle.p1.active[0]?.zMoves?.[0]?.name
+						} ${
+							// @ts-ignore typings are wrong
+							battle.p1.active[0]?.moveSlots[0]?.pp
+							// @ts-ignore typings are wrong
+						}/${battle.p1.active[0]?.moveSlots[0]?.maxpp} PP`,
+						style: 1,
+						emoji: type1
+					},
+					{
+						type: 2,
+						custom_id: battle.p1.active[0]?.moveSlots?.[1].id,
+						label: `${
+							process.romaji
+								? process.romajiMoves.find(
+										(m) =>
+											m.move.replace(/\s/g, '').toLowerCase() ===
+											battle.p1.active[0]?.zMoves?.[1]?.name.replace(/\s/g, '').toLowerCase()
+								  )?.romaji ?? battle.p1.active[0]?.zMoves?.[1]?.name
+								: battle.p1.active[0]?.zMoves?.[1]?.name
+						} ${
+							// @ts-ignore typings are wrong
+							battle.p1.active[0]?.moveSlots[1]?.pp
+							// @ts-ignore typings are wrong
+						}/${battle.p1.active[0]?.moveSlots[1]?.maxpp} PP`,
+						style: 1,
+						emoji: type2
+					}
+				]
+			},
+			{
+				type: 1,
+				components: [
+					{
+						type: 2,
+						custom_id: battle.p1.active[0]?.moveSlots?.[2].id,
+						label: `${
+							process.romaji
+								? process.romajiMoves.find(
+										(m) =>
+											m.move.replace(/\s/g, '').toLowerCase() ===
+											battle.p1.active[0]?.zMoves?.[2]?.name.replace(/\s/g, '').toLowerCase()
+								  )?.romaji ?? battle.p1.active[0]?.zMoves?.[2]?.name
+								: battle.p1.active[0]?.zMoves?.[2]?.name
+						} ${
+							// @ts-ignore typings are wrong
+							battle.p1.active[0]?.moveSlots[2]?.pp
+							// @ts-ignore typings are wrong
+						}/${battle.p1.active[0]?.moveSlots[2]?.maxpp} PP`,
+						style: 1,
+						emoji: type3
+					},
+					{
+						type: 2,
+						custom_id: battle.p1.active[0]?.moveSlots?.[3].id,
+						label: `${
+							process.romaji
+								? process.romajiMoves.find(
+										(m) =>
+											m.move.replace(/\s/g, '').toLowerCase() ===
+											battle.p1.active[0]?.zMoves?.[3]?.name.replace(/\s/g, '').toLowerCase()
+								  )?.romaji ?? battle.p1.active[0]?.zMoves?.[3]?.name
+								: battle.p1.active[0]?.zMoves?.[3]?.name
+						} ${
+							// @ts-ignore typings are wrong
+							battle.p1.active[0]?.moveSlots[3]?.pp
+							// @ts-ignore typings are wrong
+						}/${battle.p1.active[0]?.moveSlots[3]?.maxpp} PP`,
+						style: 1,
+						emoji: type4
+					}
+				]
+			}
+		];
+	}
 }
