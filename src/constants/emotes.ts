@@ -18,3 +18,24 @@ export const typeEmotes = {
 	steel: '<:steeltype:1038083456707612762>',
 	water: '<:watertype:1038083426110160926>'
 } as any;
+
+export const shortTypes = {
+	bug: 'BUG',
+	dark: 'DRK',
+	dragon: 'DRA',
+	electric: 'ELE',
+	fairy: 'FAY',
+	fighting: 'FGT',
+	fire: 'FIR',
+	flying: 'FLY',
+	ghost: 'GHO',
+	grass: 'GRS',
+	ground: 'GRN',
+	ice: 'ICE',
+	normal: 'NRM',
+	poison: 'PSN',
+	psychic: 'PSY',
+	rock: 'RCK',
+	steel: 'STL',
+	water: 'WTR'
+} as any;

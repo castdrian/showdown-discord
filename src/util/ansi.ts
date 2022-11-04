@@ -1,3 +1,4 @@
+import { shortTypes } from '#constants/emotes';
 import type { Battle, Side } from '@pkmn/client';
 import { Dex, MoveName } from '@pkmn/dex';
 import { Formatters } from 'discord.js';
@@ -198,12 +199,16 @@ export function generateSideState(side: Side) {
 		frz: CYAN_BOLD
 	};
 
-	const status = mon.status ? STATUS_COLORS[mon.status] + mon.status.toUpperCase() + RESET : '';
+	const status = mon.status ? `${STATUS_COLORS[mon.status] + mon.status.toUpperCase() + RESET} ` : '';
 	const HP_COLOR = HP_COLORS[mon.hpcolor];
 
+	// get the mons types and format them to look like (type1/type2) if it has 2 types, otherwise just (type1)
+	const types = mon.types.map((type) => shortTypes[type.toLowerCase()]).join('/');
+	const typesString = `(${types})`;
+
 	const monString = `${WHITE_BOLD}${mon.name}${RESET} ${HP_COLOR}${mon.hp}${RESET}/${HP_COLOR}${mon.maxhp}${RESET} ${WHITE_BOLD}HP${RESET} ${
-		mon.status ? `${status}` : ''
-	}`;
+		mon.status ? status : ''
+	}${typesString}`;
 	const ansi = Formatters.codeBlock('ansi', monString);
 
 	const normalBall = '<:normalball:1037794399347822622>';
@@ -220,7 +225,7 @@ export function generateSideState(side: Side) {
 		.concat(Array(side.n === 1 && side.team.length < 6 ? 6 - side.team.length : 0).fill(normalBall))
 		.join(' ');
 
-	// if side is not player swap ansi and teamStatusString order
+	// if side is not player swap order
 	if (side.n === 1) return `${teamStatusString}\n${ansi}`;
 	return `${ansi}\n${teamStatusString}`;
 }
