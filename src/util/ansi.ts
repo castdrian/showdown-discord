@@ -92,7 +92,7 @@ export function formatBattleLog(log: string[], battle: Battle): string {
 	str = str.replace(new RegExp(battle.p2.name, 'g'), `${CYAN_BOLD}${battle.p2.name}${RESET}`);
 
 	// format turn and turn number white bold
-	str = str.replace(/(Turn )(\d+)/g, `${WHITE_BOLD}$1$2${RESET}`);
+	str = str.replace(/(Turn )(\d+)/g, `== ${WHITE_BOLD}$1$2${RESET}`);
 
 	// format all moves from both active mons blue bold
 	if (battle.p1.active[0]?.moves && battle.p2.active[0]?.moves) {
