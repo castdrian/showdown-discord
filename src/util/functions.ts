@@ -80,11 +80,13 @@ export async function sendErrorToUser(error: any, message: Message, interaction:
 			]
 		}
 	] as any;
-	await message.reply({
-		// ansi red bold error message
-		content: `An error occurred while running the simulation:\n${Formatters.codeBlock('ansi', `\u001b[1;31m${error.message}\u001b[0m`)}`,
-		components,
-		files: [new MessageAttachment(Buffer.from(error.stack), 'stacktrace.txt')]
-	});
-	await interaction.deleteReply();
+	await message
+		.reply({
+			// ansi red bold error message
+			content: `An error occurred while running the simulation:\n${Formatters.codeBlock('ansi', `\u001b[1;31m${error.message}\u001b[0m`)}`,
+			components,
+			files: [new MessageAttachment(Buffer.from(error.stack), 'stacktrace.txt')]
+		})
+		.catch(() => null);
+	await interaction.deleteReply().catch(() => null);
 }
