@@ -38,6 +38,31 @@ export async function startScreen(interaction: CommandInteraction) {
 	const { id } = await interaction.followUp({
 		content:
 			'[info] This application is very experimental and may break at any time.\n[info] You may just want to play [Pokémon Showdown](https://play.pokemonshowdown.com).',
+		components: [
+			{
+				type: 1,
+				components: [
+					{
+						type: 2,
+						label: 'Contact',
+						style: 5,
+						url: 'discord://-/users/224617799434108928'
+					},
+					{
+						type: 2,
+						label: 'GitHub',
+						style: 5,
+						url: 'https://github.com/castdrian/showdown'
+					},
+					{
+						type: 2,
+						label: 'Add to Server',
+						style: 5,
+						url: 'https://discord.com/api/oauth2/authorize?client_id=847595833347801118&permissions=314368&scope=applications.commands%20bot'
+					}
+				]
+			}
+		] as any,
 		ephemeral: true
 	});
 
@@ -60,17 +85,8 @@ export async function startScreen(interaction: CommandInteraction) {
 		}
 		if (i.customId === 'cancel') {
 			await i.deferUpdate();
-			const embeds = [
-				{
-					title: 'Pokémon Showdown! Battle',
-					thumbnail: { url: interaction.client.user?.displayAvatarURL() },
-					description: '`Battle cancelled`',
-					color: '0x5865F2'
-				}
-			] as any;
-
 			collector.stop();
-			await i.editReply({ embeds, components: [], files: [] });
+			await interaction.deleteReply();
 		}
 		if (i.customId === 'romaji') {
 			await i.deferUpdate();
