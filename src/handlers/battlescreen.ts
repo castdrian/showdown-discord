@@ -7,6 +7,7 @@ import type { MoveName } from '@pkmn/dex';
 import { Dex } from '@pkmn/sim';
 import { fixCustomId, getCustomId } from '#util/functions';
 import { maxSprite } from '#util/canvas';
+import { typeEmotes } from '#constants/emotes';
 
 export async function updateBattleEmbed(
 	battle: Battle,
@@ -270,6 +271,17 @@ async function activateGimmick(gimmick: string, streams: any, battle: Battle, me
 }
 
 function generateMoveButtons(activemon: Pokemon): any {
+	// get the type of each move
+	const moveTypes = activemon.moves.map((move) => {
+		const moveType = Dex.moves.get(move)?.type;
+		return moveType;
+	});
+	// get emojis from constants
+	const type1 = moveTypes[0] ? typeEmotes[moveTypes[0].toLowerCase()] : undefined;
+	const type2 = moveTypes[1] ? typeEmotes[moveTypes[1].toLowerCase()] : undefined;
+	const type3 = moveTypes[2] ? typeEmotes[moveTypes[2].toLowerCase()] : undefined;
+	const type4 = moveTypes[3] ? typeEmotes[moveTypes[3].toLowerCase()] : undefined;
+
 	return [
 		{
 			type: 1,
@@ -280,6 +292,7 @@ function generateMoveButtons(activemon: Pokemon): any {
 					// @ts-ignore pp props missing from types
 					label: `${activemon?.moveSlots[0]?.name} ${activemon?.moveSlots[0]?.pp}/${activemon?.moveSlots[0]?.maxpp} PP`,
 					style: 1,
+					emoji: type1,
 					// @ts-ignore disbaled prop missing from types
 					disabled: activemon?.moveSlots[0]?.disabled
 				},
@@ -289,6 +302,7 @@ function generateMoveButtons(activemon: Pokemon): any {
 					// @ts-ignore pp props missing from types
 					label: `${activemon?.moveSlots[1]?.name} ${activemon?.moveSlots[1]?.pp}/${activemon?.moveSlots[1]?.maxpp} PP`,
 					style: 1,
+					emoji: type2,
 					// @ts-ignore disbaled prop missing from types
 					disabled: activemon?.moveSlots[1]?.disabled
 				},
@@ -309,6 +323,7 @@ function generateMoveButtons(activemon: Pokemon): any {
 					// @ts-ignore pp props missing from types
 					label: `${activemon?.moveSlots[2]?.name} ${activemon?.moveSlots[2]?.pp}/${activemon?.moveSlots[2]?.maxpp} PP`,
 					style: 1,
+					emoji: type3,
 					// @ts-ignore disbaled prop missing from types
 					disabled: activemon?.moveSlots[2]?.disabled
 				},
@@ -318,6 +333,7 @@ function generateMoveButtons(activemon: Pokemon): any {
 					// @ts-ignore pp props missing from types
 					label: `${activemon?.moveSlots[3]?.name} ${activemon?.moveSlots[3]?.pp}/${activemon?.moveSlots[3]?.maxpp} PP`,
 					style: 1,
+					emoji: type4,
 					// @ts-ignore disbaled prop missing from types
 					disabled: activemon?.moveSlots[3]?.disabled
 				},
@@ -385,6 +401,17 @@ function generateMoveButtons(activemon: Pokemon): any {
 }
 
 function maxMoves(battle: Battle): any {
+	// get the type of each move
+	const moveTypes = battle.p1.active[0]?.moves.map((move) => {
+		const moveType = Dex.moves.get(move)?.type;
+		return moveType;
+	});
+	// get emojis from constants
+	const type1 = moveTypes?.[0] ? typeEmotes[moveTypes[0].toLowerCase()] : undefined;
+	const type2 = moveTypes?.[1] ? typeEmotes[moveTypes[1].toLowerCase()] : undefined;
+	const type3 = moveTypes?.[2] ? typeEmotes[moveTypes[2].toLowerCase()] : undefined;
+	const type4 = moveTypes?.[3] ? typeEmotes[moveTypes[3].toLowerCase()] : undefined;
+
 	return [
 		{
 			type: 1,
@@ -405,7 +432,9 @@ function maxMoves(battle: Battle): any {
 						battle.p1.active[0]?.moveSlots[0]?.pp
 						// @ts-ignore typings are wrong
 					}/${battle.p1.active[0]?.moveSlots[0]?.maxpp} PP`,
-					style: 1
+					style: 1,
+					emoji: type1,
+					disabled: !battle.p1.active[0]?.maxMoves?.[0].disabled
 				},
 				{
 					type: 2,
@@ -423,7 +452,9 @@ function maxMoves(battle: Battle): any {
 						battle.p1.active[0]?.moveSlots[1]?.pp
 						// @ts-ignore typings are wrong
 					}/${battle.p1.active[0]?.moveSlots[1]?.maxpp} PP`,
-					style: 1
+					style: 1,
+					emoji: type2,
+					disabled: !battle.p1.active[0]?.maxMoves?.[1].disabled
 				}
 			]
 		},
@@ -446,7 +477,9 @@ function maxMoves(battle: Battle): any {
 						battle.p1.active[0]?.moveSlots[2]?.pp
 						// @ts-ignore typings are wrong
 					}/${battle.p1.active[0]?.moveSlots[2]?.maxpp} PP`,
-					style: 1
+					style: 1,
+					emoji: type3,
+					disabled: !battle.p1.active[0]?.maxMoves?.[2].disabled
 				},
 				{
 					type: 2,
@@ -464,7 +497,9 @@ function maxMoves(battle: Battle): any {
 						battle.p1.active[0]?.moveSlots[3]?.pp
 						// @ts-ignore typings are wrong
 					}/${battle.p1.active[0]?.moveSlots[3]?.maxpp} PP`,
-					style: 1
+					style: 1,
+					emoji: type4,
+					disabled: !battle.p1.active[0]?.maxMoves?.[3].disabled
 				}
 			]
 		}

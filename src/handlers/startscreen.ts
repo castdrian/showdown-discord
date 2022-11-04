@@ -37,7 +37,7 @@ export async function startScreen(interaction: CommandInteraction) {
 	const message = (await interaction.editReply({ embeds, components, files })) as Message;
 	const { id } = await interaction.followUp({
 		content:
-			'[info] This application is very experimental and may break at any time.\n[info] You may just want to play [Pokémon Showdown](https://play.pokemonshowdown.com).',
+			'[info] This application is very experimental and may break at any time.\n[info] You may just want to play [Pokémon Showdown](https://play.pokemonshowdown.com).\nhttps://discord.gg/JRwVqEXHxp',
 		components: [
 			{
 				type: 1,
