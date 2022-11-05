@@ -95,75 +95,42 @@ export function formatBattleLog(log: string[], battle: Battle): string {
 	// format turn and turn number white bold
 	str = str.replace(/(Turn )(\d+)/g, `== ${WHITE_BOLD}$1$2${RESET}`);
 
-	// format all moves from both active mons blue bold
-	if (battle.p1.active[0]?.moves && battle.p2.active[0]?.moves) {
-		const moveIDs = [...battle.p1.active[0].moves, ...battle.p2.active[0].moves].map((move) => move);
-		const moveNames = moveIDs.map((move) => Dex.moves.get(move).name);
+	// format 'Z-Move' blue bold
+	str = str.replace(/(Z-Move)/g, `${BLUE_BOLD}$1${RESET}`);
 
-		for (let move of moveNames) {
-			if (process.romaji && process.romajiMons && process.romajiMoves) {
-				const romajiMove =
-					(process.romajiMoves.find((m) => m.move.replace(/\s/g, '').toLowerCase() === move.replace(/\s/g, '').toLowerCase())
-						?.romaji as MoveName) ?? move;
-				str = str.replace(new RegExp(move, 'g'), romajiMove);
-				move = romajiMove;
-			}
-			str = str.replace(new RegExp(move, 'g'), `${BLUE_BOLD}${move}${RESET}`);
+	// format all moves blue bold
+	for (const move of Dex.moves.all()) {
+		if (process.romaji && process.romajiMons && process.romajiMoves) {
+			const romajiMove =
+				(process.romajiMoves.find((m) => m.move.replace(/\s/g, '').toLowerCase() === move.name.replace(/\s/g, '').toLowerCase())
+					?.romaji as MoveName) ?? move;
+			str = str.replace(new RegExp(move.name, 'g'), romajiMove);
+			move.name = romajiMove;
+		}
+		str = str.replace(new RegExp(move.name, 'g'), `${BLUE_BOLD}${move.name}${RESET}`);
+	}
+
+	// // format all abilities green bold
+	for (const ability of Dex.abilities.all()) {
+		str = str.replace(new RegExp(ability.name, 'g'), `${GREEN_BOLD}${ability.name}${RESET}`);
+	}
+
+	// format all items yellow bold
+	for (const item of Dex.items.all()) {
+		str = str.replace(new RegExp(item.name, 'g'), `${YELLOW_BOLD}${item.name}${RESET}`);
+	}
+
+	// split by linebreaks
+	const lines = str.split('\n');
+	// if the same mon was withdrawn and sent out in the same turn: '<player> withdrew Avalugg!\n<player> sent out Avalugg!' -> '<player> sent out Avalugg!' remove the withdrew line
+	for (let i = 0; i < lines.length; i++) {
+		if (lines[i].includes(' withdrew ') && lines[i + 1]?.includes(' sent out ')) {
+			lines.splice(i, 1);
 		}
 	}
 
-	// format all abilities and base abilities from both teams green bold and items yellow bold respectively
-	for (const mon of battle.p1.team) {
-		if (mon) {
-			const abilityID = mon.ability;
-			const baseAbilityID = mon.baseAbility;
-			const abilityName = Dex.abilities.get(abilityID).name;
-			const baseAbilityName = Dex.abilities.get(baseAbilityID).name;
-
-			if (abilityName && baseAbilityName) {
-				// eslint-disable-next-line no-negated-condition
-				if (abilityName !== baseAbilityName) {
-					str = str.replace(new RegExp(abilityName, 'g'), `${GREEN_BOLD}${abilityName}${RESET}`);
-					str = str.replace(new RegExp(baseAbilityName, 'g'), `${GREEN_BOLD}${baseAbilityName}${RESET}`);
-				} else {
-					str = str.replace(new RegExp(abilityName, 'g'), `${GREEN_BOLD}${abilityName}${RESET}`);
-				}
-			}
-
-			const itemID = mon.item;
-			const itemName = Dex.items.get(itemID).name;
-
-			if (itemName) {
-				str = str.replace(new RegExp(itemName, 'g'), `${YELLOW_BOLD}${itemName}${RESET}`);
-			}
-		}
-	}
-
-	for (const mon of battle.p2.team) {
-		if (mon) {
-			const abilityID = mon.ability;
-			const baseAbilityID = mon.baseAbility;
-			const abilityName = Dex.abilities.get(abilityID).name;
-			const baseAbilityName = Dex.abilities.get(baseAbilityID).name;
-
-			if (abilityName && baseAbilityName) {
-				// eslint-disable-next-line no-negated-condition
-				if (abilityName !== baseAbilityName) {
-					str = str.replace(new RegExp(abilityName, 'g'), `${GREEN_BOLD}${abilityName}${RESET}`);
-					str = str.replace(new RegExp(baseAbilityName, 'g'), `${GREEN_BOLD}${baseAbilityName}${RESET}`);
-				} else {
-					str = str.replace(new RegExp(abilityName, 'g'), `${GREEN_BOLD}${abilityName}${RESET}`);
-				}
-			}
-
-			const itemID = mon.item;
-			const itemName = Dex.items.get(itemID).name;
-
-			if (itemName) {
-				str = str.replace(new RegExp(itemName, 'g'), `${YELLOW_BOLD}${itemName}${RESET}`);
-			}
-		}
-	}
+	// join the lines back together
+	str = lines.join('\n');
 
 	// format as ansi code block
 	const result = Formatters.codeBlock('ansi', str);
