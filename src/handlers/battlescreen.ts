@@ -207,13 +207,13 @@ async function forfeitBattle(streams: any, interaction: MessageComponentInteract
 						type: 2,
 						custom_id: 'yes',
 						label: 'Yes',
-						style: 3
+						style: 4
 					},
 					{
 						type: 2,
 						custom_id: 'no',
 						label: 'No',
-						style: 4
+						style: 3
 					}
 				]
 			}
