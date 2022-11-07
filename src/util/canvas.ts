@@ -1,4 +1,4 @@
-import { CommandInteraction, MessageAttachment } from 'discord.js';
+import { AttachmentBuilder, CommandInteraction } from 'discord.js';
 import { Canvas, loadImage } from 'skia-canvas';
 import { request } from 'undici';
 import { default as sharp } from 'sharp';
@@ -8,9 +8,9 @@ export async function versusScreen(interaction: CommandInteraction): Promise<Buf
 	const ctx = canvas.getContext('2d');
 
 	const bg = await loadImage('./data/images/versus.png');
-	const userAvatar = await loadImage(interaction.user.displayAvatarURL({ format: 'png' }));
+	const userAvatar = await loadImage(interaction.user.displayAvatarURL({ forceStatic: true, extension: 'png' }));
 	// eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
-	const opponentAvatar = await loadImage(interaction.client.user?.displayAvatarURL({ format: 'png' })!);
+	const opponentAvatar = await loadImage(interaction.client.user?.displayAvatarURL({ forceStatic: true, extension: 'png' })!);
 
 	ctx.drawImage(bg, 0, 0);
 	ctx.drawImage(userAvatar, 350, 400, 1000, 1000);
@@ -20,7 +20,7 @@ export async function versusScreen(interaction: CommandInteraction): Promise<Buf
 	return buffer;
 }
 
-export async function maxSprite(url: string, width: number, height: number): Promise<MessageAttachment> {
+export async function maxSprite(url: string, width: number, height: number): Promise<AttachmentBuilder> {
 	// get buffer from url with undici request
 	const { body } = await request(url);
 	const buffer = await body.arrayBuffer();
@@ -32,5 +32,5 @@ export async function maxSprite(url: string, width: number, height: number): Pro
 		.toBuffer();
 
 	// return attachment
-	return new MessageAttachment(resizedBuffer, 'max.gif');
+	return new AttachmentBuilder(resizedBuffer, { name: 'max.gif' });
 }

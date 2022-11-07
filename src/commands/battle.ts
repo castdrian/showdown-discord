@@ -7,7 +7,6 @@ export class Battle extends Command {
 	public override async chatInputRun(interaction: CommandInteraction) {
 		await interaction.deferReply();
 		const message = await interaction.fetchReply();
-
 		// attach global rejection handler and global uncaught exception handler
 		process.on('unhandledRejection', (err: any) => {
 			this.container.logger.error(err);

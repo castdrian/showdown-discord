@@ -1,7 +1,7 @@
 import { shortTypes } from '#constants/emotes';
 import type { Battle, Side } from '@pkmn/client';
 import { Dex, MoveName } from '@pkmn/dex';
-import { Formatters } from 'discord.js';
+import { codeBlock } from 'discord.js';
 
 const RED_BOLD = '\u001b[1;31m';
 const BLUE_BOLD = '\u001b[1;34m';
@@ -133,7 +133,7 @@ export function formatBattleLog(log: string[], battle: Battle): string {
 	str = lines.join('\n');
 
 	// format as ansi code block
-	const result = Formatters.codeBlock('ansi', str);
+	const result = codeBlock('ansi', str);
 	return result;
 }
 
@@ -176,7 +176,7 @@ export function generateSideState(side: Side) {
 	const monString = `${WHITE_BOLD}${mon.name}${RESET} ${HP_COLOR}${mon.hp}${RESET}/${HP_COLOR}${mon.maxhp}${RESET} ${WHITE_BOLD}HP${RESET} ${
 		mon.status ? status : ''
 	}${typesString}`;
-	const ansi = Formatters.codeBlock('ansi', monString);
+	const ansi = codeBlock('ansi', monString);
 
 	const normalBall = '<:normalball:1037794399347822622>';
 	const statusBall = '<:statusball:1037794402657128570>';

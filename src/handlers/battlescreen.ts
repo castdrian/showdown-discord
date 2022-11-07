@@ -1,5 +1,15 @@
 import type { Battle, Pokemon } from '@pkmn/client';
-import type { BaseMessageComponentOptions, Message, MessageActionRow, MessageActionRowOptions, MessageComponentInteraction, User } from 'discord.js';
+import type {
+	Message,
+	MessageComponentInteraction,
+	User,
+	ActionRowData,
+	APIActionRowComponent,
+	APIMessageActionRowComponent,
+	JSONEncodable,
+	MessageActionRowComponentBuilder,
+	MessageActionRowComponentData
+} from 'discord.js';
 import { Sprites } from '@pkmn/img';
 import { ChoiceBuilder } from '@pkmn/view';
 import { formatBattleLog, generateSideState } from '#util/ansi';
@@ -12,7 +22,11 @@ import { typeEmotes } from '#constants/emotes';
 export async function updateBattleEmbed(
 	battle: Battle,
 	message: Message,
-	extComponents?: (MessageActionRow | (Required<BaseMessageComponentOptions> & MessageActionRowOptions))[]
+	extComponents?: (
+		| JSONEncodable<APIActionRowComponent<APIMessageActionRowComponent>>
+		| ActionRowData<MessageActionRowComponentData | MessageActionRowComponentBuilder>
+		| APIActionRowComponent<APIMessageActionRowComponent>
+	)[]
 ): Promise<void> {
 	if (extComponents) {
 		extComponents = fixCustomId(extComponents);
@@ -65,7 +79,7 @@ export async function updateBattleEmbed(
 	const embeds = [
 		{
 			thumbnail: { url: opponentsprite },
-			color: '0x5865F2',
+			color: 0x5865f2,
 			description: `${generateSideState(battle.p2)}\n${formatBattleLog(process.battlelog, battle)}\n${generateSideState(battle.p1)}`,
 			// when process.isMax is true take 'max.gif' from the messageattachment that maxSprite() returns
 			// only show image if active mon is not fainted, if it is fainted image is undefined
@@ -113,10 +127,10 @@ export async function moveChoice(streams: any, battle: Battle, message: Message,
 	const activemon = battle.p1.active[0];
 	const builder = new ChoiceBuilder(battle.request!);
 
-	const filter = (i: MessageComponentInteraction) => i.user.id === user.id;
+	const filter = (i: any) => i.user.id === user.id;
 	const collector = message!.createMessageComponentCollector({ filter });
 
-	collector.on('collect', async (i) => {
+	collector.on('collect', async (i: MessageComponentInteraction) => {
 		await i.deferUpdate();
 		// retrieve the original custom id
 		const customId = getCustomId(i.customId);
@@ -175,10 +189,10 @@ export async function switchChoice(streams: any, battle: Battle, message: Messag
 	await updateBattleEmbed(battle, message, components);
 	console.log('sent switch embed');
 
-	const filter = (i: MessageComponentInteraction) => i.user.id === user.id;
+	const filter = (i: any) => i.user.id === user.id;
 	const collector = message!.createMessageComponentCollector({ filter });
 
-	collector.on('collect', async (i) => {
+	collector.on('collect', async (i: MessageComponentInteraction) => {
 		await i.deferUpdate();
 		// retrieve the original custom id
 		const customId = getCustomId(i.customId);
@@ -221,12 +235,12 @@ async function forfeitBattle(streams: any, interaction: MessageComponentInteract
 		ephemeral: true
 	})) as Message;
 
-	const filter = (i: MessageComponentInteraction) => i.user.id === interaction.user.id;
+	const filter = (i: any) => i.user.id === interaction.user.id;
 	const collector = msg!.createMessageComponentCollector({ filter });
 
 	let choice = false;
 
-	collector.on('collect', async (i) => {
+	collector.on('collect', async (i: MessageComponentInteraction) => {
 		collector.stop();
 		// retrieve the original custom id
 		const customId = getCustomId(i.customId);
@@ -235,13 +249,11 @@ async function forfeitBattle(streams: any, interaction: MessageComponentInteract
 			choice = true;
 			process.battlelog.push(`${interaction.user.username} forfeited.`);
 			await streams.omniscient.write(`>forcewin p2`);
-			// @ts-ignore delete ephemeral message
-			await interaction.client.api.webhooks(i.client.user!.id, interaction.token).messages(msg.id).delete();
+			await interaction.webhook.deleteMessage(msg);
 		}
 		if (customId === 'no') {
 			await updateBattleEmbed(battle, message);
-			// @ts-ignore delete ephemeral message
-			await interaction.client.api.webhooks(i.client.user!.id, interaction.token).messages(msg.id).delete();
+			await interaction.webhook.deleteMessage(msg);
 		}
 	});
 

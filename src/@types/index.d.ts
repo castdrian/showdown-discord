@@ -1,5 +1,5 @@
 import type { ObjectReadStream, ObjectReadWriteStream } from '@pkmn/sim/build/lib/streams';
-import type { MessageAttachment } from 'discord.js';
+import type { AttachmentBuilder } from 'discord.js';
 import type { RomajiMon, RomajiMove } from 'pkmn-romaji';
 declare global {
 	namespace NodeJS {
@@ -9,7 +9,7 @@ declare global {
 			romajiMons: RomajiMon[];
 			romajiMoves: RomajiMove[];
 			isMax: boolean;
-			maxSprite: MessageAttachment;
+			maxSprite: AttachmentBuilder;
 		}
 	}
 }

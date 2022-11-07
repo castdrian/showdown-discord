@@ -1,4 +1,4 @@
-import { CommandInteraction, Formatters, Message, MessageAttachment, MessageEditOptions } from 'discord.js';
+import { CommandInteraction, Message, AttachmentBuilder, MessageEditOptions, codeBlock } from 'discord.js';
 import newGithubIssueUrl from 'new-github-issue-url';
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -83,9 +83,9 @@ export async function sendErrorToUser(error: any, message: Message, interaction:
 	await message
 		.reply({
 			// ansi red bold error message
-			content: `An error occurred while running the simulation:\n${Formatters.codeBlock('ansi', `\u001b[1;31m${error.message}\u001b[0m`)}`,
+			content: `An error occurred while running the simulation:\n${codeBlock('ansi', `\u001b[1;31m${error.message}\u001b[0m`)}`,
 			components,
-			files: [new MessageAttachment(Buffer.from(error.stack), 'stacktrace.txt')]
+			files: [new AttachmentBuilder(Buffer.from(error.stack), { name: 'stacktrace.txt' })]
 		})
 		.catch(() => null);
 	await interaction.deleteReply().catch(() => null);

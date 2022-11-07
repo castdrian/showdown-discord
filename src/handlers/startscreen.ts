@@ -1,5 +1,5 @@
 import { versusScreen } from '#util/canvas';
-import { CommandInteraction, Formatters, Message, MessageComponentInteraction, MessageSelectOption, ModalSubmitInteraction } from 'discord.js';
+import { CommandInteraction, Formatters, inlineCode, Message, MessageComponentInteraction, ModalSubmitInteraction } from 'discord.js';
 import { initiateBattle } from '#handlers/simulation';
 import type { formaticon, PokePasteResponse } from '#types/';
 import { components, modal } from '#constants/components';
@@ -23,7 +23,7 @@ export async function startScreen(interaction: CommandInteraction) {
 			description: `Format: \`[Gen 8] Random Battle\`\nPlayers: ${Formatters.inlineCode(interaction.user.username)} vs. ${Formatters.inlineCode(
 				interaction.client.user!.username
 			)}\nTeam: \`Random\``,
-			color: '0x5865F2',
+			color: 0x5865f2,
 			image: { url: 'attachment://versus.png' }
 		}
 	] as any;
@@ -66,15 +66,14 @@ export async function startScreen(interaction: CommandInteraction) {
 		ephemeral: true
 	});
 
-	const filter = (i: MessageComponentInteraction) => i.user.id === interaction.user.id;
+	const filter = (i: any) => i.user.id === interaction.user.id;
 	const collector = message!.createMessageComponentCollector({ filter });
 
-	collector.on('collect', async (i): Promise<any> => {
+	collector.on('collect', async (i: MessageComponentInteraction): Promise<any> => {
 		if (i.customId === 'start') {
 			await i.deferUpdate();
 			collector.stop();
-			// @ts-ignore delete ephemeral message
-			await interaction.client.api.webhooks(i.client.user!.id, interaction.token).messages(id).delete();
+			await interaction.webhook.deleteMessage(id);
 			const message = await interaction.fetchReply();
 			if (message instanceof Message) {
 				await initiateBattle(interaction, message, interaction.user, formatid, battle_team).catch((err) =>
@@ -104,11 +103,9 @@ export async function startScreen(interaction: CommandInteraction) {
 				{
 					title: 'Pokémon Showdown! Battle',
 					thumbnail: { url: 'attachment://format.png' },
-					description: `Format: \`${
-						(i.component.options as MessageSelectOption[]).find((x) => x.value === i.values[0])?.label
-					}\`\nPlayers: ${Formatters.inlineCode(interaction.user.username)} vs. ${Formatters.inlineCode(
-						interaction.client.user!.username
-					)}\nTeam: \`Random\``,
+					description: `Format: \`${i.values.find((x) => x === i.values[0])}\`\nPlayers: ${inlineCode(
+						interaction.user.username
+					)} vs. ${inlineCode(interaction.client.user!.username)}\nTeam: \`Random\``,
 					color: '0x5865F2',
 					image: { url: 'attachment://versus.png' }
 				}
