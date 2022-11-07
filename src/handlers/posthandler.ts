@@ -60,11 +60,6 @@ export class PostHandler implements Handler<void> {
 
 	async '|win|'(args: Protocol.Args['|win|']) {
 		console.log(args);
-		const battlelog: string[] = cache.get('battlelog')!;
-		if (battlelog) {
-			battlelog.push(`${args[1]} won the battle!`);
-			cache.set('battlelog', battlelog);
-		}
 		await updateBattleEmbed(this.battle, this.message, []);
 		this.battle.destroy();
 	}

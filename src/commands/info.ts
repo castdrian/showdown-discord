@@ -30,10 +30,10 @@ export class Info extends Command {
 			const shardString = `${shard + 1}/${shardCount}`;
 			const lclInstance = new lcl(process.cwd());
 			const lastCommit = await lclInstance.getLastCommit();
-			const { gitUrl, shortHash, sanitizedSubject, author } = lastCommit;
+			const { gitUrl, shortHash, subject, author } = lastCommit;
 			const commitDate = new Date(parseInt(author.date, 10) * 1000);
 			const commitDateString = commitDate.toDateString();
-			const commitString = `[${shortHash}](${gitUrl}) - ${sanitizedSubject} \`${commitDateString}\``;
+			const commitString = `[${shortHash}](${gitUrl}) - ${subject} \`${commitDateString}\``;
 			const node = `[${process.version}](https://nodejs.org/en/download/releases/)`;
 			const tsver = `[v${ts.version}](https://www.typescriptlang.org/download)`;
 			const latency = this.container.client.ws.ping;
