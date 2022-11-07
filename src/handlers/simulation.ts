@@ -9,6 +9,7 @@ import { PostHandler } from '#handlers/posthandler';
 import type { CommandInteraction, Message, User } from 'discord.js';
 import { default as removeMD } from 'remove-markdown';
 import { sendErrorToUser } from '#util/functions';
+import { cache } from '#util/cache';
 
 export async function initiateBattle(interaction: CommandInteraction, message: Message, user: User, formatid: string, team: PokemonSet[] | null) {
 	Teams.setGeneratorFactory(TeamGenerators);
@@ -34,7 +35,7 @@ export async function initiateBattle(interaction: CommandInteraction, message: M
 		if (k && k in h) (h as any)[k](a, kw);
 	};
 
-	process.battlelog = [];
+	cache.set('battlelog', []);
 
 	await Promise.all([omnicientStream(), playerStream(), startBattle()].map((p) => p.catch((err) => sendErrorToUser(err, message, interaction))));
 
@@ -49,7 +50,13 @@ export async function initiateBattle(interaction: CommandInteraction, message: M
 				battle.add(args, kwArgs);
 				add(post, key, args, kwArgs);
 
-				if (text !== '') process.battlelog.push(removeMD(text));
+				if (text !== '') {
+					const log: string[] = cache.get('battlelog')!;
+					if (log) {
+						log.push(removeMD(text));
+						cache.set('battlelog', log);
+					}
+				}
 				console.log(removeMD(text));
 			}
 			battle.update();

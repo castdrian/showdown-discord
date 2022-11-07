@@ -2,6 +2,8 @@ import { shortTypes } from '#constants/emotes';
 import type { Battle, Side } from '@pkmn/client';
 import { Dex, MoveName } from '@pkmn/dex';
 import { codeBlock } from 'discord.js';
+import type { RomajiMon, RomajiMove } from 'pkmn-romaji';
+import { cache } from '#util/cache';
 
 const RED_BOLD = '\u001b[1;31m';
 const BLUE_BOLD = '\u001b[1;34m';
@@ -33,14 +35,18 @@ export function formatBattleLog(log: string[], battle: Battle): string {
 	const p2romajimons = [];
 
 	// apply romaji mode if it is enabled
-	if (process.romaji && process.romajiMons && process.romajiMoves) {
+	const romaji = cache.get('romaji');
+	const romajiMons: RomajiMon[] = cache.get('romajimons')!;
+	const romajiMoves: RomajiMove[] = cache.get('romajimoves')!;
+
+	if (romaji && romajiMons && romajiMoves) {
 		// replace all instances of the mons' names with their romaji names
 
 		for (const mon of p1mons) {
-			const romajiSpecies = process.romajiMons.find((r) => r.name.toLowerCase() === mon.baseSpeciesForme.toLowerCase())?.trademark;
+			const romajiSpecies = romajiMons.find((r) => r.name.toLowerCase() === mon.baseSpeciesForme.toLowerCase())?.trademark;
 			// const ident is originalIdent property, which looks like this originalIdent: 'p1: Sceptile', so we split it by the colon and take the second element
 			const ident = mon.originalIdent.split(':')[1].trim();
-			const romajiIdent = process.romajiMons.find((r) => r.name.toLowerCase() === ident.toLowerCase())?.trademark;
+			const romajiIdent = romajiMons.find((r) => r.name.toLowerCase() === ident.toLowerCase())?.trademark;
 			if (romajiSpecies) {
 				str = str.replace(new RegExp(mon.baseSpeciesForme, 'g'), romajiSpecies);
 				p1romajimons.push(romajiSpecies);
@@ -52,10 +58,10 @@ export function formatBattleLog(log: string[], battle: Battle): string {
 		}
 
 		for (const mon of p2mons) {
-			const romajiSpecies = process.romajiMons.find((r) => r.name.toLowerCase() === mon.baseSpeciesForme.toLowerCase())?.trademark;
+			const romajiSpecies = romajiMons.find((r) => r.name.toLowerCase() === mon.baseSpeciesForme.toLowerCase())?.trademark;
 			// const ident is originalIdent property, which looks like this originalIdent: 'p1: Sceptile', so we split it by the colon and take the second element
 			const ident = mon.originalIdent.split(':')[1].trim();
-			const romajiIdent = process.romajiMons.find((r) => r.name.toLowerCase() === ident.toLowerCase())?.trademark;
+			const romajiIdent = romajiMons.find((r) => r.name.toLowerCase() === ident.toLowerCase())?.trademark;
 			if (romajiSpecies) {
 				str = str.replace(new RegExp(mon.baseSpeciesForme, 'g'), romajiSpecies);
 				p2romajimons.push(romajiSpecies);
@@ -100,12 +106,11 @@ export function formatBattleLog(log: string[], battle: Battle): string {
 
 	// format all moves blue bold
 	for (const move of Dex.moves.all()) {
-		if (process.romaji && process.romajiMons && process.romajiMoves) {
+		if (romaji && romajiMons && romajiMoves) {
 			const romajiMove =
-				(process.romajiMoves.find((m) => m.move.replace(/\s/g, '').toLowerCase() === move.name.replace(/\s/g, '').toLowerCase())
-					?.romaji as MoveName) ?? move;
+				romajiMoves.find((m) => m.move.replace(/\s/g, '').toLowerCase() === move.name.replace(/\s/g, '').toLowerCase())?.romaji ?? move.name;
 			str = str.replace(new RegExp(move.name, 'g'), romajiMove);
-			move.name = romajiMove;
+			move.name = romajiMove as MoveName;
 		}
 		str = str.replace(new RegExp(move.name, 'g'), `${BLUE_BOLD}${move.name}${RESET}`);
 	}

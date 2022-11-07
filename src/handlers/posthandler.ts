@@ -6,6 +6,7 @@ import { waitFor } from '#util/functions';
 import { moveChoice, switchChoice, updateBattleEmbed } from '#handlers/battlescreen';
 import type { Message, User } from 'discord.js';
 import type { BattleStreams } from '#types/index';
+import { cache } from '#util/cache';
 
 export class PostHandler implements Handler<void> {
 	// @ts-ignore whatever this is
@@ -30,15 +31,15 @@ export class PostHandler implements Handler<void> {
 			this.battle.p1.active[0].canZMove = this.battle.request.active[0].canZMove;
 			// @ts-ignore missing types
 			this.battle.p1.active[0].zMoves = this.battle.request.active[0].zMoves;
-			await waitFor(() => process.battlelog.length !== 0);
+			(await waitFor(() => cache.get('battlelog'))) !== null;
 			await updateBattleEmbed(this.battle, this.message);
 			await moveChoice(this.streams, this.battle, this.message, this.user);
 		} else if (this.battle.request?.requestType === 'switch') {
 			console.log('switchchoice');
-			await waitFor(() => process.battlelog.length !== 0);
+			(await waitFor(() => cache.get('battlelog'))) !== null;
 			await switchChoice(this.streams, this.battle, this.message, this.user);
 		} else if (this.battle.request?.requestType === 'wait') {
-			await waitFor(() => process.battlelog.length !== 0);
+			(await waitFor(() => cache.get('battlelog'))) !== null;
 			await updateBattleEmbed(this.battle, this.message);
 		}
 	}
@@ -59,14 +60,22 @@ export class PostHandler implements Handler<void> {
 
 	async '|win|'(args: Protocol.Args['|win|']) {
 		console.log(args);
-		process.battlelog.push(`${args[1]} won the battle!`);
+		const battlelog: string[] = cache.get('battlelog')!;
+		if (battlelog) {
+			battlelog.push(`${args[1]} won the battle!`);
+			cache.set('battlelog', battlelog);
+		}
 		await updateBattleEmbed(this.battle, this.message, []);
 		this.battle.destroy();
 	}
 
 	async '|tie|'(args: Protocol.Args['|tie|']) {
 		console.log(args);
-		process.battlelog.push(`The battle ended in a tie!`);
+		const battlelog: string[] = cache.get('battlelog')!;
+		if (battlelog) {
+			battlelog.push(`The battle ended in a tie!`);
+			cache.set('battlelog', battlelog);
+		}
 		await updateBattleEmbed(this.battle, this.message, []);
 		this.battle.destroy();
 	}
@@ -90,7 +99,7 @@ export class PostHandler implements Handler<void> {
 		// if effect is Dynamax or Gmax, and the pokemon is on side p1a, then set process.isMax to true
 		if (effect === 'Dynamax' || effect === 'Gmax') {
 			if (pokemon.startsWith('p1a')) {
-				process.isMax = true;
+				cache.set('isMax', true);
 			}
 		}
 	}
@@ -104,7 +113,7 @@ export class PostHandler implements Handler<void> {
 		// if effect is Dynamax or Gmax, and the pokemon is on side p1a, then set process.isMax to false
 		if (effect === 'Dynamax' || effect === 'Gmax') {
 			if (pokemon.startsWith('p1a')) {
-				process.isMax = false;
+				cache.set('isMax', false);
 			}
 		}
 	}

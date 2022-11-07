@@ -18,6 +18,8 @@ import { Dex } from '@pkmn/sim';
 import { fixCustomId, getCustomId } from '#util/functions';
 import { maxSprite } from '#util/canvas';
 import { typeEmotes } from '#constants/emotes';
+import type { RomajiMon, RomajiMove } from 'pkmn-romaji';
+import { cache } from '#util/cache';
 
 export async function updateBattleEmbed(
 	battle: Battle,
@@ -32,14 +34,20 @@ export async function updateBattleEmbed(
 		extComponents = fixCustomId(extComponents);
 	}
 
-	if (process.romaji && process.romajiMons && process.romajiMoves) {
+	const romaji = await cache.get('romaji');
+	const romajiMons: RomajiMon[] = await cache.get('romajimons')!;
+	const romajiMoves: RomajiMove[] = await cache.get('romajimoves')!;
+	const isMax = await cache.get('isMax');
+	const battlelog: string[] = cache.get('battlelog')!;
+
+	if (romaji && romajiMons && romajiMoves) {
 		// overwrite active mons and moves with romaji
 		for (const mon of battle.p1.active) {
 			if (mon) {
-				mon.name = process.romajiMons.find((m) => m.name.toLowerCase() === mon.name.toLowerCase())?.trademark ?? mon.name;
+				mon.name = romajiMons.find((m) => m.name.toLowerCase() === mon.name.toLowerCase())?.trademark ?? mon.name;
 				for (const move of mon.moveSlots) {
 					move.name =
-						(process.romajiMoves.find((m) => m.move.replace(/\s/g, '').toLowerCase() === move.name.replace(/\s/g, '').toLowerCase())
+						(romajiMoves.find((m) => m.move.replace(/\s/g, '').toLowerCase() === move.name.replace(/\s/g, '').toLowerCase())
 							?.romaji as MoveName) ?? move.name;
 				}
 			}
@@ -48,10 +56,10 @@ export async function updateBattleEmbed(
 		// repeat for foe
 		for (const mon of battle.p1.foe.active) {
 			if (mon) {
-				mon.name = process.romajiMons.find((m) => m.name.toLowerCase() === mon.name.toLowerCase())?.trademark ?? mon.name;
+				mon.name = romajiMons.find((m) => m.name.toLowerCase() === mon.name.toLowerCase())?.trademark ?? mon.name;
 				for (const move of mon.moveSlots) {
 					move.name =
-						(process.romajiMoves.find((m) => m.move.replace(/\s/g, '').toLowerCase() === move.name.replace(/\s/g, '').toLowerCase())
+						(romajiMoves.find((m) => m.move.replace(/\s/g, '').toLowerCase() === move.name.replace(/\s/g, '').toLowerCase())
 							?.romaji as MoveName) ?? move.name;
 				}
 			}
@@ -80,10 +88,10 @@ export async function updateBattleEmbed(
 		{
 			thumbnail: { url: opponentsprite },
 			color: 0x5865f2,
-			description: `${generateSideState(battle.p2)}\n${formatBattleLog(process.battlelog, battle)}\n${generateSideState(battle.p1)}`,
+			description: `${generateSideState(battle.p2)}\n${formatBattleLog(battlelog, battle)}\n${generateSideState(battle.p1)}`,
 			// when process.isMax is true take 'max.gif' from the messageattachment that maxSprite() returns
 			// only show image if active mon is not fainted, if it is fainted image is undefined
-			image: activemon?.fainted ? undefined : { url: process.isMax ? 'attachment://max.gif' : activesprite }
+			image: activemon?.fainted ? undefined : { url: isMax ? 'attachment://max.gif' : activesprite }
 		}
 	] as any;
 
@@ -94,7 +102,7 @@ export async function updateBattleEmbed(
 	let files: any = [];
 
 	// if process.isMax is true, overwrite the components with the result of maxMoves(battle) and add the switch and forfeit buttons into the components and run them through fixCustomId
-	if (process.isMax) {
+	if (isMax) {
 		components = maxMoves(battle);
 		// add the switch button to the first row and the forfeit button to the second row
 		components[0].components.push({
@@ -113,10 +121,14 @@ export async function updateBattleEmbed(
 		components = fixCustomId(components) as any;
 
 		// overwrite the files with the result of maxSprite()
-		if (!process.maxSprite) {
-			process.maxSprite = await maxSprite(activesprite, activewidth, activeheight);
+		let file = cache.get('maxsprite');
+		if (!file) {
+			// if maxSpriteString is undefined, run maxSprite() and set base64 string to cache
+			const attachment = await maxSprite(activesprite, activewidth, activeheight);
+			cache.set('maxsprite', attachment);
+			file = attachment;
 		}
-		files = [process.maxSprite];
+		files = [file];
 	}
 
 	await message.edit({ embeds, components: extComponents ?? components, files });
@@ -168,11 +180,15 @@ export async function switchChoice(streams: any, battle: Battle, message: Messag
 	const { team } = battle.p1;
 	const builder = new ChoiceBuilder(battle.request!);
 
+	const romaji = await cache.get('romaji');
+	const romajiMons: RomajiMon[] = await cache.get('romajimons')!;
+	const romajiMoves: RomajiMove[] = await cache.get('romajimoves')!;
+
 	const switch_buttons = [];
 	for (const mon of team) {
 		let label = mon.name;
-		if (process.romaji && process.romajiMons && process.romajiMoves) {
-			label = process.romajiMons.find((m) => m.name.toLowerCase() === mon.name.toLowerCase())?.trademark ?? mon.name;
+		if (romaji && romajiMons && romajiMoves) {
+			label = romajiMons.find((m) => m.name.toLowerCase() === mon.name.toLowerCase())?.trademark ?? mon.name;
 		}
 		if (mon.name === battle.p1.active[0]?.name)
 			switch_buttons.push({ type: 2, custom_id: mon.name, label, style: mon.fainted ? 2 : 1, disabled: true });
@@ -247,7 +263,11 @@ async function forfeitBattle(streams: any, interaction: MessageComponentInteract
 
 		if (customId === 'yes') {
 			choice = true;
-			process.battlelog.push(`${interaction.user.username} forfeited.`);
+			const battlelog: string[] = cache.get('battlelog')!;
+			if (battlelog) {
+				battlelog.push(`${interaction.user.username} forfeited.`);
+				cache.set('battlelog', battlelog);
+			}
 			await streams.omniscient.write(`>forcewin p2`);
 			await interaction.webhook.deleteMessage(msg);
 		}
@@ -263,31 +283,31 @@ async function forfeitBattle(streams: any, interaction: MessageComponentInteract
 async function activateGimmick(gimmick: string, streams: any, battle: Battle, message: Message, user: User) {
 	if (gimmick === 'max') {
 		// const components is the result of maxMoves(battle) plus a cancel button { type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 }
-		const components = maxMoves(battle);
+		const components = await maxMoves(battle);
 		// now insert the cancel button at row 2
 		components[1].components.push({ type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 });
 
-		await updateBattleEmbed(battle, message, components);
+		await updateBattleEmbed(battle, message, await components);
 		await moveChoice(streams, battle, message, user, gimmick);
 	}
 	if (gimmick === 'mega') {
-		const components = generateMoveButtons(battle.p1.active[0]!);
+		const components = await generateMoveButtons(battle.p1.active[0]!);
 		// now insert the cancel button at row 2
 		components[1].components.push({ type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 });
 		// remove row 3 (the mega button) which is at index 2
 		components.splice(2, 1);
 
-		await updateBattleEmbed(battle, message, components);
+		await updateBattleEmbed(battle, message, await components);
 		await moveChoice(streams, battle, message, user, gimmick);
 	}
 	if (gimmick === 'zmove') {
-		const components = zMoves(battle);
+		const components = await zMoves(battle);
 		// now insert the cancel button at row 2
 		components[1].components.push({ type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 });
 		// remove row 3 (the zmove button) which is at index 2
 		components.splice(2, 1);
 
-		await updateBattleEmbed(battle, message, components);
+		await updateBattleEmbed(battle, message, await components);
 		await moveChoice(streams, battle, message, user, gimmick);
 	}
 }
@@ -303,6 +323,8 @@ function generateMoveButtons(activemon: Pokemon): any {
 	const type2 = moveTypes[1] ? typeEmotes[moveTypes[1].toLowerCase()] : undefined;
 	const type3 = moveTypes[2] ? typeEmotes[moveTypes[2].toLowerCase()] : undefined;
 	const type4 = moveTypes[3] ? typeEmotes[moveTypes[3].toLowerCase()] : undefined;
+
+	const romaji = cache.get('romaji');
 
 	return [
 		{
@@ -381,7 +403,7 @@ function generateMoveButtons(activemon: Pokemon): any {
 										{
 											type: 2,
 											custom_id: 'max',
-											label: process.romaji
+											label: romaji
 												? activemon?.canGigantamax
 													? 'Kyodaimax'
 													: 'Daimax'
@@ -399,7 +421,7 @@ function generateMoveButtons(activemon: Pokemon): any {
 										{
 											type: 2,
 											custom_id: 'mega',
-											label: process.romaji ? 'Mega Shinka' : 'Mega Evolve',
+											label: romaji ? 'Mega Shinka' : 'Mega Evolve',
 											style: 2,
 											emoji: '<:megaevo:1038102161122414602>',
 											disabled: !activemon?.canMegaEvo
@@ -411,7 +433,7 @@ function generateMoveButtons(activemon: Pokemon): any {
 										{
 											type: 2,
 											custom_id: 'zmove',
-											label: process.romaji ? 'Z Waza' : 'Z-Move',
+											label: romaji ? 'Z Waza' : 'Z-Move',
 											style: 2,
 											emoji: '<:zpower:1038102607027261540>',
 											disabled: !activemon?.zMoves?.length
@@ -437,6 +459,9 @@ function maxMoves(battle: Battle): any {
 	const type3 = moveTypes?.[2] ? typeEmotes[moveTypes[2].toLowerCase()] : undefined;
 	const type4 = moveTypes?.[3] ? typeEmotes[moveTypes[3].toLowerCase()] : undefined;
 
+	const romaji = cache.get('romaji');
+	const romajiMoves: RomajiMove[] = cache.get('romajimoves')!;
+
 	return [
 		{
 			type: 1,
@@ -445,8 +470,8 @@ function maxMoves(battle: Battle): any {
 					type: 2,
 					custom_id: battle.p1.active[0]?.moveSlots?.[0].id,
 					label: `${
-						process.romaji
-							? process.romajiMoves.find(
+						romaji
+							? romajiMoves.find(
 									(m) =>
 										m.move.replace(/\s/g, '').toLowerCase() ===
 										Dex.moves.get(battle.p1.active[0]?.maxMoves?.[0].id)?.name.replace(/\s/g, '').toLowerCase()
@@ -464,8 +489,8 @@ function maxMoves(battle: Battle): any {
 					type: 2,
 					custom_id: battle.p1.active[0]?.moveSlots?.[1].id,
 					label: `${
-						process.romaji
-							? process.romajiMoves.find(
+						romaji
+							? romajiMoves.find(
 									(m) =>
 										m.move.replace(/\s/g, '').toLowerCase() ===
 										Dex.moves.get(battle.p1.active[0]?.maxMoves?.[1].id)?.name.replace(/\s/g, '').toLowerCase()
@@ -488,8 +513,8 @@ function maxMoves(battle: Battle): any {
 					type: 2,
 					custom_id: battle.p1.active[0]?.moveSlots?.[2].id,
 					label: `${
-						process.romaji
-							? process.romajiMoves.find(
+						romaji
+							? romajiMoves.find(
 									(m) =>
 										m.move.replace(/\s/g, '').toLowerCase() ===
 										Dex.moves.get(battle.p1.active[0]?.maxMoves?.[2].id)?.name.replace(/\s/g, '').toLowerCase()
@@ -507,8 +532,8 @@ function maxMoves(battle: Battle): any {
 					type: 2,
 					custom_id: battle.p1.active[0]?.moveSlots?.[3].id,
 					label: `${
-						process.romaji
-							? process.romajiMoves.find(
+						romaji
+							? romajiMoves.find(
 									(m) =>
 										m.move.replace(/\s/g, '').toLowerCase() ===
 										Dex.moves.get(battle.p1.active[0]?.maxMoves?.[3].id)?.name.replace(/\s/g, '').toLowerCase()
@@ -539,6 +564,9 @@ function zMoves(battle: Battle): any {
 	const type3 = moveTypes?.[2] ? typeEmotes[moveTypes[2].toLowerCase()] : undefined;
 	const type4 = moveTypes?.[3] ? typeEmotes[moveTypes[3].toLowerCase()] : undefined;
 
+	const romaji = cache.get('romaji');
+	const romajiMoves: RomajiMove[] = cache.get('romajimoves')!;
+
 	if (battle.p1.active[0]?.zMoves?.length) {
 		// replace entries in battle.p1.active[0]?.zMoves with the moveSlot data if the index is null
 		for (let i = 0; i < battle.p1.active[0]?.zMoves?.length; i++) {
@@ -556,8 +584,8 @@ function zMoves(battle: Battle): any {
 						type: 2,
 						custom_id: battle.p1.active[0]?.moveSlots?.[0].id,
 						label: `${
-							process.romaji
-								? process.romajiMoves.find(
+							romaji
+								? romajiMoves.find(
 										(m) =>
 											m.move.replace(/\s/g, '').toLowerCase() ===
 											battle.p1.active[0]?.zMoves?.[0]?.name.replace(/\s/g, '').toLowerCase()
@@ -575,8 +603,8 @@ function zMoves(battle: Battle): any {
 						type: 2,
 						custom_id: battle.p1.active[0]?.moveSlots?.[1].id,
 						label: `${
-							process.romaji
-								? process.romajiMoves.find(
+							romaji
+								? romajiMoves.find(
 										(m) =>
 											m.move.replace(/\s/g, '').toLowerCase() ===
 											battle.p1.active[0]?.zMoves?.[1]?.name.replace(/\s/g, '').toLowerCase()
@@ -599,8 +627,8 @@ function zMoves(battle: Battle): any {
 						type: 2,
 						custom_id: battle.p1.active[0]?.moveSlots?.[2].id,
 						label: `${
-							process.romaji
-								? process.romajiMoves.find(
+							romaji
+								? romajiMoves.find(
 										(m) =>
 											m.move.replace(/\s/g, '').toLowerCase() ===
 											battle.p1.active[0]?.zMoves?.[2]?.name.replace(/\s/g, '').toLowerCase()
@@ -618,8 +646,8 @@ function zMoves(battle: Battle): any {
 						type: 2,
 						custom_id: battle.p1.active[0]?.moveSlots?.[3].id,
 						label: `${
-							process.romaji
-								? process.romajiMoves.find(
+							romaji
+								? romajiMoves.find(
 										(m) =>
 											m.move.replace(/\s/g, '').toLowerCase() ===
 											battle.p1.active[0]?.zMoves?.[3]?.name.replace(/\s/g, '').toLowerCase()

@@ -82,8 +82,6 @@ export class Info extends Command {
 			];
 
 			await interaction.editReply({ embeds: [embed], components });
-
-			// get git, node, and typescript data
 		} catch (error: any) {
 			if (message instanceof Message) {
 				await sendErrorToUser(error, message, interaction);

@@ -1,5 +1,5 @@
 import { versusScreen } from '#util/canvas';
-import { CommandInteraction, Formatters, inlineCode, Message, MessageComponentInteraction, ModalSubmitInteraction } from 'discord.js';
+import { codeBlock, CommandInteraction, inlineCode, Message, MessageComponentInteraction, ModalSubmitInteraction } from 'discord.js';
 import { initiateBattle } from '#handlers/simulation';
 import type { formaticon, PokePasteResponse } from '#types/';
 import { components, modal } from '#constants/components';
@@ -8,19 +8,25 @@ import { Teams, Data, PokemonSet } from '@pkmn/sets';
 import { fetchRomaji, RomajiMon, RomajiMove } from 'pkmn-romaji';
 import { request } from 'undici';
 import { sendErrorToUser } from '#util/functions';
+import { cache } from '#util/cache';
 
 export async function startScreen(interaction: CommandInteraction) {
 	let formatid = 'gen8randombattle';
 	let battle_team: PokemonSet[];
-	process.romaji = false;
-	process.romajiMons = (await fetchRomaji({ allMons: true })) as RomajiMon[];
-	process.romajiMoves = (await fetchRomaji({ allMoves: true })) as RomajiMove[];
+
+	cache.set('romaji', false);
+
+	const romajiMons = (await fetchRomaji({ allMons: true })) as RomajiMon[];
+	const romajiMoves = (await fetchRomaji({ allMoves: true })) as RomajiMove[];
+
+	cache.set('romajimons', romajiMons);
+	cache.set('romajimoves', romajiMoves);
 
 	const embeds = [
 		{
 			title: 'Pokémon Showdown! Battle',
 			thumbnail: { url: 'attachment://format.png' },
-			description: `Format: \`[Gen 8] Random Battle\`\nPlayers: ${Formatters.inlineCode(interaction.user.username)} vs. ${Formatters.inlineCode(
+			description: `Format: \`[Gen 8] Random Battle\`\nPlayers: ${inlineCode(interaction.user.username)} vs. ${inlineCode(
 				interaction.client.user!.username
 			)}\nTeam: \`Random\``,
 			color: 0x5865f2,
@@ -79,7 +85,7 @@ export async function startScreen(interaction: CommandInteraction) {
 				await initiateBattle(interaction, message, interaction.user, formatid, battle_team).catch((err) =>
 					sendErrorToUser(err, message, interaction)
 				);
-				process.romaji = false;
+				cache.set('romaji', false);
 			}
 		}
 		if (i.customId === 'cancel') {
@@ -89,9 +95,15 @@ export async function startScreen(interaction: CommandInteraction) {
 		}
 		if (i.customId === 'romaji') {
 			await i.deferUpdate();
-			process.romaji = !process.romaji;
-			// change the button label to reflect the new state of the romaji toggle and update the message with the new label
-			components[1].components[2].label = process.romaji ? 'Romaji: On' : 'Romaji: Off';
+			const romaji = cache.get('romaji');
+			if (romaji === 'true') {
+				cache.set('romaji', false);
+				components[1].components[2].label = 'Romaji: Off';
+			} else {
+				cache.set('romaji', true);
+				components[1].components[2].label = 'Romaji: On';
+			}
+
 			await i.editReply({ components });
 		}
 		if (i.customId === 'format') {
@@ -158,9 +170,7 @@ export async function startScreen(interaction: CommandInteraction) {
 
 				if (!team || invalid) {
 					return submit.editReply({
-						content: `Team ${Formatters.inlineCode(pasteTeam.title)} is invalid:\n\n${Formatters.codeBlock(
-							invalid?.join('\n') ?? 'Invalid Team Data'
-						)}`
+						content: `Team ${inlineCode(pasteTeam.title)} is invalid:\n\n${codeBlock(invalid?.join('\n') ?? 'Invalid Team Data')}`
 					});
 				}
 
@@ -168,11 +178,9 @@ export async function startScreen(interaction: CommandInteraction) {
 					{
 						title: 'Pokémon Showdown! Battle',
 						thumbnail: { url: 'attachment://format.png' },
-						description: `Format: \`[Gen 8] Random Battle\`\nPlayers: ${Formatters.inlineCode(
-							interaction.user.username
-						)} vs. ${Formatters.inlineCode(interaction.client.user!.username)}\nTeam: ${Formatters.inlineCode(
-							pasteTeam.title
-						)}\n${Formatters.codeBlock(
+						description: `Format: \`[Gen 8] Random Battle\`\nPlayers: ${inlineCode(interaction.user.username)} vs. ${inlineCode(
+							interaction.client.user!.username
+						)}\nTeam: ${inlineCode(pasteTeam.title)}\n${codeBlock(
 							// iterate over the team and format it into a readable string
 							// eslint-disable-next-line no-negated-condition
 							team.map((x) => `${x.name} ${x.name !== x.species ? `(${x.species})` : ''}`).join('\n')
@@ -184,7 +192,7 @@ export async function startScreen(interaction: CommandInteraction) {
 
 				await interaction.editReply({ embeds, files });
 				battle_team = team;
-				await submit.editReply({ content: `Team ${Formatters.inlineCode(pasteTeam.title)} imported successfully!` });
+				await submit.editReply({ content: `Team ${inlineCode(pasteTeam.title)} imported successfully!` });
 			}
 		}
 	});
