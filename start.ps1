@@ -1,1 +1,1 @@
-npm.cmd run start
+yarn.cmd run start
