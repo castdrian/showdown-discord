@@ -1,5 +1,6 @@
-FROM node:16 as base
+FROM node:18 as base
 WORKDIR /home/node/app
+COPY .git/ ./.git/
 COPY package*.json ./
 RUN npm i
 COPY . .
