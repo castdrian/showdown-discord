@@ -4,6 +4,7 @@
   "description": "Showdown! for Discord",
   "main": "dist/showdown.js",
   "author": "castdrian",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "lint": "eslint src tests --ext ts --fix",
@@ -17,8 +18,7 @@
     "sversion": "standard-version",
     "commit": "git-cz",
     "cz": "git-cz",
-    "prepare": "husky install .github/husky",
-    "start": "npm run build && node ."
+    "prepare": "husky install .github/husky"
   },
   "dependencies": {
     "@pkmn/client": "^0.5.1",
