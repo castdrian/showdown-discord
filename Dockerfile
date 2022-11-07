@@ -2,6 +2,7 @@ FROM node:18 as base
 WORKDIR /home/node/app
 COPY .git/ ./.git/
 COPY package*.json ./
+COPY yarn.lock ./
 RUN corepack enable
 RUN yarn install
 COPY . .
