@@ -174,9 +174,12 @@ export function generateSideState(side: Side) {
 	const status = mon.status ? `${STATUS_COLORS[mon.status] + mon.status.toUpperCase() + RESET} ` : '';
 	const HP_COLOR = HP_COLORS[mon.hpcolor];
 
+	// grab mon from dex and get types from there
+	const { types } = Dex.species.get(mon.baseSpeciesForme);
+
 	// get the mons types and format them to look like (type1/type2) if it has 2 types, otherwise just (type1)
-	const types = mon.types.map((type) => shortTypes[type.toLowerCase()]).join('/');
-	const typesString = `(${types})`;
+	const parsedTypes = types.map((type) => shortTypes[type.toLowerCase()]).join('/');
+	const typesString = `(${parsedTypes})`;
 
 	const monString = `${WHITE_BOLD}${mon.name}${RESET} ${HP_COLOR}${mon.hp}${RESET}/${HP_COLOR}${mon.maxhp}${RESET} ${WHITE_BOLD}HP${RESET} ${
 		mon.status ? status : ''

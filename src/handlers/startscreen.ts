@@ -118,7 +118,7 @@ export async function startScreen(interaction: CommandInteraction) {
 					description: `Format: \`${i.values.find((x) => x === i.values[0])}\`\nPlayers: ${inlineCode(
 						interaction.user.username
 					)} vs. ${inlineCode(interaction.client.user!.username)}\nTeam: \`Random\``,
-					color: '0x5865F2',
+					color: 0x5865f2,
 					image: { url: 'attachment://versus.png' }
 				}
 			] as any;
@@ -185,7 +185,7 @@ export async function startScreen(interaction: CommandInteraction) {
 							// eslint-disable-next-line no-negated-condition
 							team.map((x) => `${x.name} ${x.name !== x.species ? `(${x.species})` : ''}`).join('\n')
 						)}`,
-						color: '0x5865F2',
+						color: 0x5865f2,
 						image: { url: 'attachment://versus.png' }
 					}
 				] as any;

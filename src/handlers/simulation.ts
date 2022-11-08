@@ -44,11 +44,6 @@ export async function initiateBattle(interaction: CommandInteraction, message: M
 			for (const line of chunk.split('\n')) {
 				const { args, kwArgs } = Protocol.parseBattleLine(line);
 				const text = formatter.formatText(args, kwArgs);
-				const key = Protocol.key(args);
-
-				add(pre, key, args, kwArgs);
-				battle.add(args, kwArgs);
-				add(post, key, args, kwArgs);
 
 				if (text !== '') {
 					const log: string[] = cache.get('battlelog')!;
@@ -67,7 +62,11 @@ export async function initiateBattle(interaction: CommandInteraction, message: M
 		for await (const chunk of streams.p1) {
 			for (const line of chunk.split('\n')) {
 				const { args, kwArgs } = Protocol.parseBattleLine(line);
+				const key = Protocol.key(args);
+
+				add(pre, key, args, kwArgs);
 				battle.add(args, kwArgs);
+				add(post, key, args, kwArgs);
 			}
 			battle.update();
 		}
