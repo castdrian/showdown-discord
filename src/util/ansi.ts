@@ -1,6 +1,6 @@
 import { shortTypes } from '#constants/emotes';
 import type { Battle, Side } from '@pkmn/client';
-import { Dex, MoveName } from '@pkmn/dex';
+import { Dex } from '@pkmn/dex';
 import { codeBlock } from 'discord.js';
 import type { RomajiMon, RomajiMove } from 'pkmn-romaji';
 import { cache } from '#util/cache';
@@ -104,15 +104,46 @@ export function formatBattleLog(log: string[], battle: Battle): string {
 	// format 'Z-Move' blue bold
 	str = str.replace(/(Z-Move)/g, `${BLUE_BOLD}$1${RESET}`);
 
-	// format all moves blue bold
-	for (const move of Dex.moves.all()) {
-		if (romaji && romajiMons && romajiMoves) {
-			const romajiMove =
-				romajiMoves.find((m) => m.move.replace(/\s/g, '').toLowerCase() === move.name.replace(/\s/g, '').toLowerCase())?.romaji ?? move.name;
-			str = str.replace(new RegExp(move.name, 'g'), romajiMove);
-			move.name = romajiMove as MoveName;
+	// format 'Z-Power' blue bold
+	str = str.replace(/(Z-Power)/g, `${BLUE_BOLD}$1${RESET}`);
+
+	// get all move ids from all mons
+	const moveIds = [...p1mons, ...p2mons].flatMap((mon) => mon.moves);
+	const moveNames = moveIds.map((move) => Dex.moves.get(move).name);
+
+	// loop through all move names and replace them with their romaji names if romaji mode is enabled and then format them blue bold
+	for (const move of moveNames) {
+		const romajiMove = romajiMoves.find((m) => m.move.replace(/\s/g, '').toLowerCase() === move.replace(/\s/g, '').toLowerCase())?.romaji;
+		if (romaji && romajiMove) {
+			str = str.replace(new RegExp(move, 'g'), `${BLUE_BOLD}${romajiMove}${RESET}`);
+		} else {
+			str = str.replace(new RegExp(move, 'g'), `${BLUE_BOLD}${move}${RESET}`);
 		}
-		str = str.replace(new RegExp(move.name, 'g'), `${BLUE_BOLD}${move.name}${RESET}`);
+	}
+
+	// get all z-moves from dex
+	const zMoves = Dex.moves.all().filter((move) => move.isZ);
+
+	// loop through all z-moves and replace them with their romaji names if romaji mode is enabled and then format them blue bold
+	for (const zMove of zMoves) {
+		const romajiMove = romajiMoves.find((m) => m.move.replace(/\s/g, '').toLowerCase() === zMove.name.replace(/\s/g, '').toLowerCase())?.romaji;
+		if (romaji && romajiMove) {
+			str = str.replace(new RegExp(zMove.name, 'g'), `${BLUE_BOLD}${romajiMove}${RESET}`);
+		} else {
+			str = str.replace(new RegExp(zMove.name, 'g'), `${BLUE_BOLD}${zMove.name}${RESET}`);
+		}
+	}
+
+	// repeat for max moves
+	const maxMoves = Dex.moves.all().filter((move) => move.isMax);
+
+	for (const maxMove of maxMoves) {
+		const romajiMove = romajiMoves.find((m) => m.move.replace(/\s/g, '').toLowerCase() === maxMove.name.replace(/\s/g, '').toLowerCase())?.romaji;
+		if (romaji && romajiMove) {
+			str = str.replace(new RegExp(maxMove.name, 'g'), `${BLUE_BOLD}${romajiMove}${RESET}`);
+		} else {
+			str = str.replace(new RegExp(maxMove.name, 'g'), `${BLUE_BOLD}${maxMove.name}${RESET}`);
+		}
 	}
 
 	// // format all abilities green bold
