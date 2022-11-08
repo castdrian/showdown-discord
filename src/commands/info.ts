@@ -1,5 +1,5 @@
 import { type ApplicationCommandRegistry, Command, RegisterBehavior, version as sversion } from '@sapphire/framework';
-import { CommandInteraction, Message, version } from 'discord.js';
+import { CommandInteraction, Message, time, version } from 'discord.js';
 import { sendErrorToUser } from '#util/functions';
 import { default as lcl } from 'last-commit-log';
 import { default as ts } from 'typescript';
@@ -14,14 +14,13 @@ export class Info extends Command {
 			const guilds = this.container.client.guilds.cache.size;
 			const users = this.container.client.guilds.cache.reduce((a, b) => a + b.memberCount, 0);
 			const channels = this.container.client.channels.cache.size;
-			const { uptime } = this.container.client;
-			const uptimeString = new Date(uptime!).toISOString().substr(11, 8);
-			const os = process.platform;
+			const { readyAt } = this.container.client;
+			const uptimeString = time(readyAt!, 'R');
 			const cpu = process.cpuUsage();
 			const cpuUsage = Math.round((cpu.user + cpu.system) / 1000000);
 			const cpuCount = cpus().length;
 			const cpuModel = cpus()[0].model;
-			const osString = `${os} ${cpuCount}x ${cpuModel}`;
+			const osString = `${process.platform} ${cpuCount}x ${cpuModel}`;
 			const cpuUsageString = `Using ${cpuUsage}% of ${cpuCount} CPU cores`;
 			const memory = process.memoryUsage().heapUsed / 1024 / 1024;
 			const memoryString = `${memory.toFixed(2)} MB / ${Math.round(totalmem() / 1024 / 1024)} MB`;
@@ -30,10 +29,8 @@ export class Info extends Command {
 			const shardString = `${shard + 1}/${shardCount}`;
 			const lclInstance = new lcl(process.cwd());
 			const lastCommit = await lclInstance.getLastCommit();
-			const { gitUrl, shortHash, subject, author } = lastCommit;
-			const commitDate = new Date(parseInt(author.date, 10) * 1000);
-			const commitDateString = commitDate.toDateString();
-			const commitString = `[${shortHash}](${gitUrl}) - ${subject} \`${commitDateString}\``;
+			const { gitUrl, shortHash, subject } = lastCommit;
+			const commitString = `[${shortHash}](${gitUrl}) - ${subject}`;
 			const node = `[${process.version}](https://nodejs.org/en/download/releases/)`;
 			const tsver = `[v${ts.version}](https://www.typescriptlang.org/download)`;
 			const latency = this.container.client.ws.ping;
@@ -45,7 +42,7 @@ export class Info extends Command {
 				thumbnail: {
 					url: this.container.client.user?.displayAvatarURL() ?? ''
 				},
-				description: `**Guilds:** ${guilds}\n**Users:** ${users}\n**Channels:** ${channels}\n**Uptime:** ${uptimeString}\n**Latency:** ${latency} ms\n**System:** ${osString}\n**CPU Usage:** ${cpuUsageString}\n**Memory Usage:** ${memoryString}\n**Shard:** ${shardString}\n**Current Commit:** ${commitString}\n**Node:** ${node}\n**TypeScript:** ${tsver}\n**Discord.js:** ${djs}\n**Sapphire:** ${sapphire}`,
+				description: `**Guilds:** ${guilds}\n**Users:** ${users}\n**Channels:** ${channels}\n**Uptime:** Container started ${uptimeString}\n**Latency:** ${latency} ms\n**System:** ${osString}\n**CPU Usage:** ${cpuUsageString}\n**Memory Usage:** ${memoryString}\n**Shard:** ${shardString}\n**Current Commit:** ${commitString}\n**Node:** ${node}\n**TypeScript:** ${tsver}\n**Discord.js:** ${djs}\n**Sapphire:** ${sapphire}`,
 				color: 0x5865f2
 			};
 
