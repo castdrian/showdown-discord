@@ -12,7 +12,7 @@ import type {
 } from 'discord.js';
 import { Sprites } from '@pkmn/img';
 import { ChoiceBuilder } from '@pkmn/view';
-import { formatBattleLog, generateSideState } from '#util/ansi';
+import { formatBattleLog, generateEffectInfo, generateSideState } from '#util/ansi';
 import type { MoveName } from '@pkmn/dex';
 import { Dex } from '@pkmn/sim';
 import { fixCustomId, getCustomId } from '#util/functions';
@@ -114,6 +114,18 @@ export async function updateBattleEmbed(
 			label: 'Forfeit',
 			style: 4
 		});
+		// add row 3 with info button
+		components.push({
+			type: 1,
+			components: [
+				{
+					type: 2,
+					custom_id: 'info',
+					emoji: 'ℹ️',
+					style: 1
+				}
+			]
+		});
 		components = fixCustomId(components) as any;
 
 		// overwrite the files with the result of maxSprite()
@@ -163,6 +175,9 @@ export async function moveChoice(streams: any, battle: Battle, message: Message,
 		if (customId === 'max' || customId === 'mega' || customId === 'zmove') {
 			collector.stop();
 			await activateGimmick(customId, streams, battle, message, user);
+		}
+		if (customId === 'info') {
+			await i.followUp({ content: generateEffectInfo(battle) ?? 'No active battle effects.', ephemeral: true });
 		}
 		if (customId === 'cancel') {
 			collector.stop();
@@ -388,60 +403,61 @@ function generateMoveButtons(activemon: Pokemon): any {
 				}
 			]
 		},
-		// add another row if the mon can dynamax, gigantamax, mega evolve, or use z move
-		...(activemon?.canDynamax || activemon?.canGigantamax || activemon?.canMegaEvo || activemon?.zMoves?.length
-			? [
-					{
-						type: 1,
-						components: [
-							// add buttons dynamically based on what the mon can do
-							// if can dynamax or gigantamax, add a button for that, if can gigantamax label it as such otherwise label it as dynamax, also if romaji is available use that instead of the name
-							...(activemon?.canDynamax || activemon?.canGigantamax
-								? [
-										{
-											type: 2,
-											custom_id: 'max',
-											label: romaji
-												? activemon?.canGigantamax
-													? 'Kyodaimax'
-													: 'Daimax'
-												: activemon?.canGigantamax
-												? 'Gigantamax'
-												: 'Dynamax',
-											style: 2,
-											emoji: '<:dmax:1038101514142617650>',
-											disabled: !activemon?.canDynamax && !activemon?.canGigantamax
-										}
-								  ]
-								: []),
-							...(activemon?.canMegaEvo
-								? [
-										{
-											type: 2,
-											custom_id: 'mega',
-											label: romaji ? 'Mega Shinka' : 'Mega Evolve',
-											style: 2,
-											emoji: '<:megaevo:1038102161122414602>',
-											disabled: !activemon?.canMegaEvo
-										}
-								  ]
-								: []),
-							...(activemon?.zMoves?.length
-								? [
-										{
-											type: 2,
-											custom_id: 'zmove',
-											label: romaji ? 'Z Waza' : 'Z-Move',
-											style: 2,
-											emoji: '<:zpower:1038102607027261540>',
-											disabled: !activemon?.zMoves?.length
-										}
-								  ]
-								: [])
-						]
-					}
-			  ]
-			: [])
+		{
+			type: 1,
+			components: [
+				// add buttons dynamically based on what the mon can do
+				// if can dynamax or gigantamax, add a button for that, if can gigantamax label it as such otherwise label it as dynamax, also if romaji is available use that instead of the name
+				...(activemon?.canDynamax || activemon?.canGigantamax
+					? [
+							{
+								type: 2,
+								custom_id: 'max',
+								label: romaji
+									? activemon?.canGigantamax
+										? 'Kyodaimax'
+										: 'Daimax'
+									: activemon?.canGigantamax
+									? 'Gigantamax'
+									: 'Dynamax',
+								style: 2,
+								emoji: '<:dmax:1038101514142617650>',
+								disabled: !activemon?.canDynamax && !activemon?.canGigantamax
+							}
+					  ]
+					: []),
+				...(activemon?.canMegaEvo
+					? [
+							{
+								type: 2,
+								custom_id: 'mega',
+								label: romaji ? 'Mega Shinka' : 'Mega Evolve',
+								style: 2,
+								emoji: '<:megaevo:1038102161122414602>',
+								disabled: !activemon?.canMegaEvo
+							}
+					  ]
+					: []),
+				...(activemon?.zMoves?.length
+					? [
+							{
+								type: 2,
+								custom_id: 'zmove',
+								label: romaji ? 'Z Waza' : 'Z-Move',
+								style: 2,
+								emoji: '<:zpower:1038102607027261540>',
+								disabled: !activemon?.zMoves?.length
+							}
+					  ]
+					: []),
+				{
+					type: 2,
+					custom_id: 'info',
+					emoji: 'ℹ️',
+					style: 1
+				}
+			]
+		}
 	];
 }
 

@@ -235,3 +235,67 @@ export function generateSideState(side: Side) {
 	if (side.n === 1) return `${teamStatusString}\n${ansi}`;
 	return `${ansi}\n${teamStatusString}`;
 }
+
+export function generateEffectInfo(battle: Battle) {
+	const active = battle.p1.active[0] ?? battle.p1.lastPokemon;
+	if (!active) return null;
+	const foeActive = battle.p2.active[0] ?? battle.p2.lastPokemon;
+	if (!foeActive) return null;
+
+	const activeBoosts = active.boosts;
+	const foeActiveBoosts = foeActive.boosts;
+	const activeSideConditions = battle.p1.sideConditions;
+	const foeActiveSideConditions = battle.p2.sideConditions;
+
+	// if all of these are empty objects, return null
+	if (
+		Object.keys(activeBoosts).length === 0 &&
+		Object.keys(foeActiveBoosts).length === 0 &&
+		Object.keys(activeSideConditions).length === 0 &&
+		Object.keys(foeActiveSideConditions).length === 0
+	)
+		return null;
+
+	// function to calculate boost color based on boost value
+	const boostColor = (boost: number) => {
+		if (boost > 0) return RED_BOLD;
+		if (boost < 0) return BLUE_BOLD;
+		return WHITE_BOLD;
+	};
+
+	// format boosts that look like this { atk: 2, def: 2 } and this { evasion: -1 } into a pretty colored string
+	const formatBoosts = (boosts: { [key: string]: number }) => {
+		const boostStrings = [];
+		for (const [stat, boost] of Object.entries(boosts)) {
+			if (boost === 0) continue;
+			const color = boostColor(boost);
+			const sign = boost > 0 ? '+' : '';
+			boostStrings.push(`${color}${sign}${boost}${RESET} ${stat}`);
+		}
+		return boostStrings.join(' ');
+	};
+
+	// format side conditions that look like this { toxicspikes: { name: 'Toxic Spikes', level: 2, minDuration: 0, maxDuration: 0 } } into a pretty colored string
+	const formatSideConditions = (sideConditions: { [key: string]: { name: string; level: number; minDuration: number; maxDuration: number } }) => {
+		const sideConditionStrings = [];
+		for (const [_sideCondition, data] of Object.entries(sideConditions)) {
+			const color = WHITE_BOLD;
+			const { name } = data;
+			sideConditionStrings.push(`${color}${name}${RESET}`);
+		}
+		return sideConditionStrings.join('\n');
+	};
+
+	const activeBoostsString = Object.keys(activeBoosts).length === 0 ? 'No active boosts' : formatBoosts(activeBoosts);
+	const foeActiveBoostsString = Object.keys(foeActiveBoosts).length === 0 ? 'No active boosts' : formatBoosts(foeActiveBoosts);
+	const activeSideConditionsString =
+		Object.keys(activeSideConditions).length === 0 ? 'No active side conditions' : formatSideConditions(activeSideConditions);
+	const foeActiveSideConditionsString =
+		Object.keys(foeActiveSideConditions).length === 0 ? 'No active side conditions' : formatSideConditions(foeActiveSideConditions);
+
+	const activeString = `${WHITE_BOLD}${active.name}${RESET}\n${activeBoostsString}\n${activeSideConditionsString}`;
+	const foeActiveString = `${WHITE_BOLD}${foeActive.name}${RESET}\n${foeActiveBoostsString}\n${foeActiveSideConditionsString}`;
+
+	const ansi = codeBlock('ansi', `${foeActiveString}\n\n${activeString}`);
+	return ansi;
+}
