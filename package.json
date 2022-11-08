@@ -19,7 +19,9 @@
     "commit": "git-cz",
     "cz": "git-cz",
     "prepare": "husky install .github/husky",
-    "start": "yarn run build && node dist/showdown.js"
+    "start": "yarn run build && node dist/showdown.js",
+    "predocker:start": "yarn",
+    "docker:start": "yarn start"
   },
   "dependencies": {
     "@pkmn/client": "^0.5.1",
