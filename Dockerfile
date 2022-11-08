@@ -1,5 +1,5 @@
 # Base layer
-FROM node:18-bullseye-slim as base
+FROM node:18 as base
 WORKDIR /home/node/app
 
 # Build layer (everything besides build output & node_modules can be disgarded from this)

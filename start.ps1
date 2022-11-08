@@ -1,1 +1,0 @@
-yarn.cmd run start
