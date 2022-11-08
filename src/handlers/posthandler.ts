@@ -53,11 +53,6 @@ export class PostHandler implements Handler<void> {
 	}
 
 	async '|tie|'() {
-		const battlelog: string[] = cache.get('battlelog')!;
-		if (battlelog) {
-			battlelog.push(`The battle ended in a tie!`);
-			cache.set('battlelog', battlelog);
-		}
 		await updateBattleEmbed(this.battle, this.message, []);
 		this.battle.destroy();
 	}

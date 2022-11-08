@@ -149,7 +149,12 @@ export async function moveChoice(streams: any, battle: Battle, message: Message,
 			else builder.addChoice(`move ${customId}`);
 			const choice = builder.toString();
 			streams.p1.write(choice);
-			await updateBattleEmbed(battle, message);
+
+			const move = Dex.moves.get(customId as any);
+
+			if (move.selfSwitch && !activemon?.trapped) {
+				await switchChoice(streams, battle, message, user, false);
+			} else await updateBattleEmbed(battle, message);
 		}
 		if (customId === 'switch') {
 			collector.stop();
