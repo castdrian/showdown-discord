@@ -15,8 +15,6 @@ RUN yarn
 
 COPY . .
 
-EXPOSE 8080
-
 RUN yarn run build
 
 # Production layer, only copy required files to run.
