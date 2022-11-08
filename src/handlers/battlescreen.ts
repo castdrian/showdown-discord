@@ -68,10 +68,6 @@ export async function updateBattleEmbed(
 
 	const activemon = battle.p1.active[0] ?? battle.p1.lastPokemon;
 	const opponent = battle.p1.foe.active[0] ?? battle.p2.lastPokemon;
-	console.log(activemon?.maxMoves);
-	console.log('max moves');
-	console.log(activemon?.zMoves);
-	console.log('z moves');
 
 	const {
 		url: activesprite,
@@ -146,7 +142,7 @@ export async function moveChoice(streams: any, battle: Battle, message: Message,
 		await i.deferUpdate();
 		// retrieve the original custom id
 		const customId = getCustomId(i.customId);
-		console.log(customId);
+
 		if (activemon?.moves.includes(customId as any)) {
 			collector.stop();
 			if (gimmick) builder.addChoice(`move ${customId} ${gimmick}`);
@@ -176,7 +172,6 @@ export async function moveChoice(streams: any, battle: Battle, message: Message,
 }
 
 export async function switchChoice(streams: any, battle: Battle, message: Message, user: User, allowCancel = false) {
-	console.log('switching');
 	const { team } = battle.p1;
 	const builder = new ChoiceBuilder(battle.request!);
 
@@ -201,9 +196,7 @@ export async function switchChoice(streams: any, battle: Battle, message: Messag
 		...(allowCancel ? [{ type: 1, components: [{ type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 }] }] : [])
 	];
 
-	console.log('sending switch embed');
 	await updateBattleEmbed(battle, message, components);
-	console.log('sent switch embed');
 
 	const filter = (i: any) => i.user.id === user.id;
 	const collector = message!.createMessageComponentCollector({ filter });
