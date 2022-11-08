@@ -1,7 +1,15 @@
 ## Usage
 
+### Production
+
 ```bash
 docker run --env-file=.env --name=showdown --restart=unless-stopped ghcr.io/castdrian/showdown:main
+```
+
+### Development
+
+```bash
+docker-compose up
 ```
 
 ## Play & Support
