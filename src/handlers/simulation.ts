@@ -57,7 +57,6 @@ export async function initiateBattle(interaction: CommandInteraction, message: M
 						cache.set('battlelog', log);
 					}
 				}
-				console.log(removeMD(text));
 			}
 			battle.update();
 		}

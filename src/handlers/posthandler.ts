@@ -17,16 +17,10 @@ export class PostHandler implements Handler<void> {
 		this.user = user;
 	}
 
-	'|teampreview|'() {
-		console.log('teampreview');
-	}
+	'|teampreview|'() {}
 
 	async '|turn|'() {
-		console.log('turn');
 		if (this.battle.request?.requestType === 'move') {
-			// @ts-ignore missing types
-			console.log(this.battle.request.active[0]?.canZMove);
-			console.log(this.battle.request.active[0]?.zMoves);
 			// @ts-ignore missing types
 			this.battle.p1.active[0].canZMove = this.battle.request.active[0].canZMove;
 			// @ts-ignore missing types
@@ -35,7 +29,6 @@ export class PostHandler implements Handler<void> {
 			await updateBattleEmbed(this.battle, this.message);
 			await moveChoice(this.streams, this.battle, this.message, this.user);
 		} else if (this.battle.request?.requestType === 'switch') {
-			console.log('switchchoice');
 			(await waitFor(() => cache.get('battlelog'))) !== null;
 			await switchChoice(this.streams, this.battle, this.message, this.user);
 		} else if (this.battle.request?.requestType === 'wait') {
@@ -45,12 +38,8 @@ export class PostHandler implements Handler<void> {
 	}
 
 	async '|switch|'(args: Protocol.Args['|switch|']) {
-		console.log('switch event');
-		console.log(args);
 		const poke = this.battle.getPokemon(args[1]);
 		if (poke?.side === this.battle.p1 && this.battle.p1.lastPokemon) {
-			console.log('switch done');
-			console.log('updating battle embed');
 			if (this.battle.p1.active[0]?.name === this.battle.p1.lastPokemon.name) {
 				this.battle.p1.active[0] = this.battle.p1.lastPokemon;
 				await updateBattleEmbed(this.battle, this.message);
@@ -58,14 +47,12 @@ export class PostHandler implements Handler<void> {
 		}
 	}
 
-	async '|win|'(args: Protocol.Args['|win|']) {
-		console.log(args);
+	async '|win|'() {
 		await updateBattleEmbed(this.battle, this.message, []);
 		this.battle.destroy();
 	}
 
-	async '|tie|'(args: Protocol.Args['|tie|']) {
-		console.log(args);
+	async '|tie|'() {
 		const battlelog: string[] = cache.get('battlelog')!;
 		if (battlelog) {
 			battlelog.push(`The battle ended in a tie!`);
@@ -75,19 +62,7 @@ export class PostHandler implements Handler<void> {
 		this.battle.destroy();
 	}
 
-	'|detailschange|'(args: Protocol.Args['|detailschange|']) {
-		console.log('detailschange event');
-		console.log(args);
-	}
-
-	'|-formechange|'(args: Protocol.Args['|-formechange|']) {
-		console.log('formechange event');
-		console.log(args);
-	}
-
 	'|-start|'(args: Protocol.Args['|-start|']) {
-		console.log('-start event');
-		console.log(args);
 		// looks like this: [ '-start', 'p1a: Dracozolt', 'Dynamax' ]
 		// destructure index 1 and 2
 		const [, pokemon, effect] = args;
@@ -100,8 +75,6 @@ export class PostHandler implements Handler<void> {
 	}
 
 	'|-end|'(args: Protocol.Args['|-end|']) {
-		console.log('-end event');
-		console.log(args);
 		// looks like this: [ '-end', 'p1a: Dracozolt', 'Dynamax' ]
 		// destructure index 1 and 2
 		const [, pokemon, effect] = args;
