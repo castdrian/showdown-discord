@@ -80,14 +80,24 @@ export async function updateBattleEmbed(
 		side: 'p2'
 	});
 
+	const { avatar1, avatar2 } = cache.get('avatars') as any;
+
 	const embeds = [
 		{
+			author: {
+				name: battle.p2.name,
+				icon_url: avatar2
+			},
 			thumbnail: { url: opponentsprite },
 			color: 0x5865f2,
 			description: `${generateSideState(battle.p2)}\n${formatBattleLog(battlelog, battle)}\n${generateSideState(battle.p1)}`,
-			// when process.isMax is true take 'max.gif' from the messageattachment that maxSprite() returns
+			// when isMax is true take 'max.gif' from the messageattachment that maxSprite() returns
 			// only show image if active mon is not fainted, if it is fainted image is undefined
-			image: activemon?.fainted ? undefined : { url: isMax ? 'attachment://max.gif' : activesprite }
+			image: activemon?.fainted ? undefined : { url: isMax ? 'attachment://max.gif' : activesprite },
+			footer: {
+				text: battle.p1.name,
+				icon_url: avatar1
+			}
 		}
 	] as any;
 

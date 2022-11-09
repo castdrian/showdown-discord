@@ -113,8 +113,8 @@ export function formatBattleLog(log: string[], battle: Battle): string {
 
 	// loop through all move names and replace them with their romaji names if romaji mode is enabled and then format them blue bold
 	for (const move of moveNames) {
-		const romajiMove = romajiMoves.find((m) => m.move.replace(/\s/g, '').toLowerCase() === move.replace(/\s/g, '').toLowerCase())?.romaji;
-		if (romaji && romajiMove) {
+		if (romaji && romajiMoves) {
+			const romajiMove = romajiMoves.find((m) => m.move.replace(/\s/g, '').toLowerCase() === move.replace(/\s/g, '').toLowerCase())?.romaji;
 			str = str.replace(new RegExp(move, 'g'), `${BLUE_BOLD}${romajiMove}${RESET}`);
 		} else {
 			str = str.replace(new RegExp(move, 'g'), `${BLUE_BOLD}${move}${RESET}`);
@@ -126,8 +126,10 @@ export function formatBattleLog(log: string[], battle: Battle): string {
 
 	// loop through all z-moves and replace them with their romaji names if romaji mode is enabled and then format them blue bold
 	for (const zMove of zMoves) {
-		const romajiMove = romajiMoves.find((m) => m.move.replace(/\s/g, '').toLowerCase() === zMove.name.replace(/\s/g, '').toLowerCase())?.romaji;
-		if (romaji && romajiMove) {
+		if (romaji && romajiMoves) {
+			const romajiMove = romajiMoves.find(
+				(m) => m.move.replace(/\s/g, '').toLowerCase() === zMove.name.replace(/\s/g, '').toLowerCase()
+			)?.romaji;
 			str = str.replace(new RegExp(zMove.name, 'g'), `${BLUE_BOLD}${romajiMove}${RESET}`);
 		} else {
 			str = str.replace(new RegExp(zMove.name, 'g'), `${BLUE_BOLD}${zMove.name}${RESET}`);
@@ -138,8 +140,10 @@ export function formatBattleLog(log: string[], battle: Battle): string {
 	const maxMoves = Dex.moves.all().filter((move) => move.isMax);
 
 	for (const maxMove of maxMoves) {
-		const romajiMove = romajiMoves.find((m) => m.move.replace(/\s/g, '').toLowerCase() === maxMove.name.replace(/\s/g, '').toLowerCase())?.romaji;
-		if (romaji && romajiMove) {
+		if (romaji && romajiMoves) {
+			const romajiMove = romajiMoves.find(
+				(m) => m.move.replace(/\s/g, '').toLowerCase() === maxMove.name.replace(/\s/g, '').toLowerCase()
+			)?.romaji;
 			str = str.replace(new RegExp(maxMove.name, 'g'), `${BLUE_BOLD}${romajiMove}${RESET}`);
 		} else {
 			str = str.replace(new RegExp(maxMove.name, 'g'), `${BLUE_BOLD}${maxMove.name}${RESET}`);

@@ -1,5 +1,6 @@
 import { CommandInteraction, Message, AttachmentBuilder, MessageEditOptions, codeBlock } from 'discord.js';
 import newGithubIssueUrl from 'new-github-issue-url';
+import { cache } from '#util/cache';
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -89,4 +90,15 @@ export async function sendErrorToUser(error: any, message: Message, interaction:
 		})
 		.catch(() => null);
 	await interaction.deleteReply().catch(() => null);
+}
+
+// grab two random images from https://github.com/castdrian/showdown/blob/main/data/avatars/ that arent the same, avatars range from 1.png to 57.png
+export function getTwoRandomAvatars(): boolean {
+	const num1 = Math.floor(Math.random() * 57) + 1;
+	const num2 = Math.floor(Math.random() * 57) + 1;
+	if (num1 === num2) return getTwoRandomAvatars();
+
+	const avatar1 = `https://github.com/castdrian/showdown/raw/main/data/avatars/${num1}.png`;
+	const avatar2 = `https://github.com/castdrian/showdown/raw/main/data/avatars/${num2}.png`;
+	return cache.set('avatars', { avatar1, avatar2 });
 }
