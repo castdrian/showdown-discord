@@ -121,7 +121,7 @@ export async function updateBattleEmbed(
 				{
 					type: 2,
 					custom_id: 'info',
-					emoji: 'ℹ️',
+					emoji: '<:normalball:1037794399347822622>',
 					style: 2
 				}
 			]
@@ -453,7 +453,7 @@ function generateMoveButtons(activemon: Pokemon): any {
 				{
 					type: 2,
 					custom_id: 'info',
-					emoji: 'ℹ️',
+					emoji: '<:normalball:1037794399347822622>',
 					style: 2
 				}
 			]
