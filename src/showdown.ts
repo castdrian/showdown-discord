@@ -14,4 +14,9 @@ const client = new SapphireClient({
 });
 
 if (!process.env.DISCORD_TOKEN) process.exit(0);
+
+// attach global rejection handler and global uncaught exception handler
+process.on('unhandledRejection', (err) => console.log(err));
+process.on('uncaughtException', (err) => console.log(err));
+
 await client.login();
