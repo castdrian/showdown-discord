@@ -8,9 +8,9 @@ import { Teams, Data, PokemonSet } from '@pkmn/sets';
 import { fetchRomaji, RomajiMon, RomajiMove } from 'pkmn-romaji';
 import { request } from 'undici';
 import { getTwoRandomAvatars, sendErrorToUser } from '#util/functions';
-import { cache } from '#util/cache';
+import type NodeCache from 'node-cache';
 
-export async function startScreen(interaction: CommandInteraction) {
+export async function startScreen(interaction: CommandInteraction, cache: NodeCache) {
 	let formatid = 'gen8randombattle';
 	let battle_team: PokemonSet[];
 
@@ -82,8 +82,8 @@ export async function startScreen(interaction: CommandInteraction) {
 			await interaction.webhook.deleteMessage(id);
 			const message = await interaction.fetchReply();
 			if (message instanceof Message) {
-				getTwoRandomAvatars();
-				await initiateBattle(interaction, message, interaction.user, formatid, battle_team).catch((err) =>
+				getTwoRandomAvatars(cache);
+				await initiateBattle(interaction, message, interaction.user, formatid, battle_team, cache).catch((err) =>
 					sendErrorToUser(err, message, interaction)
 				);
 				cache.set('romaji', false);

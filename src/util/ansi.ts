@@ -2,8 +2,8 @@ import { shortTypes } from '#constants/emotes';
 import type { Battle, Side } from '@pkmn/client';
 import { Dex } from '@pkmn/dex';
 import { codeBlock } from 'discord.js';
+import type NodeCache from 'node-cache';
 import type { RomajiMon, RomajiMove } from 'pkmn-romaji';
-import { cache } from '#util/cache';
 
 const RED_BOLD = '\u001b[1;31m';
 const BLUE_BOLD = '\u001b[1;34m';
@@ -14,7 +14,7 @@ const CYAN_BOLD = '\u001b[1;36m';
 const WHITE_BOLD = '\u001b[1;37m';
 const RESET = '\u001b[0m';
 
-export function formatBattleLog(log: string[], battle: Battle): string {
+export function formatBattleLog(log: string[], battle: Battle, cache: NodeCache): string {
 	// cut down log to last 10 lines
 	// if there are more than 2 linebreaks in a row, replace them with 2 linebreaks
 	let str = log

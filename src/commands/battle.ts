@@ -2,6 +2,7 @@ import { type ApplicationCommandRegistry, Command, RegisterBehavior } from '@sap
 import { CommandInteraction, Message } from 'discord.js';
 import { startScreen } from '#handlers/startscreen';
 import { sendErrorToUser } from '#util/functions';
+import NodeCache from 'node-cache';
 
 export class Battle extends Command {
 	public override async chatInputRun(interaction: CommandInteraction) {
@@ -20,7 +21,8 @@ export class Battle extends Command {
 		// try catch the entire thing and send an error message if it fails
 		try {
 			// do the battle stuff
-			await startScreen(interaction);
+			const cache = new NodeCache();
+			await startScreen(interaction, cache);
 		} catch (error: any) {
 			if (message instanceof Message) {
 				await sendErrorToUser(error, message, interaction);

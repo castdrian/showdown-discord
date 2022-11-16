@@ -9,9 +9,16 @@ import { PostHandler } from '#handlers/posthandler';
 import type { CommandInteraction, Message, User } from 'discord.js';
 import { default as removeMD } from 'remove-markdown';
 import { sendErrorToUser } from '#util/functions';
-import { cache } from '#util/cache';
+import type NodeCache from 'node-cache';
 
-export async function initiateBattle(interaction: CommandInteraction, message: Message, user: User, formatid: string, team: PokemonSet[] | null) {
+export async function initiateBattle(
+	interaction: CommandInteraction,
+	message: Message,
+	user: User,
+	formatid: string,
+	team: PokemonSet[] | null,
+	cache: NodeCache
+) {
 	Teams.setGeneratorFactory(TeamGenerators);
 	const gens = new Generations(Dex as any);
 	const custom_team = Teams.pack(team);
@@ -28,8 +35,8 @@ export async function initiateBattle(interaction: CommandInteraction, message: M
 	const battle = new Battle(gens);
 	const formatter = new LogFormatter('p1', battle);
 
-	const pre = new PreHandler(battle, streams, message, user);
-	const post = new PostHandler(battle, streams, message, user);
+	const pre = new PreHandler(battle, streams, message, user, cache);
+	const post = new PostHandler(battle, streams, message, user, cache);
 
 	const add = <T>(h: Handler<T>, k: ArgName | undefined, a: ArgType, kw: BattleArgsKWArgType) => {
 		if (k && k in h) (h as any)[k](a, kw);

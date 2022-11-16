@@ -19,11 +19,12 @@ import { fixCustomId, getCustomId } from '#util/functions';
 import { maxSprite } from '#util/canvas';
 import { typeEmotes } from '#constants/emotes';
 import type { RomajiMon, RomajiMove } from 'pkmn-romaji';
-import { cache } from '#util/cache';
+import type NodeCache from 'node-cache';
 
 export async function updateBattleEmbed(
 	battle: Battle,
 	message: Message,
+	cache: NodeCache,
 	extComponents?: (
 		| JSONEncodable<APIActionRowComponent<APIMessageActionRowComponent>>
 		| ActionRowData<MessageActionRowComponentData | MessageActionRowComponentBuilder>
@@ -90,7 +91,7 @@ export async function updateBattleEmbed(
 			},
 			thumbnail: { url: opponentsprite },
 			color: 0x5865f2,
-			description: `${generateSideState(battle.p2)}\n${formatBattleLog(battlelog, battle)}\n${generateSideState(battle.p1)}`,
+			description: `${generateSideState(battle.p2)}\n${formatBattleLog(battlelog, battle, cache)}\n${generateSideState(battle.p1)}`,
 			// when isMax is true take 'max.gif' from the messageattachment that maxSprite() returns
 			// only show image if active mon is not fainted, if it is fainted image is undefined
 			image: activemon?.fainted ? undefined : { url: isMax ? 'attachment://max.gif' : activesprite },
@@ -101,7 +102,7 @@ export async function updateBattleEmbed(
 		}
 	] as any;
 
-	let components = generateMoveButtons(activemon!);
+	let components = generateMoveButtons(activemon!, cache);
 	if (components) {
 		components = fixCustomId(components) as any;
 	}
@@ -109,7 +110,7 @@ export async function updateBattleEmbed(
 
 	// if process.isMax is true, overwrite the components with the result of maxMoves(battle) and add the switch and forfeit buttons into the components and run them through fixCustomId
 	if (isMax) {
-		components = maxMoves(battle);
+		components = maxMoves(battle, cache);
 		// add the switch button to the first row and the forfeit button to the second row
 		components[0].components.push({
 			type: 2,
@@ -153,7 +154,7 @@ export async function updateBattleEmbed(
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await
-export async function moveChoice(streams: any, battle: Battle, message: Message, user: User, gimmick?: string) {
+export async function moveChoice(streams: any, battle: Battle, message: Message, user: User, cache: NodeCache, gimmick?: string) {
 	const activemon = battle.p1.active[0];
 	const builder = new ChoiceBuilder(battle.request!);
 
@@ -175,33 +176,33 @@ export async function moveChoice(streams: any, battle: Battle, message: Message,
 			const move = Dex.moves.get(customId as any);
 
 			if (move.selfSwitch && !activemon?.trapped) {
-				await switchChoice(streams, battle, message, user, false);
-			} else await updateBattleEmbed(battle, message);
+				await switchChoice(streams, battle, message, user, cache, false);
+			} else await updateBattleEmbed(battle, message, cache);
 		}
 		if (customId === 'switch') {
 			collector.stop();
-			await switchChoice(streams, battle, message, user, true);
+			await switchChoice(streams, battle, message, user, cache, true);
 		}
 		if (customId === 'max' || customId === 'mega' || customId === 'zmove') {
 			collector.stop();
-			await activateGimmick(customId, streams, battle, message, user);
+			await activateGimmick(customId, streams, battle, message, user, cache);
 		}
 		if (customId === 'info') {
 			await i.followUp({ content: generateEffectInfo(battle) ?? 'No active battle effects.', ephemeral: true });
 		}
 		if (customId === 'cancel') {
 			collector.stop();
-			await updateBattleEmbed(battle, message);
-			await moveChoice(streams, battle, message, user);
+			await updateBattleEmbed(battle, message, cache);
+			await moveChoice(streams, battle, message, user, cache);
 		}
 		if (customId === 'forfeit') {
-			const forfeit = await forfeitBattle(streams, i, battle, message);
+			const forfeit = await forfeitBattle(streams, i, battle, message, cache);
 			if (forfeit) collector.stop();
 		}
 	});
 }
 
-export async function switchChoice(streams: any, battle: Battle, message: Message, user: User, allowCancel = false) {
+export async function switchChoice(streams: any, battle: Battle, message: Message, user: User, cache: NodeCache, allowCancel = false) {
 	const { team } = battle.p1;
 	const builder = new ChoiceBuilder(battle.request!);
 
@@ -226,7 +227,7 @@ export async function switchChoice(streams: any, battle: Battle, message: Messag
 		...(allowCancel ? [{ type: 1, components: [{ type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 }] }] : [])
 	];
 
-	await updateBattleEmbed(battle, message, components);
+	await updateBattleEmbed(battle, message, cache, components);
 
 	const filter = (i: any) => i.user.id === user.id;
 	const collector = message!.createMessageComponentCollector({ filter });
@@ -238,8 +239,8 @@ export async function switchChoice(streams: any, battle: Battle, message: Messag
 
 		if (customId === 'cancel') {
 			collector.stop();
-			await updateBattleEmbed(battle, message);
-			await moveChoice(streams, battle, message, user);
+			await updateBattleEmbed(battle, message, cache);
+			await moveChoice(streams, battle, message, user, cache);
 		} else {
 			collector.stop();
 			builder.addChoice(`switch ${customId}`);
@@ -249,7 +250,13 @@ export async function switchChoice(streams: any, battle: Battle, message: Messag
 	});
 }
 
-async function forfeitBattle(streams: any, interaction: MessageComponentInteraction, battle: Battle, message: Message): Promise<boolean> {
+async function forfeitBattle(
+	streams: any,
+	interaction: MessageComponentInteraction,
+	battle: Battle,
+	message: Message,
+	cache: NodeCache
+): Promise<boolean> {
 	const msg = (await interaction.followUp({
 		content: 'Do you wish to forfeit this battle?',
 		components: [
@@ -295,7 +302,7 @@ async function forfeitBattle(streams: any, interaction: MessageComponentInteract
 			await interaction.webhook.deleteMessage(msg);
 		}
 		if (customId === 'no') {
-			await updateBattleEmbed(battle, message);
+			await updateBattleEmbed(battle, message, cache);
 			await interaction.webhook.deleteMessage(msg);
 		}
 	});
@@ -303,39 +310,39 @@ async function forfeitBattle(streams: any, interaction: MessageComponentInteract
 	return choice;
 }
 
-async function activateGimmick(gimmick: string, streams: any, battle: Battle, message: Message, user: User) {
+async function activateGimmick(gimmick: string, streams: any, battle: Battle, message: Message, user: User, cache: NodeCache) {
 	if (gimmick === 'max') {
 		// const components is the result of maxMoves(battle) plus a cancel button { type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 }
-		const components = await maxMoves(battle);
+		const components = await maxMoves(battle, cache);
 		// now insert the cancel button at row 2
 		components[1].components.push({ type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 });
 
 		await updateBattleEmbed(battle, message, await components);
-		await moveChoice(streams, battle, message, user, gimmick);
+		await moveChoice(streams, battle, message, user, cache, gimmick);
 	}
 	if (gimmick === 'mega') {
-		const components = await generateMoveButtons(battle.p1.active[0]!);
+		const components = await generateMoveButtons(battle.p1.active[0]!, cache);
 		// now insert the cancel button at row 2
 		components[1].components.push({ type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 });
 		// remove row 3 (the mega button) which is at index 2
 		components.splice(2, 1);
 
 		await updateBattleEmbed(battle, message, await components);
-		await moveChoice(streams, battle, message, user, gimmick);
+		await moveChoice(streams, battle, message, user, cache, gimmick);
 	}
 	if (gimmick === 'zmove') {
-		const components = await zMoves(battle);
+		const components = await zMoves(battle, cache);
 		// now insert the cancel button at row 2
 		components[1].components.push({ type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 });
 		// remove row 3 (the zmove button) which is at index 2
 		components.splice(2, 1);
 
 		await updateBattleEmbed(battle, message, await components);
-		await moveChoice(streams, battle, message, user, gimmick);
+		await moveChoice(streams, battle, message, user, cache, gimmick);
 	}
 }
 
-function generateMoveButtons(activemon: Pokemon): any {
+function generateMoveButtons(activemon: Pokemon, cache: NodeCache): any {
 	// get the type of each move
 	const moveTypes = activemon.moves.map((move) => {
 		const moveType = Dex.moves.get(move)?.type;
@@ -471,7 +478,7 @@ function generateMoveButtons(activemon: Pokemon): any {
 	];
 }
 
-function maxMoves(battle: Battle): any {
+function maxMoves(battle: Battle, cache: NodeCache): any {
 	// get the type of each move
 	const moveTypes = battle.p1.active[0]?.moves.map((move) => {
 		const moveType = Dex.moves.get(move)?.type;
@@ -576,7 +583,7 @@ function maxMoves(battle: Battle): any {
 	];
 }
 
-function zMoves(battle: Battle): any {
+function zMoves(battle: Battle, cache: NodeCache): any {
 	// get the type of each move
 	const moveTypes = battle.p1.active[0]?.moves.map((move) => {
 		const moveType = Dex.moves.get(move)?.type;
