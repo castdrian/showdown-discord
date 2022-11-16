@@ -16,17 +16,14 @@ export class Info extends Command {
 			const channels = this.container.client.channels.cache.size;
 			const { readyAt } = this.container.client;
 			const uptimeString = time(readyAt!, 'R');
-			const cpu = process.cpuUsage();
-			const cpuUsage = Math.round((cpu.user + cpu.system) / 1000000);
 			const cpuCount = cpus().length;
 			const cpuModel = cpus()[0].model;
 			const osString = `${process.platform} ${cpuCount}x ${cpuModel}`;
-			const cpuUsageString = `Using ${cpuUsage}% of ${cpuCount} CPU cores`;
 			const memory = process.memoryUsage().heapUsed / 1024 / 1024;
 			const memoryString = `${memory.toFixed(2)} MB / ${Math.round(totalmem() / 1024 / 1024)} MB`;
 			const shard = this.container.client.shard?.ids[0] ?? 0;
 			const shardCount = this.container.client.shard?.count ?? 1;
-			const shardString = `${shard + 1}/${shardCount}`;
+			const shardString = `${shard} (${shardCount} total)`;
 			const lclInstance = new lcl(process.cwd());
 			const lastCommit = await lclInstance.getLastCommit();
 			const { gitUrl, shortHash, subject } = lastCommit;
@@ -42,7 +39,7 @@ export class Info extends Command {
 				thumbnail: {
 					url: this.container.client.user?.displayAvatarURL() ?? ''
 				},
-				description: `**Guilds:** ${guilds}\n**Users:** ${users}\n**Channels:** ${channels}\n**Uptime:** Container started ${uptimeString}\n**Latency:** ${latency} ms\n**System:** ${osString}\n**CPU Usage:** ${cpuUsageString}\n**Memory Usage:** ${memoryString}\n**Shard:** ${shardString}\n**Current Commit:** ${commitString}\n**Node:** ${node}\n**TypeScript:** ${tsver}\n**Discord.js:** ${djs}\n**Sapphire:** ${sapphire}`,
+				description: `**Guilds:** ${guilds}\n**Users:** ${users}\n**Channels:** ${channels}\n**Uptime:** Container started ${uptimeString}\n**Latency:** ${latency} ms\n**System:** ${osString}\n**Memory Usage:** ${memoryString}\n**Shard:** ${shardString}\n**Current Commit:** ${commitString}\n**Node:** ${node}\n**TypeScript:** ${tsver}\n**Discord.js:** ${djs}\n**Sapphire:** ${sapphire}`,
 				color: 0x5865f2
 			};
 
