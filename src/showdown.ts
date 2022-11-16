@@ -7,7 +7,7 @@ config();
 
 const client = new SapphireClient({
 	shards: 'auto',
-	intents: [GatewayIntentBits.Guilds],
+	intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
 	logger: {
 		level: LogLevel.Debug
 	}
