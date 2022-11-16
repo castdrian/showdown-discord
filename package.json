@@ -9,8 +9,6 @@
   "scripts": {
     "lint": "eslint src tests --ext ts --fix",
     "format": "prettier --write {src,tests}/**/*.ts",
-    "test": "jest",
-    "test:watch": "jest --watch",
     "update": "yarn upgrade-interactive",
     "build": "tsc -b src",
     "clean": "tsc -b src --clean",
