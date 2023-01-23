@@ -183,7 +183,7 @@ export async function moveChoice(streams: any, battle: Battle, message: Message,
 			collector.stop();
 			await switchChoice(streams, battle, message, user, cache, true);
 		}
-		if (customId === 'max' || customId === 'mega' || customId === 'zmove') {
+		if (customId === 'max' || customId === 'mega' || customId === 'zmove' || customId === 'terastallize') {
 			collector.stop();
 			await activateGimmick(customId, streams, battle, message, user, cache);
 		}
@@ -320,14 +320,14 @@ async function activateGimmick(gimmick: string, streams: any, battle: Battle, me
 		await updateBattleEmbed(battle, message, await components);
 		await moveChoice(streams, battle, message, user, cache, gimmick);
 	}
-	if (gimmick === 'mega') {
+	if (gimmick === 'mega' || gimmick === 'terastallize') {
 		const components = await generateMoveButtons(battle.p1.active[0]!, cache);
 		// now insert the cancel button at row 2
 		components[1].components.push({ type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 });
-		// remove row 3 (the mega button) which is at index 2
+		// remove row 3 (the mega or tera button) which is at index 2
 		components.splice(2, 1);
 
-		await updateBattleEmbed(battle, message, await components);
+		await updateBattleEmbed(battle, message, cache, await components);
 		await moveChoice(streams, battle, message, user, cache, gimmick);
 	}
 	if (gimmick === 'zmove') {
@@ -452,6 +452,18 @@ function generateMoveButtons(activemon: Pokemon, cache: NodeCache): any {
 								style: 2,
 								emoji: '<:megaevo:1038102161122414602>',
 								disabled: !activemon?.canMegaEvo
+							}
+					  ]
+					: []),
+				...(activemon?.canTerastallize
+					? [
+							{
+								type: 2,
+								custom_id: 'terastallize',
+								label: romaji ? 'Terastal' : 'Terastallize',
+								style: 2,
+								emoji: '<:terastal:1067029059395145809>',
+								disabled: !activemon?.canTerastallize
 							}
 					  ]
 					: []),
