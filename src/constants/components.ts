@@ -7,6 +7,12 @@ export const components = [
 				custom_id: 'format',
 				options: [
 					{
+						label: '[Gen 9] Random Battle',
+						value: 'gen9randombattle',
+						description: 'Pokémon Scarlet & Violet',
+						emoji: { name: 'sv', id: '1067031019741528124' }
+					},
+					{
 						label: '[Gen 8] Random Battle',
 						value: 'gen8randombattle',
 						description: 'Pokémon Sword & Shield',

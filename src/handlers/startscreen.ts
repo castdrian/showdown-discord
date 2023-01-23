@@ -11,7 +11,7 @@ import { getTwoRandomAvatars, sendErrorToUser } from '#util/functions';
 import type NodeCache from 'node-cache';
 
 export async function startScreen(interaction: CommandInteraction, cache: NodeCache) {
-	let formatid = 'gen8randombattle';
+	let formatid = 'gen9randombattle';
 	let battle_team: PokemonSet[];
 
 	cache.set('romaji', false);
@@ -26,7 +26,7 @@ export async function startScreen(interaction: CommandInteraction, cache: NodeCa
 		{
 			title: 'Pokémon Showdown! Battle',
 			thumbnail: { url: 'attachment://format.png' },
-			description: `Format: \`[Gen 8] Random Battle\`\nPlayers: ${inlineCode(interaction.user.username)} vs. ${inlineCode(
+			description: `Format: \`[Gen 9] Random Battle\`\nPlayers: ${inlineCode(interaction.user.username)} vs. ${inlineCode(
 				interaction.client.user!.username
 			)}\nTeam: \`Random\``,
 			color: 0x5865f2,
@@ -37,7 +37,7 @@ export async function startScreen(interaction: CommandInteraction, cache: NodeCa
 	const image = await versusScreen(interaction);
 	const files = [
 		{ attachment: image, name: 'versus.png' },
-		{ attachment: './data/images/swsh.png', name: 'format.png' }
+		{ attachment: './data/images/sv.png', name: 'format.png' }
 	];
 
 	const message = (await interaction.editReply({ embeds, components, files })) as Message;
