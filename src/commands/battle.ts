@@ -22,6 +22,7 @@ export class Battle extends Command {
 		try {
 			// do the battle stuff
 			const cache = new NodeCache();
+			cache.flushAll();
 			await startScreen(interaction, cache);
 		} catch (error: any) {
 			if (message instanceof Message) {
