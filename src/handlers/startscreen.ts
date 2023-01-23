@@ -97,12 +97,12 @@ export async function startScreen(interaction: CommandInteraction, cache: NodeCa
 		if (i.customId === 'romaji') {
 			await i.deferUpdate();
 			const romaji = cache.get('romaji');
-			if (romaji === 'true') {
+			if (romaji === true) {
 				cache.set('romaji', false);
-				components[1].components[2].label = 'Romaji: Off';
-			} else {
+				await i.followUp({ content: 'Romaji Mode disabled.', ephemeral: true });
+			} else if (romaji === false) {
 				cache.set('romaji', true);
-				components[1].components[2].label = 'Romaji: On';
+				await i.followUp({ content: 'Romaji Mode enabled.', ephemeral: true });
 			}
 
 			await i.editReply({ components });

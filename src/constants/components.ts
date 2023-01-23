@@ -59,7 +59,7 @@ export const components = [
 			{
 				type: 2,
 				custom_id: 'romaji',
-				label: 'Romaji: Off',
+				label: 'Romaji Mode',
 				style: 2
 			},
 			{
