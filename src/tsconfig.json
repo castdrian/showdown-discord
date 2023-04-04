@@ -7,6 +7,7 @@
 		"target": "ESNext",
 		"composite": true,
 		"preserveConstEnums": true,
+		"ignoreDeprecations": "5.0",
 		"skipLibCheck": true,
         "paths": {
 			"#handlers/*": ["./handlers/*"],
