@@ -70,6 +70,12 @@ export async function updateBattleEmbed(
 	const activemon = battle.p1.active[0] ?? battle.p1.lastPokemon;
 	const opponent = battle.p1.foe.active[0] ?? battle.p2.lastPokemon;
 
+	/* 	console.log(activemon?.canTerastallize);
+	console.log(activemon?.terastallized);
+	console.log(activemon?.types);
+	console.log(activemon?.teraType);
+	console.log(activemon?.hp); */
+
 	const {
 		url: activesprite,
 		w: activewidth,
@@ -462,7 +468,9 @@ function generateMoveButtons(activemon: Pokemon, cache: NodeCache): any {
 								custom_id: 'terastallize',
 								label: romaji ? 'Terastal' : 'Terastallize',
 								style: 2,
-								emoji: '<:terastal:1067029059395145809>',
+								emoji: typeEmotes[
+									(activemon?.canTerastallize as unknown as string)?.toLowerCase() ?? '<:terastal:1067029059395145809>'
+								],
 								disabled: !activemon?.canTerastallize
 							}
 					  ]
