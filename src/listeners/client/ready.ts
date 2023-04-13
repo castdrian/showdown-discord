@@ -1,5 +1,5 @@
 import { ApplyOptions } from '@sapphire/decorators';
-import { ListenerOptions, Listener } from '@sapphire/framework';
+import { type ListenerOptions, Listener } from '@sapphire/framework';
 import { ActivityType } from 'discord.js';
 
 @ApplyOptions<ListenerOptions>({ once: true })
