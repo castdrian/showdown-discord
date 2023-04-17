@@ -20,10 +20,10 @@ docker-compose up
 
 ## Showcase
 
-https://user-images.githubusercontent.com/22133246/200044258-99bfcbb2-07c0-4fd3-957d-2dde5305d0cd.mp4
+<https://user-images.githubusercontent.com/22133246/200044258-99bfcbb2-07c0-4fd3-957d-2dde5305d0cd.mp4>
 
 ## Thanks to
 
--   [scheibo](https://github.com/scheibo) for their [modularized showdown](https://github.com/pkmn/ps) impl
--   [Zarel](https://github.com/Zarel) & [Smogon](https://www.smogon.com) for [Pokémon Showdown](https://play.pokemonshowdown.com)
--   [Yugen](https://github.com/jurienhamaker) for being Mr. Dockerman and helping out with the [Dockerfile](https://github.com/castdrian/showdown/blob/main/Dockerfile)
+- [scheibo](https://github.com/scheibo) for their [modularized showdown](https://github.com/pkmn/ps) impl
+- [Zarel](https://github.com/Zarel) & [Smogon](https://www.smogon.com) for [Pokémon Showdown](https://play.pokemonshowdown.com)
+- [Yugen](https://github.com/jurienhamaker) for being Mr. Dockerman and helping out with the [Dockerfile](https://github.com/castdrian/showdown/blob/main/Dockerfile)

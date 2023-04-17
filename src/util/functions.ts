@@ -1,4 +1,4 @@
-import { CommandInteraction, Message, AttachmentBuilder, MessageEditOptions, codeBlock } from 'discord.js';
+import { CommandInteraction, Message, AttachmentBuilder, type MessageEditOptions, codeBlock } from 'discord.js';
 import newGithubIssueUrl from 'new-github-issue-url';
 import type NodeCache from 'node-cache';
 

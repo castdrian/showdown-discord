@@ -1,5 +1,5 @@
-import { Dex, Teams, RandomPlayerAI, BattleStreams, PokemonSet } from '@pkmn/sim';
-import { Protocol, Handler, ArgName, ArgType, BattleArgsKWArgType } from '@pkmn/protocol';
+import { Dex, Teams, RandomPlayerAI, BattleStreams, type PokemonSet } from '@pkmn/sim';
+import { Protocol, type Handler, type ArgName, type ArgType, type BattleArgsKWArgType } from '@pkmn/protocol';
 import { Battle } from '@pkmn/client';
 import { TeamGenerators } from '@pkmn/randoms';
 import { LogFormatter } from '@pkmn/view';
