@@ -70,12 +70,6 @@ export async function updateBattleEmbed(
 	const activemon = battle.p1.active[0] ?? battle.p1.lastPokemon;
 	const opponent = battle.p1.foe.active[0] ?? battle.p2.lastPokemon;
 
-	/* 	console.log(activemon?.canTerastallize);
-	console.log(activemon?.terastallized);
-	console.log(activemon?.types);
-	console.log(activemon?.teraType);
-	console.log(activemon?.hp); */
-
 	const {
 		url: activesprite,
 		w: activewidth,
