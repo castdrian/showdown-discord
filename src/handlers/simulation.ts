@@ -38,49 +38,55 @@ export async function initiateBattle(
 	const pre = new PreHandler(battle, streams, message, user, cache);
 	const post = new PostHandler(battle, streams, message, user, cache);
 
-	const add = <T>(h: Handler<T>, k: ArgName | undefined, a: ArgType, kw: BattleArgsKWArgType) => {
-		if (k && k in h) (h as any)[k](a, kw);
+	const addHandler = <T>(handler: Handler<T>, argName: ArgName | undefined, arg: ArgType, kwarg: BattleArgsKWArgType) => {
+		if (argName && argName in handler) {
+			(handler as any)[argName](arg, kwarg);
+		}
 	};
 
 	cache.set('battlelog', []);
 
-	await Promise.all([omnicientStream(), playerStream(), startBattle()].map((p) => p.catch((err) => sendErrorToUser(err, message, interaction))));
+	await Promise.all(
+		[omniscientStream(), playerStream(), startBattle()].map((promise) => promise.catch((error) => sendErrorToUser(error, message, interaction)))
+	);
 
-	async function omnicientStream() {
+	async function omniscientStream() {
 		for await (const chunk of streams.omniscient) {
-			for (const line of chunk.split('\n')) {
+			const lines = chunk.split('\n');
+			for (const line of lines) {
 				const { args, kwArgs } = Protocol.parseBattleLine(line);
-				// only continue if args are not empty, undefined or null and have at least one property
-				if (!args || Object.keys(args).length === 0) continue;
 
-				const text = formatter.formatText(args, kwArgs);
-				const key = Protocol.key(args);
+				if (args && Object.keys(args).length > 0) {
+					const text = formatter.formatText(args, kwArgs);
+					const key = Protocol.key(args);
 
-				add(pre, key, args, kwArgs);
-				battle.add(args, kwArgs);
-				add(post, key, args, kwArgs);
+					addHandler(pre, key, args, kwArgs);
+					battle.add(args, kwArgs);
+					addHandler(post, key, args, kwArgs);
 
-				if (text !== '') {
-					const log: string[] = cache.get('battlelog')!;
-					if (log) {
+					if (text) {
+						const log: string[] = cache.get('battlelog') ?? [];
 						log.push(removeMD(text));
 						cache.set('battlelog', log);
 					}
 				}
 			}
+
 			battle.update();
 		}
 	}
 
 	async function playerStream() {
 		for await (const chunk of streams.p1) {
-			for (const line of chunk.split('\n')) {
+			const lines = chunk.split('\n');
+			for (const line of lines) {
 				const { args, kwArgs } = Protocol.parseBattleLine(line);
-				// only continue if args are not empty, undefined or null and have at least one property
-				if (!args || Object.keys(args).length === 0) continue;
 
-				battle.add(args, kwArgs);
+				if (args && Object.keys(args).length > 0) {
+					battle.add(args, kwArgs);
+				}
 			}
+
 			battle.update();
 		}
 	}
