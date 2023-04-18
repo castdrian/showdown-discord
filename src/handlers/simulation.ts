@@ -50,8 +50,8 @@ export async function initiateBattle(
 		for await (const chunk of streams.omniscient) {
 			for (const line of chunk.split('\n')) {
 				const { args, kwArgs } = Protocol.parseBattleLine(line);
-				// only continue if args and kwArgs are not empty, undefined or null and have at least one property
-				if (!args || !kwArgs || Object.keys(args).length === 0 || Object.keys(kwArgs).length === 0) continue;
+				// only continue if args are not empty, undefined or null and have at least one property
+				if (!args || Object.keys(args).length === 0) continue;
 
 				const text = formatter.formatText(args, kwArgs);
 				const key = Protocol.key(args);
@@ -76,6 +76,9 @@ export async function initiateBattle(
 		for await (const chunk of streams.p1) {
 			for (const line of chunk.split('\n')) {
 				const { args, kwArgs } = Protocol.parseBattleLine(line);
+				// only continue if args are not empty, undefined or null and have at least one property
+				if (!args || Object.keys(args).length === 0) continue;
+
 				battle.add(args, kwArgs);
 			}
 			battle.update();
