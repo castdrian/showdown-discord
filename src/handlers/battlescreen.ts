@@ -154,48 +154,53 @@ export async function updateBattleEmbed(
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await
-export async function moveChoice(streams: any, battle: Battle, message: Message, user: User, cache: NodeCache, gimmick?: string) {
+export async function moveChoice(streams: any, battle: Battle, message: Message, user: User, cache: NodeCache, gimmick?: string): Promise<void> {
 	const activemon = battle.p1.active[0];
 	const builder = new ChoiceBuilder(battle.request!);
 
-	const filter = (i: any) => i.user.id === user.id;
-	const collector = message!.createMessageComponentCollector({ filter });
+	const filter = (i: MessageComponentInteraction) => i.user.id === user.id;
+	const collector = message.createMessageComponentCollector({ filter });
 
-	collector.on('collect', async (i: MessageComponentInteraction) => {
+	collector.on('collect', async (i) => {
 		await i.deferUpdate();
-		// retrieve the original custom id
+
 		const customId = getCustomId(i.customId);
 
 		if (activemon?.moves.includes(customId as any)) {
 			collector.stop();
-			if (gimmick) builder.addChoice(`move ${customId} ${gimmick}`);
-			else builder.addChoice(`move ${customId}`);
+
+			if (gimmick) {
+				builder.addChoice(`move ${customId} ${gimmick}`);
+			} else {
+				builder.addChoice(`move ${customId}`);
+			}
+
 			const choice = builder.toString();
 			streams.p1.write(choice);
 
 			const move = Dex.moves.get(customId as any);
 
-			if (move.selfSwitch && !activemon?.trapped) {
+			if (move.selfSwitch && !activemon.trapped) {
 				await switchChoice(streams, battle, message, user, cache, false);
-			} else await updateBattleEmbed(battle, message, cache);
-		}
-		if (customId === 'switch') {
+			} else {
+				await updateBattleEmbed(battle, message, cache);
+			}
+		} else if (customId === 'switch') {
 			collector.stop();
 			await switchChoice(streams, battle, message, user, cache, true);
-		}
-		if (customId === 'max' || customId === 'mega' || customId === 'zmove' || customId === 'terastallize') {
+		} else if (customId === 'max' || customId === 'mega' || customId === 'zmove' || customId === 'terastallize') {
 			collector.stop();
 			await activateGimmick(customId, streams, battle, message, user, cache);
-		}
-		if (customId === 'info') {
-			await i.followUp({ content: generateEffectInfo(battle) ?? 'No active battle effects.', ephemeral: true });
-		}
-		if (customId === 'cancel') {
+		} else if (customId === 'info') {
+			await i.followUp({
+				content: generateEffectInfo(battle) ?? 'No active battle effects.',
+				ephemeral: true
+			});
+		} else if (customId === 'cancel') {
 			collector.stop();
 			await updateBattleEmbed(battle, message, cache);
 			await moveChoice(streams, battle, message, user, cache);
-		}
-		if (customId === 'forfeit') {
+		} else if (customId === 'forfeit') {
 			const forfeit = await forfeitBattle(streams, i, battle, message, cache);
 			if (forfeit) collector.stop();
 		}
