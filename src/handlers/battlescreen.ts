@@ -311,35 +311,37 @@ async function forfeitBattle(
 }
 
 async function activateGimmick(gimmick: string, streams: any, battle: Battle, message: Message, user: User, cache: NodeCache) {
-	if (gimmick === 'max') {
-		// const components is the result of maxMoves(battle) plus a cancel button { type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 }
-		const components = await maxMoves(battle, cache);
-		// now insert the cancel button at row 2
-		components[1].components.push({ type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 });
+	let components;
+	let rowToRemove = -1;
 
-		await updateBattleEmbed(battle, message, await components);
-		await moveChoice(streams, battle, message, user, cache, gimmick);
+	switch (gimmick) {
+		case 'max':
+			components = await maxMoves(battle, cache);
+			rowToRemove = -1; // don't remove any row
+			break;
+		case 'mega':
+		case 'terastallize':
+			components = await generateMoveButtons(battle.p1.active[0]!, cache);
+			rowToRemove = 2; // remove row 3 (the mega or tera button)
+			break;
+		case 'zmove':
+			components = await zMoves(battle, cache);
+			rowToRemove = 2; // remove row 3 (the zmove button)
+			break;
+		default:
+			return; // unsupported gimmick
 	}
-	if (gimmick === 'mega' || gimmick === 'terastallize') {
-		const components = await generateMoveButtons(battle.p1.active[0]!, cache);
-		// now insert the cancel button at row 2
-		components[1].components.push({ type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 });
-		// remove row 3 (the mega or tera button) which is at index 2
-		components.splice(2, 1);
 
-		await updateBattleEmbed(battle, message, cache, await components);
-		await moveChoice(streams, battle, message, user, cache, gimmick);
-	}
-	if (gimmick === 'zmove') {
-		const components = await zMoves(battle, cache);
-		// now insert the cancel button at row 2
-		components[1].components.push({ type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 });
-		// remove row 3 (the zmove button) which is at index 2
-		components.splice(2, 1);
+	// insert the cancel button at row 2
+	components[1].components.push({ type: 2, custom_id: 'cancel', label: 'Cancel', style: 2 });
 
-		await updateBattleEmbed(battle, message, await components);
-		await moveChoice(streams, battle, message, user, cache, gimmick);
+	// remove a row if necessary
+	if (rowToRemove >= 0) {
+		components.splice(rowToRemove, 1);
 	}
+
+	await updateBattleEmbed(battle, message, cache, await components);
+	await moveChoice(streams, battle, message, user, cache, gimmick);
 }
 
 function generateMoveButtons(activemon: Pokemon, cache: NodeCache): any {
