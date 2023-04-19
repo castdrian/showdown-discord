@@ -7,6 +7,7 @@ import { moveChoice, switchChoice, updateBattleEmbed } from '#handlers/battlescr
 import type { Message, User } from 'discord.js';
 import type { BattleStreams } from '#types/index';
 import type NodeCache from 'node-cache';
+import { incrementOrCreateLeaderboardEntry } from '#util/firebase';
 
 export class PostHandler implements Handler<void> {
 	// @ts-ignore whatever this is
@@ -54,9 +55,15 @@ export class PostHandler implements Handler<void> {
 		}
 	}
 
-	async '|win|'() {
+	async '|win|'(args: Protocol.Args['|win|']) {
 		await updateBattleEmbed(this.battle, this.message, this.cache, []);
 		this.battle.destroy();
+
+		if (args[1] === this.user.username) {
+			await incrementOrCreateLeaderboardEntry(this.user.id, this.message.guild?.id ?? '', 'win');
+		} else {
+			await incrementOrCreateLeaderboardEntry(this.user.id, this.message.guild?.id ?? '', 'loss');
+		}
 	}
 
 	async '|tie|'() {

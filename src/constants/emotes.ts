@@ -19,6 +19,13 @@ export const typeEmotes = {
 	water: '<:watertype:1038083426110160926>'
 } as any;
 
+export const leaderBoardEmotes = [
+	'<:masterball:1098245988495409153>',
+	'<:ultraball:1098245986029154325>',
+	'<:greatball:1098245993495007262>',
+	'<:pokeball:1098245990500278293>'
+];
+
 export const shortTypes = {
 	bug: 'BUG',
 	dark: 'DRK',

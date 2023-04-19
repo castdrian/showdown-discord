@@ -21,3 +21,10 @@ export interface PokePasteResponse {
 	paste: string;
 	title: string;
 }
+
+export interface LeaderboardEntry {
+	user_id: string;
+	guild_id: string;
+	wins: number;
+	losses: number;
+}
