@@ -3,7 +3,7 @@
 ### Production
 
 ```bash
-docker run --env-file=.env --name=showdown --restart=unless-stopped ghcr.io/castdrian/showdown:main
+docker run --env-file=.env -v "$(pwd)/firebase_credentials.json:/app/firebase_credentials.json:ro" --name=showdown --restart=unless-stopped ghcr.io/castdrian/showdown:main
 ```
 
 ### Development

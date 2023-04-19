@@ -9,6 +9,7 @@ import { fetchRomaji, type RomajiMon, type RomajiMove } from 'pkmn-romaji';
 import { request } from 'undici';
 import { getTwoRandomAvatars, sendErrorToUser } from '#util/functions';
 import type NodeCache from 'node-cache';
+import { incrementBattles } from '#util/firebase';
 
 export async function startScreen(interaction: CommandInteraction, cache: NodeCache) {
 	let formatid = 'gen9randombattle';
@@ -82,6 +83,7 @@ export async function startScreen(interaction: CommandInteraction, cache: NodeCa
 			await interaction.webhook.deleteMessage(id);
 			const message = await interaction.fetchReply();
 			if (message instanceof Message) {
+				await incrementBattles();
 				getTwoRandomAvatars(cache);
 				await initiateBattle(interaction, message, interaction.user, formatid, battle_team, cache).catch((err) =>
 					sendErrorToUser(err, message, interaction)

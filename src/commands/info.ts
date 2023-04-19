@@ -4,6 +4,7 @@ import { sendErrorToUser } from '#util/functions';
 import { default as lcl } from 'last-commit-log';
 import { default as ts } from 'typescript';
 import { cpus, totalmem } from 'os';
+import { readBattles } from '#util/firebase';
 
 export class Info extends Command {
 	public override async chatInputRun(interaction: CommandInteraction) {
@@ -11,6 +12,7 @@ export class Info extends Command {
 		const message = await interaction.fetchReply();
 		// try catch the entire thing and send an error message if it fails
 		try {
+			const battles = await readBattles();
 			const guilds = this.container.client.guilds.cache.size;
 			const users = this.container.client.guilds.cache.reduce((a, b) => a + b.memberCount, 0);
 			const channels = this.container.client.channels.cache.size;
@@ -39,7 +41,7 @@ export class Info extends Command {
 				thumbnail: {
 					url: this.container.client.user?.displayAvatarURL() ?? ''
 				},
-				description: `**Guilds:** ${guilds}\n**Users:** ${users}\n**Channels:** ${channels}\n**Uptime:** Container started ${uptimeString}\n**Latency:** ${latency} ms\n**System:** ${osString}\n**Memory Usage:** ${memoryString}\n**Shard:** ${shardString}\n**Current Commit:** ${commitString}\n**Node:** ${node}\n**TypeScript:** ${tsver}\n**Discord.js:** ${djs}\n**Sapphire:** ${sapphire}`,
+				description: `**Processed Battles:** ${battles}\n**Guilds:** ${guilds}\n**Users:** ${users}\n**Channels:** ${channels}\n**Uptime:** Container started ${uptimeString}\n**Latency:** ${latency} ms\n**System:** ${osString}\n**Memory Usage:** ${memoryString}\n**Shard:** ${shardString}\n**Current Commit:** ${commitString}\n**Node:** ${node}\n**TypeScript:** ${tsver}\n**Discord.js:** ${djs}\n**Sapphire:** ${sapphire}`,
 				color: 0x5865f2
 			};
 
