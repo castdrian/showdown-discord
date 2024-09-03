@@ -1,5 +1,5 @@
 # Base layer
-FROM node:18 as base
+FROM node:20 as base
 WORKDIR /home/node/app
 
 # Build layer (everything besides build output & node_modules can be disgarded from this)
